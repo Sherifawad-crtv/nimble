@@ -1,0 +1,37 @@
+# Origin
+
+Coaching app: coaches build and assign workouts, clients train from a phone and log results. PWA, multi-tenant by design.
+
+**Phase 1 (this repo):** frontend only, built against a typed mock backend. No Supabase calls.
+
+## Run
+
+```sh
+npm install
+npm run dev        # http://localhost:5173
+npm test           # timer engine + mock service
+npm run build      # tokens -> tsc -> vite build
+```
+
+Sign in with a demo account on the first screen (one coach, four clients with different wearable setups).
+Reset the demo data by clearing site data for the page.
+
+## Structure
+
+| Path | What |
+|---|---|
+| `src/types` | Domain types. The contract shared by the mock and the real backend. |
+| `src/services` | `DataService` interface, the `ServiceError` shape, and `mock/` (in-memory, persisted to `localStorage`, seeded). Phase 2 replaces one line in `services/index.ts`. |
+| `src/hooks/data.ts` | `useData` and `useAction`: the only way screens read and write. |
+| `src/timer` | Pure timer engine (`engine.ts`, tested), cue sounds, wake lock, and the `useTimer` hook. |
+| `src/design` | The Origin design system: vendored bundle, generated `tokens.css`, typed wrapper. |
+| `src/screens`, `src/components` | Coach and client screens, shared pieces. |
+| `src/i18n` | All strings, in one table. Layout uses logical CSS properties. |
+
+`tokens.css` is generated from `src/design/tokens.json` by `scripts/build-tokens.mjs`. Do not edit it by hand.
+
+## Rules the code follows
+
+- Derived business values (readiness, personal records, package balances) come from the service, never the UI.
+- Every data region goes through `DataBoundary`, so loading, empty and error states exist everywhere.
+- Timer state is derived from the real clock (`Date.now()`), never from a ticking counter.

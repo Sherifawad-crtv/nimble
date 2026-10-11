@@ -1,0 +1,123 @@
+/* Origin — generated from tokens.json by scripts/build-tokens.mjs. Do not edit. */
+:root, [data-theme="dark"] {
+  --bg: #000000;
+  --surface-map: #080808;
+  --surface-control: #1c1c1c;
+  --surface-card: #201e1f;
+  --surface-raised: #2c2c2c;
+  --brand: #f0ff8a;
+  --brand-yellow: #f0ff8a;
+  --brand-indigo: #442bee;
+  --brand-beige: #fbeecb;
+  --on-brand: #000000;
+  --sub: #998aff;
+  --text-sub: #998aff;
+  --on-sub: #000000;
+  --pink: #fa80b1;
+  --blue: #01a6ff;
+  --green: #8df584;
+  --on-accent: #000000;
+  --ink: #d9d9d9;
+  --muted: #8b8b8b;
+  --faint: #5c5c5c;
+  --text-brand: #f0ff8a;
+  --text-pink: #fa80b1;
+  --text-blue: #01a6ff;
+  --text-green: #8df584;
+  --danger: #ff7a7a;
+  --on-danger: #000000;
+  --line: #2c2c2c;
+  --line-strong: #6b6b6b;
+  --card-edge: #00000000;
+  --edge-accent: #fdff92;
+  --focus: #fdff92;
+  --scrim: #000000cc;
+  --glass: #201e1fb8;
+  --warning: #ffa94d;
+  --success: var(--text-green);
+  --info: var(--text-blue);
+  --error: var(--danger);
+  --brand-black: #000000;
+  --brand-white: #ffffff;
+  --glow-brand: 0 0 24px 0 rgba(253,255,146,0.35);
+  --shadow-pop: 0 12px 32px 0 rgba(0,0,0,0.6);
+}
+[data-theme="light"] {
+  --bg: #f3eee2;
+  --surface-map: #eae4d4;
+  --surface-control: #e6dfcb;
+  --surface-card: #f8f4ea;
+  --surface-raised: #ddd5c0;
+  --brand: #442bee;
+  --brand-yellow: #f0ff8a;
+  --brand-indigo: #442bee;
+  --brand-beige: #fbeecb;
+  --on-brand: #f8f4ea;
+  --sub: #442bee;
+  --text-sub: #442bee;
+  --on-sub: #f8f4ea;
+  --ink: #14110d;
+  --muted: #615a4d;
+  --faint: #8f8776;
+  --text-brand: #442bee;
+  --text-pink: #b0295f;
+  --text-blue: #0067b3;
+  --text-green: #17692a;
+  --danger: #c01f2f;
+  --on-danger: #f8f4ea;
+  --line: #d9d1bd;
+  --line-strong: #7a7262;
+  --card-edge: #00000000;
+  --edge-accent: #14110d;
+  --focus: #442bee;
+  --scrim: #14110d66;
+  --glass: #f8f4eab8;
+  --warning: #9a4a00;
+  --success: var(--text-green);
+  --info: var(--text-blue);
+  --error: var(--danger);
+  --brand-black: #000000;
+  --brand-white: #ffffff;
+  --glow-brand: 0 0 24px 0 rgba(17,17,17,0.0);
+  --shadow-pop: 0 12px 32px 0 rgba(17,17,17,0.18);
+}
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --dot-size: 48px;
+  --control-size: 56px;
+  --pill-height: 80px;
+  --space-5: 20px;
+  --space-10: 40px;
+  --tap-min: 44px;
+  --sidebar-width: 264px;
+  --radius-card: 24px;
+  --radius-pill: 999px;
+  --radius-screen: 56px;
+  --radius-md: 16px;
+  --radius-sheet: 28px;
+  --font-sans: "Archivo Variable", "Archivo", "Cairo Variable", "Cairo", "Helvetica Neue", Arial, sans-serif;
+  --font-brand: "BBH Hegarty", "Archivo", sans-serif;
+}
+.t-display { font-family: var(--font-sans); font-size: 200px; line-height: 190px; font-weight: 900; font-style: italic; letter-spacing: -0.02em; }
+.t-headline { font-family: var(--font-sans); font-size: 40px; line-height: 40px; font-weight: 900; font-style: italic; letter-spacing: -0.01em; }
+.t-title { font-family: var(--font-sans); font-size: 36px; line-height: 40px; font-weight: 900; font-style: italic; }
+.t-metric { font-family: var(--font-sans); font-size: 26px; line-height: 30px; font-weight: 800; font-style: italic; }
+.t-stat { font-family: var(--font-sans); font-size: 26px; line-height: 30px; font-weight: 800; font-style: italic; }
+.t-eyebrow { font-family: var(--font-sans); font-size: 22px; line-height: 26px; font-weight: 800; font-style: italic; letter-spacing: 0.01em; }
+.t-label { font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 500; }
+.t-caption { font-family: var(--font-sans); font-size: 13px; line-height: 16px; font-weight: 500; }
+.t-button { font-family: var(--font-sans); font-size: 26px; line-height: 30px; font-weight: 900; font-style: italic; }
+.t-heading { font-family: var(--font-sans); font-size: 22px; line-height: 26px; font-weight: 800; font-style: italic; }
+.t-body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 500; }
+.t-body-strong { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 700; }
+.t-input { font-family: var(--font-sans); font-size: 17px; line-height: 24px; font-weight: 600; }
+.t-chip { font-family: var(--font-sans); font-size: 13px; line-height: 16px; font-weight: 700; }
+.t-button-md { font-family: var(--font-sans); font-size: 18px; line-height: 22px; font-weight: 900; font-style: italic; }
+.t-timer { font-family: var(--font-sans); font-size: 96px; line-height: 96px; font-weight: 900; font-style: italic; letter-spacing: -0.02em; }
+.t-timer-xl { font-family: var(--font-sans); font-size: 160px; line-height: 150px; font-weight: 900; font-style: italic; letter-spacing: -0.02em; }
+.t-wordmark { font-family: var(--font-brand); font-size: 32px; line-height: 32px; font-weight: 400; letter-spacing: 0.02em; }
