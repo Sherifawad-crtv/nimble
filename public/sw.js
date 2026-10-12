@@ -1,6 +1,6 @@
 // App-shell service worker: pre-caches the shell so Origin opens offline, and
 // serves built assets from cache first. Data always comes from the app, never from here.
-const VERSION = 'origin-shell-v1';
+const VERSION = 'origin-shell-v2';
 const SHELL = ['/', '/manifest.webmanifest', '/apple-touch-icon.png', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {
