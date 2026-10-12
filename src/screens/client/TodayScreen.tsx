@@ -1,14 +1,11 @@
-import { Navigate, useNavigate } from 'react-router-dom';
-import { useMe } from '../../app/auth';
+import { useNavigate } from 'react-router-dom';
 import { DataBoundary } from '../../components/DataBoundary';
 import { Page } from '../../components/Page';
-import { ReadinessHint } from '../../components/WearableBlocks';
 import { Button, EmptyState, ListRow, MetricPill, StatusChip } from '../../design';
 import { useData } from '../../hooks/data';
 import { keys } from '../../hooks/keys';
 import { formatDateShort, t } from '../../i18n';
 import { addDays, todayISO } from '../../lib/date';
-import { readPref, wearablePromptKey } from '../../lib/prefs';
 import { blockTypeLabel, isTimerBlock } from '../../lib/workout';
 import type { Assignment } from '../../types';
 
@@ -41,15 +38,10 @@ function TodayCard({ a, onOpen }: { a: Assignment; onOpen: () => void }) {
 }
 
 export function TodayScreen() {
-  const me = useMe();
   const navigate = useNavigate();
   const today = todayISO();
   const until = addDays(today, 7);
   const assignments = useData(keys.assignments(undefined, today, until), (s) => s.listAssignments({ from: today, to: until }));
-  const wearable = useData(keys.wearable(me.id), (s) => s.getWearableConnection(me.id));
-
-  // First visit without a device: ask once, at sign-up time. Skipping is fine.
-  if (wearable.data === null && readPref(wearablePromptKey(me.id)) === null) return <Navigate to="/app/wearable?first=1" replace />;
 
   return (
     <Page title={t('today.title')} accent={formatDateShort(today)}>
@@ -65,7 +57,6 @@ export function TodayScreen() {
                 ) : (
                   todays.map((a) => <TodayCard key={a.id} a={a} onOpen={() => navigate(`/app/workout/${a.id}`)} />)
                 )}
-                <ReadinessHint clientId={me.id} />
                 {upcoming.length > 0 && (
                   <section className="app-section" aria-label={t('today.upNext')}>
                     <h2 className="t-eyebrow app-h2">{t('today.upNext')}</h2>

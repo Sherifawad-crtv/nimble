@@ -6,7 +6,6 @@ import { CalendarView, monthRange } from '../../components/CalendarView';
 import { DataBoundary } from '../../components/DataBoundary';
 import { ConfirmDialog, Sheet } from '../../components/Sheet';
 import { Page } from '../../components/Page';
-import { RecoveryBlock } from '../../components/WearableBlocks';
 import { Button, DateField, EmptyState, ListRow, PackageCard, PersonalRecord, StatusChip } from '../../design';
 import { errorMessage, useAction, useData } from '../../hooks/data';
 import { keys } from '../../hooks/keys';
@@ -53,7 +52,6 @@ function ClientView({ client }: { client: Profile }) {
         <div className="app-col side">
           <PackageSection client={client} />
           <RecordsSection client={client} />
-          <RecoveryBlock clientId={client.id} />
         </div>
       </div>
       <AssignSheet open={assignOpen} onClose={() => setAssignOpen(false)} clientId={client.id} />

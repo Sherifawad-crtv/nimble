@@ -5,7 +5,6 @@ import type {
   AssignmentStatus,
   Block,
   Comment,
-  DailyMetrics,
   Exercise,
   ExerciseInput,
   ExerciseProgress,
@@ -21,17 +20,12 @@ import type {
   Profile,
   Program,
   ProgramInput,
-  Readiness,
-  WearableCapability,
-  WearableConnection,
-  WearableConnectStart,
-  WearableProvider,
   Workout,
   WorkoutInput,
   WorkoutLog,
 } from '../../types';
 import { ServiceError, type DataService, type ExerciseQuery } from '../DataService';
-import { exerciseProgress, personalRecords, progressSummary, readinessFrom, withPackageState } from '../stats';
+import { exerciseProgress, personalRecords, progressSummary, withPackageState } from '../stats';
 import { parseVideoUrl, thumbnailFor, videoUrlFor } from '../videoLink';
 import { callFunction, must } from './client';
 
@@ -88,7 +82,6 @@ interface LogRow {
   item_results: WorkoutLog['itemResults'];
   timer_results: WorkoutLog['timerResults'];
   client_note: string | null;
-  wearable: WorkoutLog['wearable'] | null;
 }
 interface CommentRow {
   id: string;
@@ -109,24 +102,6 @@ interface PackageRow {
   expires_on: string;
   payment_received: boolean;
 }
-interface ConnectionRow {
-  id: string;
-  client_id: string;
-  provider: WearableProvider;
-  status: WearableConnection['status'];
-  capabilities: string[];
-  last_synced_at: string | null;
-}
-interface MetricsRow {
-  date: string;
-  provider: WearableProvider;
-  sleep_minutes: number | null;
-  resting_hr: number | null;
-  hrv: number | null;
-  strain: number | null;
-  calories_burned: number | null;
-}
-
 // ---------- mapping ----------
 
 /** Drops null fields so optional properties stay absent, as the UI expects. */
@@ -176,7 +151,6 @@ const toLog = (r: LogRow): WorkoutLog =>
     itemResults: r.item_results,
     timerResults: r.timer_results,
     clientNote: r.client_note,
-    wearable: r.wearable,
   });
 
 const toComment = (r: CommentRow): Comment => ({
@@ -189,31 +163,9 @@ const toComment = (r: CommentRow): Comment => ({
   createdAt: r.created_at,
 });
 
-const toConnection = (r: ConnectionRow): WearableConnection => ({
-  id: r.id,
-  clientId: r.client_id,
-  provider: r.provider,
-  status: r.status,
-  // Live heart rate is not verified with any brand, so it is never reported as available.
-  capabilities: r.capabilities.filter((c) => c !== 'live_hr') as WearableCapability[],
-});
-
-const toMetrics = (r: MetricsRow): DailyMetrics =>
-  compact<DailyMetrics>({
-    date: r.date,
-    provider: r.provider,
-    sleepMinutes: r.sleep_minutes,
-    restingHr: r.resting_hr,
-    hrv: r.hrv === null ? null : Number(r.hrv),
-    strain: r.strain === null ? null : Number(r.strain),
-    caloriesBurned: r.calories_burned,
-  });
-
 const uid = () => crypto.randomUUID();
-/** After this long without fresh data, opening the app asks for a sync. Webhooks normally keep it current. */
-const STALE_SYNC_MS = 6 * 60 * 60 * 1000;
 
-/** The real backend: Postgres with row-level security, plus edge functions for link checks and wearables. */
+/** The real backend: Postgres with row-level security, plus an edge function for video link checks. */
 export class SupabaseDataService implements DataService {
   private meCache: Promise<Profile> | null = null;
 
@@ -628,88 +580,4 @@ export class SupabaseDataService implements DataService {
       : await this.sb.from('packages').insert({ ...row, workspace_id: me.workspaceId }).select('*').single<PackageRow>();
     return this.toPackage(must(saved));
   }
-
-  // ---------- wearables ----------
-
-  private async connectionRow(clientId: Id): Promise<ConnectionRow | null> {
-    return must(
-      await this.sb.from('wearable_connections').select('id, client_id, provider, status, capabilities, last_synced_at').eq('client_id', clientId).maybeSingle<ConnectionRow>(),
-    );
-  }
-
-  async getWearableConnection(clientId: Id): Promise<WearableConnection | null> {
-    const me = await this.clientAccess(clientId);
-    const row = await this.connectionRow(clientId);
-    // The database already hides a disconnected client's connection from the coach.
-    if (!row || (me.role === 'coach' && row.status === 'disconnected')) return null;
-    const stale = !row.last_synced_at || Date.now() - Date.parse(row.last_synced_at) > STALE_SYNC_MS;
-    if (me.role === 'client' && row.status === 'connected' && stale) {
-      void callFunction(this.sb, 'wearables-sync').catch(() => undefined);
-    }
-    return toConnection(row);
-  }
-
-  async connectWearable(provider: WearableProvider, returnUrl: string): Promise<WearableConnectStart> {
-    await this.client();
-    const r = await callFunction<{ url: string }>(this.sb, 'wearables-connect', { provider, redirectUri: returnUrl });
-    return { kind: 'redirect', url: r.url };
-  }
-
-  async syncWearable(): Promise<WearableConnection | null> {
-    const me = await this.client();
-    await callFunction(this.sb, 'wearables-sync');
-    const row = await this.connectionRow(me.id);
-    return row ? toConnection(row) : null;
-  }
-
-  async disconnectWearable(): Promise<void> {
-    await this.client();
-    await callFunction(this.sb, 'wearables-disconnect');
-  }
-
-  /** Only the connected brand's numbers; data from an earlier brand is never mixed in. */
-  private async liveConnection(clientId: Id): Promise<WearableConnection | null> {
-    const row = await this.connectionRow(clientId);
-    return row && row.status === 'connected' ? toConnection(row) : null;
-  }
-
-  async getDailyMetrics(clientId: Id, from: ISODate, to: ISODate): Promise<DailyMetrics[]> {
-    await this.clientAccess(clientId);
-    const conn = await this.liveConnection(clientId);
-    if (!conn) return [];
-    const rows = must(
-      await this.sb
-        .from('daily_metrics')
-        .select('date, provider, sleep_minutes, resting_hr, hrv, strain, calories_burned')
-        .eq('client_id', clientId)
-        .eq('provider', conn.provider)
-        .gte('date', from)
-        .lte('date', to)
-        .order('date')
-        .returns<MetricsRow[]>(),
-    );
-    return rows.map(toMetrics);
-  }
-
-  async getReadiness(clientId: Id): Promise<Readiness | null> {
-    await this.clientAccess(clientId);
-    const conn = await this.liveConnection(clientId);
-    if (!conn) return null;
-    const today = this.today();
-    const latest = must(
-      await this.sb
-        .from('daily_metrics')
-        .select('date, provider, sleep_minutes, resting_hr, hrv, strain, calories_burned')
-        .eq('client_id', clientId)
-        .eq('provider', conn.provider)
-        .gte('date', addDays(today, -2))
-        .lte('date', today)
-        .order('date', { ascending: false })
-        .limit(1)
-        .returns<MetricsRow[]>(),
-    )[0];
-    // No recent day from the device: show nothing rather than a guess.
-    return latest ? readinessFrom(conn, toMetrics(latest)) : null;
-  }
 }
-

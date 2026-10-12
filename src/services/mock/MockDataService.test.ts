@@ -128,7 +128,6 @@ describe('tenancy and roles', () => {
     expect(mine.every((a) => a.clientId === CLIENT_IDS.sara)).toBe(true);
     expect(await code(svc.listAssignments({ clientId: CLIENT_IDS.karim, from: '2000-01-01', to: '2100-01-01' }))).toBe('forbidden');
     expect(await code(svc.listPackages(CLIENT_IDS.karim))).toBe('forbidden');
-    expect(await code(svc.getReadiness(CLIENT_IDS.karim))).toBe('forbidden');
     await svc.signIn(CLIENT_IDS.karim);
     const karimAssignment = (await svc.listAssignments({ from: '2000-01-01', to: '2100-01-01' }))[0]!;
     await svc.signIn(CLIENT_IDS.sara);
@@ -153,15 +152,6 @@ describe('logging', () => {
     const done = await svc.completeWorkout(today.id);
     expect(done.completedAt).toBeTruthy();
     expect(done.clientNote).toBe('nice');
-    expect(done.wearable?.provider).toBe('garmin');
-    expect(done.wearable?.avgHr).toBeDefined();
-  });
-
-  it('adds only the fields the device provides', async () => {
-    await svc.signIn(CLIENT_IDS.youssef);
-    const next = (await svc.listAssignments({ from: addDays(TODAY, 1), to: addDays(TODAY, 1) }))[0]!;
-    await svc.startWorkout(next.id);
-    expect((await svc.completeWorkout(next.id)).wearable).toBeUndefined();
   });
 
   it('computes personal records and progress in the service', async () => {
@@ -205,45 +195,6 @@ describe('packages', () => {
   it('rejects impossible counts', async () => {
     const p = (await svc.listPackages(CLIENT_IDS.sara))[0]!;
     expect(await code(svc.savePackage({ ...p, sessionsUsed: 99 }))).toBe('invalid');
-  });
-});
-
-describe('wearables', () => {
-  it('shows the four seeded situations', async () => {
-    const conn = async (id: string) => svc.getWearableConnection(id);
-    expect(await conn(CLIENT_IDS.sara)).toBeNull();
-    expect((await conn(CLIENT_IDS.karim))?.capabilities).toContain('live_hr');
-    const whoop = await conn(CLIENT_IDS.mona);
-    expect(whoop?.capabilities).toContain('strain');
-    expect(whoop?.capabilities).not.toContain('live_hr');
-    expect((await conn(CLIENT_IDS.youssef))?.capabilities).toEqual(['sleep']);
-  });
-
-  it('returns only metrics the brand provides', async () => {
-    const [m] = await svc.getDailyMetrics(CLIENT_IDS.youssef, TODAY, TODAY);
-    expect(m?.sleepMinutes).toBeGreaterThan(0);
-    expect(m?.restingHr).toBeUndefined();
-    expect(m?.strain).toBeUndefined();
-    expect(await svc.getDailyMetrics(CLIENT_IDS.sara, TODAY, TODAY)).toEqual([]);
-  });
-
-  it('returns readiness only with recovery data', async () => {
-    expect(await svc.getReadiness(CLIENT_IDS.sara)).toBeNull();
-    expect((await svc.getReadiness(CLIENT_IDS.youssef))?.basedOn).toEqual(['sleep']);
-  });
-
-  it('lets a client connect and disconnect, and the coach loses access', async () => {
-    await svc.signIn(CLIENT_IDS.sara);
-    const c = await svc.connectWearable('fitbit', 'https://example.test/app/wearable');
-    expect(c.kind === 'connected' && c.connection.status).toBe('connected');
-    await svc.signIn(COACH_ID);
-    expect((await svc.getWearableConnection(CLIENT_IDS.sara))?.provider).toBe('fitbit');
-    await svc.signIn(CLIENT_IDS.sara);
-    await svc.disconnectWearable();
-    expect((await svc.getWearableConnection(CLIENT_IDS.sara))?.status).toBe('disconnected');
-    await svc.signIn(COACH_ID);
-    expect(await svc.getWearableConnection(CLIENT_IDS.sara)).toBeNull();
-    expect(await svc.getDailyMetrics(CLIENT_IDS.sara, TODAY, TODAY)).toEqual([]);
   });
 });
 

@@ -14,14 +14,13 @@ import type {
   Package,
   Profile,
   Program,
-  WearableConnection,
   Workout,
   WorkoutLog,
 } from '../../types';
 import { parseVideoUrl, thumbnailFor, videoUrlFor } from '../videoLink';
 
 export interface MockDB {
-  version: 1;
+  version: 2;
   profiles: Profile[];
   exercises: Exercise[];
   workouts: Workout[];
@@ -30,7 +29,6 @@ export interface MockDB {
   logs: WorkoutLog[];
   comments: Comment[];
   packages: Omit<Package, 'sessionsRemaining' | 'state'>[];
-  wearables: WearableConnection[];
   /** Added after v1 shipped; older saved demo data has none. */
   invites?: Invite[];
   seq: number;
@@ -43,7 +41,6 @@ export const CLIENT_IDS = { sara: 'u_sara', karim: 'u_karim', mona: 'u_mona', yo
 /** Titles the mock "oEmbed" returns for the library's demo links. */
 export const VIDEO_TITLES: Record<string, string> = {};
 
-export const ALL_CAPABILITIES = ['sleep', 'resting_hr', 'hrv', 'workout_hr', 'calories', 'strain', 'live_hr'] as const;
 
 // ---------- exercises ----------
 
@@ -210,7 +207,7 @@ export function cloneWorkout(w: Workout, nextId: (prefix: string) => string): Wo
 
 const hash = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 
-function buildLog(a: Assignment, dayIndex: number, exercises: Exercise[], wearable?: WorkoutLog['wearable']): WorkoutLog {
+function buildLog(a: Assignment, dayIndex: number, exercises: Exercise[]): WorkoutLog {
   const itemResults: WorkoutLog['itemResults'] = [];
   const timerResults: WorkoutLog['timerResults'] = [];
   for (const b of a.workout.blocks) {
@@ -248,7 +245,6 @@ function buildLog(a: Assignment, dayIndex: number, exercises: Exercise[], wearab
     itemResults,
     timerResults,
     ...(dayIndex % 2 === 0 && { clientNote: 'Felt strong today. Last set was tough.' }),
-    ...(wearable && { wearable }),
   };
 }
 
@@ -284,7 +280,7 @@ export function createSeed(today: ISODate): MockDB {
   const logs: WorkoutLog[] = [];
   const comments: Comment[] = [];
 
-  const assign = (clientId: string, offset: number, t: number, status: AssignmentStatus, wearable?: WorkoutLog['wearable'], dayIndex = 0) => {
+  const assign = (clientId: string, offset: number, t: number, status: AssignmentStatus, dayIndex = 0) => {
     const a: Assignment = {
       id: nid('as'),
       workspaceId: WORKSPACE_ID,
@@ -294,56 +290,50 @@ export function createSeed(today: ISODate): MockDB {
       status,
     };
     assignments.push(a);
-    if (status === 'completed') logs.push(buildLog(a, dayIndex, exercises, wearable));
+    if (status === 'completed') logs.push(buildLog(a, dayIndex, exercises));
     if (status === 'in_progress') {
       logs.push({ id: nid('lg'), assignmentId: a.id, startedAt: `${a.date}T17:05:00.000Z`, itemResults: [], timerResults: [] });
     }
     return a;
   };
 
-  // Sara: no wearable. Steady history, one skip, today's workout waiting.
-  assign(CLIENT_IDS.sara, -20, 0, 'completed', undefined, 0);
-  assign(CLIENT_IDS.sara, -17, 6, 'completed', undefined, 0);
-  assign(CLIENT_IDS.sara, -13, 0, 'completed', undefined, 1);
-  assign(CLIENT_IDS.sara, -10, 6, 'completed', undefined, 1);
-  const saraSquat = assign(CLIENT_IDS.sara, -6, 0, 'completed', undefined, 2);
-  assign(CLIENT_IDS.sara, -4, 1, 'completed', undefined, 3);
+  // Sara: steady history, one skip, today's workout waiting.
+  assign(CLIENT_IDS.sara, -20, 0, 'completed', 0);
+  assign(CLIENT_IDS.sara, -17, 6, 'completed', 0);
+  assign(CLIENT_IDS.sara, -13, 0, 'completed', 1);
+  assign(CLIENT_IDS.sara, -10, 6, 'completed', 1);
+  const saraSquat = assign(CLIENT_IDS.sara, -6, 0, 'completed', 2);
+  assign(CLIENT_IDS.sara, -4, 1, 'completed', 3);
   assign(CLIENT_IDS.sara, -2, 4, 'skipped');
   assign(CLIENT_IDS.sara, 0, 6, 'not_started');
   assign(CLIENT_IDS.sara, 2, 2, 'not_started');
   assign(CLIENT_IDS.sara, 4, 0, 'not_started');
 
-  // Karim: Garmin, everything available.
-  assign(CLIENT_IDS.karim, -12, 0, 'completed', { provider: 'Garmin', avgHr: 128, maxHr: 161, caloriesBurned: 410, strain: 11.2 }, 0);
-  assign(CLIENT_IDS.karim, -5, 0, 'completed', { provider: 'Garmin', avgHr: 131, maxHr: 166, caloriesBurned: 432, strain: 12.1 }, 2);
-  assign(CLIENT_IDS.karim, -3, 3, 'completed', { provider: 'Garmin', avgHr: 152, maxHr: 178, caloriesBurned: 365, strain: 13.4 }, 1);
+  // Karim: a workout in progress.
+  assign(CLIENT_IDS.karim, -12, 0, 'completed', 0);
+  assign(CLIENT_IDS.karim, -5, 0, 'completed', 2);
+  assign(CLIENT_IDS.karim, -3, 3, 'completed', 1);
   assign(CLIENT_IDS.karim, -1, 4, 'in_progress');
   assign(CLIENT_IDS.karim, 0, 1, 'not_started');
   assign(CLIENT_IDS.karim, 1, 6, 'not_started');
 
-  // Mona: Whoop, strain but no live heart rate.
-  assign(CLIENT_IDS.mona, -7, 6, 'completed', { provider: 'Whoop', avgHr: 118, maxHr: 149, caloriesBurned: 330, strain: 9.8 }, 0);
-  const monaDone = assign(CLIENT_IDS.mona, -3, 5, 'completed', { provider: 'Whoop', avgHr: 144, maxHr: 171, caloriesBurned: 398, strain: 13.0 }, 1);
+  // Mona: a completed workout with a coach comment.
+  assign(CLIENT_IDS.mona, -7, 6, 'completed', 0);
+  const monaDone = assign(CLIENT_IDS.mona, -3, 5, 'completed', 1);
   assign(CLIENT_IDS.mona, 0, 5, 'not_started');
   assign(CLIENT_IDS.mona, 2, 1, 'not_started');
 
-  // Youssef: Oura, sleep only. His workouts carry no wearable data. Nothing today.
-  assign(CLIENT_IDS.youssef, -4, 6, 'completed', undefined, 0);
-  assign(CLIENT_IDS.youssef, -2, 2, 'completed', undefined, 1);
+  // Youssef: nothing today.
+  assign(CLIENT_IDS.youssef, -4, 6, 'completed', 0);
+  assign(CLIENT_IDS.youssef, -2, 2, 'completed', 1);
   assign(CLIENT_IDS.youssef, 1, 0, 'not_started');
 
   const stamp = (a: Assignment, hh: string) => `${a.date}T${hh}:00.000Z`;
   comments.push(
     { id: nid('cm'), assignmentId: saraSquat.id, authorId: COACH_ID, authorName: 'Omar Nasser', authorRole: 'coach', body: 'Great depth on the last set. Add 2.5 kg next week.', createdAt: stamp(saraSquat, '12:10') },
     { id: nid('cm'), assignmentId: saraSquat.id, authorId: CLIENT_IDS.sara, authorName: 'Sara Khaled', authorRole: 'client', body: 'Will do. The fourth set felt heavy.', createdAt: stamp(saraSquat, '13:02') },
-    { id: nid('cm'), assignmentId: monaDone.id, authorId: COACH_ID, authorName: 'Omar Nasser', authorRole: 'coach', body: 'Strain looks right for a heavy day. Rest well tonight.', createdAt: stamp(monaDone, '10:45') },
+    { id: nid('cm'), assignmentId: monaDone.id, authorId: COACH_ID, authorName: 'Omar Nasser', authorRole: 'coach', body: 'Good intensity for a heavy day. Rest well tonight.', createdAt: stamp(monaDone, '10:45') },
   );
-
-  const wearables: WearableConnection[] = [
-    { id: nid('wc'), clientId: CLIENT_IDS.karim, provider: 'garmin', status: 'connected', capabilities: [...ALL_CAPABILITIES] },
-    { id: nid('wc'), clientId: CLIENT_IDS.mona, provider: 'whoop', status: 'connected', capabilities: ['sleep', 'resting_hr', 'hrv', 'workout_hr', 'calories', 'strain'] },
-    { id: nid('wc'), clientId: CLIENT_IDS.youssef, provider: 'oura', status: 'connected', capabilities: ['sleep'] },
-  ];
 
   const packages: MockDB['packages'] = [
     { id: nid('pk'), workspaceId: WORKSPACE_ID, clientId: CLIENT_IDS.sara, name: '10 Session Pack', sessionsIncluded: 10, sessionsUsed: 8, expiresOn: addDays(today, 9), paymentReceived: true },
@@ -351,5 +341,5 @@ export function createSeed(today: ISODate): MockDB {
     { id: nid('pk'), workspaceId: WORKSPACE_ID, clientId: CLIENT_IDS.mona, name: '8 Session Pack', sessionsIncluded: 8, sessionsUsed: 5, expiresOn: addDays(today, 40), paymentReceived: false },
   ];
 
-  return { version: 1, profiles, exercises, workouts: templates, programs, assignments, logs, comments, packages, wearables, seq };
+  return { version: 2, profiles, exercises, workouts: templates, programs, assignments, logs, comments, packages, seq };
 }

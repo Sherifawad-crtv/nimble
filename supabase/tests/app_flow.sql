@@ -79,14 +79,6 @@ do $$ begin
   if (select count(*) from public.workspace_invites where revoked_at is null) <> 1 then raise exception 'coach does not see the invite'; end if;
 end $$;
 
--- The device recorded a workout around now (written by the sync, which bypasses RLS).
-reset role;
-insert into public.wearable_connections (client_id, workspace_id, provider, status, capabilities)
-select id, workspace_id, 'whoop', 'connected', '{sleep,resting_hr,hrv,workout_hr,calories,strain}' from public.profiles where id = 'c1000000-0000-0000-0000-0000000000c1';
-insert into public.wearable_workouts (id, client_id, workspace_id, provider, start_time, end_time, avg_hr, max_hr, calories_burned, strain)
-select 'flow-w1', id, workspace_id, 'whoop', now() - interval '5 minutes', now() + interval '40 minutes', 131, 168, 402, 12.4
-from public.profiles where id = 'c1000000-0000-0000-0000-0000000000c1';
-
 -- ---------- client: log the workout, comment ----------
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"c1000000-0000-0000-0000-0000000000c1","role":"authenticated"}', true);
@@ -105,9 +97,6 @@ begin
   if l.completed_at is null then raise exception 'log not completed'; end if;
   if l.client_note <> 'felt strong' then raise exception 'note not trimmed: %', l.client_note; end if;
   if jsonb_array_length(l.item_results -> 0 -> 'sets') <> 2 then raise exception 'sets not saved'; end if;
-  if l.wearable is distinct from '{"provider":"whoop","avgHr":131,"maxHr":168,"caloriesBurned":402,"strain":12.4}'::jsonb then
-    raise exception 'device data not attached: %', l.wearable;
-  end if;
   if (select status from public.assignments where id = (select v::uuid from ctx where k = 'as1')) <> 'completed' then raise exception 'status not completed'; end if;
   if (select author_role || '/' || author_name from public.comments limit 1) <> 'client/Flow Client' then raise exception 'comment author not stamped'; end if;
   if (select count(*) from public.packages) <> 1 then raise exception 'client cannot see own package'; end if;
@@ -125,7 +114,7 @@ insert into public.comments (assignment_id, author_id, author_name, author_role,
 values ((select v::uuid from ctx where k = 'as1'), auth.uid(), 'Flow Coach', 'coach', (select workspace_id from public.profiles where id = auth.uid()), 'Great work');
 do $$ begin
   if (select count(*) from public.comments) <> 2 then raise exception 'coach does not see the thread'; end if;
-  if (select wearable ->> 'avgHr' from public.workout_logs where id = (select v::uuid from ctx where k = 'log')) <> '131' then raise exception 'coach does not see device data'; end if;
+  if (select completed_at from public.workout_logs where id = (select v::uuid from ctx where k = 'log')) is null then raise exception 'coach does not see the completed log'; end if;
   begin
     update public.assignments set date = current_date + 3 where id = (select v::uuid from ctx where k = 'as1');
     raise exception 'moved a started workout';

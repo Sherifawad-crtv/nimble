@@ -14,5 +14,3 @@ export function writePref(key: string, value: string): void {
     /* storage unavailable: the preference simply is not remembered */
   }
 }
-
-export const wearablePromptKey = (profileId: string) => `origin.wearablePrompt.${profileId}`;

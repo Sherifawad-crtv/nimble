@@ -119,7 +119,7 @@ export function ClientShell() {
     { id: 'settings', icon: 'user', label: t('nav.settings') },
   ];
   const seg = segment(pathname, 2);
-  const active = seg === 'workout' || seg === 'wearable' ? (seg === 'wearable' ? 'settings' : 'today') : seg;
+  const active = seg === 'workout' ? 'today' : seg;
   return (
     <div className="app-shell client">
         <Main />

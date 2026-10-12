@@ -6,7 +6,6 @@ import { DataBoundary } from '../../components/DataBoundary';
 import { Page } from '../../components/Page';
 import { WorkoutPlan } from '../../components/WorkoutPlan';
 import { WorkoutResults } from '../../components/WorkoutResults';
-import { WorkoutWearable } from '../../components/WearableBlocks';
 import { errorMessage, useAction, useData } from '../../hooks/data';
 import { keys } from '../../hooks/keys';
 import { formatDateLong, t } from '../../i18n';
@@ -54,7 +53,6 @@ function ReviewView({ assignment: a }: { assignment: Assignment }) {
             <DataBoundary query={log} skeleton="card">
               {(l) => (
                 <>
-                  <WorkoutWearable log={l} />
                   <WorkoutResults assignment={a} log={l} />
                 </>
               )}

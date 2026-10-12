@@ -1,17 +1,13 @@
 import { addDays, daysBetween } from '../lib/date';
 import type {
   Assignment,
-  DailyMetrics,
   ExerciseProgress,
   ISODate,
   MeasuredAs,
   Package,
   PersonalRecord,
   ProgressSummary,
-  Readiness,
   SetResult,
-  WearableCapability,
-  WearableConnection,
   WorkoutLog,
 } from '../types';
 import { formatClock } from '../timer/engine';
@@ -145,20 +141,4 @@ export function withPackageState(p: Omit<Package, 'sessionsRemaining' | 'state'>
     sessionsRemaining: Math.max(0, p.sessionsIncluded - p.sessionsUsed),
     state: left < 0 ? 'expired' : left <= EXPIRING_WITHIN_DAYS ? 'expiring' : 'active',
   };
-}
-
-const RECOVERY: WearableCapability[] = ['sleep', 'resting_hr', 'hrv'];
-export const recoveryCapabilities = (caps: WearableCapability[]) => RECOVERY.filter((c) => caps.includes(c));
-
-/**
- * Readiness from the latest day the device reported. Only for brands that report recovery data.
- * The rule is the interim one from phase 1 (sleep only) until the owner defines the formula.
- */
-export function readinessFrom(conn: WearableConnection | null, latest: DailyMetrics | undefined): Readiness | null {
-  if (!conn || conn.status !== 'connected') return null;
-  const basedOn = recoveryCapabilities(conn.capabilities);
-  if (!basedOn.length) return null;
-  const sleep = latest?.sleepMinutes;
-  const level: Readiness['level'] = sleep === undefined ? 'ok' : sleep < 400 ? 'low' : sleep >= 460 ? 'high' : 'ok';
-  return { level, basedOn, provider: conn.provider };
 }

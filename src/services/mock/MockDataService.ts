@@ -3,7 +3,6 @@ import type {
   Assignment,
   AssignmentStatus,
   Comment,
-  DailyMetrics,
   Exercise,
   ExerciseInput,
   ExerciseProgress,
@@ -19,19 +18,14 @@ import type {
   Profile,
   Program,
   ProgramInput,
-  Readiness,
-  WearableConnection,
-  WearableConnectStart,
-  WearableProvider,
   Workout,
   WorkoutInput,
   WorkoutLog,
 } from '../../types';
 import { ServiceError, type DataService, type DemoSession, type ExerciseQuery } from '../DataService';
 import { cloneWorkout, createSeed, VIDEO_TITLES, type MockDB } from './seed';
-import { exerciseProgress, personalRecords, progressSummary, readinessFrom, withPackageState } from '../stats';
+import { exerciseProgress, personalRecords, progressSummary, withPackageState } from '../stats';
 import { mockOembed, parseVideoUrl, thumbnailFor, videoUrlFor } from '../videoLink';
-import { metricsFor, PROVIDER_CAPABILITIES } from './wearable';
 
 export interface KeyValueStore {
   getItem(key: string): string | null;
@@ -46,7 +40,7 @@ export interface MockOptions {
   today?: () => ISODate;
 }
 
-const DB_KEY = 'origin.mock.db.v1';
+const DB_KEY = 'origin.mock.db.v2';
 const SESSION_KEY = 'origin.mock.session.v1';
 
 function browserStorage(): KeyValueStore {
@@ -96,7 +90,7 @@ export class MockDataService implements DataService, DemoSession {
       const raw = this.storage.getItem(DB_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as MockDB;
-        if (parsed.version === 1) {
+        if (parsed.version === 2) {
           // Titles for the mock oEmbed are rebuilt from the library on every load.
           parsed.exercises.forEach((e) => e.videoId && (VIDEO_TITLES[e.videoId] = e.name));
           return parsed;
@@ -166,11 +160,6 @@ export class MockDataService implements DataService, DemoSession {
 
   private measuredOf = (exerciseId: Id): MeasuredAs =>
     this.db.exercises.find((e) => e.id === exerciseId)?.measuredAs ?? 'reps';
-
-  private activeConnection(clientId: Id): WearableConnection | null {
-    const c = this.db.wearables.find((w) => w.clientId === clientId);
-    return c && c.status === 'connected' ? c : null;
-  }
 
   private withDerived(p: MockDB['packages'][number]): Package {
     return withPackageState(p, this.today());
@@ -501,19 +490,6 @@ export class MockDataService implements DataService, DemoSession {
     if (!log) throw new ServiceError('invalid', 'Start the workout before finishing it.');
     log.completedAt = new Date().toISOString();
     a.status = 'completed';
-    // The device syncs after the workout; only fields the brand provides come back.
-    const conn = this.activeConnection(a.clientId);
-    if (conn && !log.wearable) {
-      const caps = conn.capabilities;
-      const wearable: NonNullable<WorkoutLog['wearable']> = { provider: conn.provider };
-      if (caps.includes('workout_hr')) {
-        wearable.avgHr = 132;
-        wearable.maxHr = 164;
-      }
-      if (caps.includes('calories')) wearable.caloriesBurned = 380;
-      if (caps.includes('strain')) wearable.strain = 11.6;
-      if (Object.keys(wearable).length > 1) log.wearable = wearable;
-    }
     this.persist();
     return structuredClone(log);
   }
@@ -608,69 +584,5 @@ export class MockDataService implements DataService, DemoSession {
     else this.db.packages.push(saved);
     this.persist();
     return this.withDerived(saved);
-  }
-
-  // ---------- wearables ----------
-
-  async getWearableConnection(clientId: Id): Promise<WearableConnection | null> {
-    await this.wait();
-    const me = this.profile();
-    this.clientAccess(clientId);
-    const c = this.db.wearables.find((w) => w.clientId === clientId);
-    // Once the client disconnects, the coach no longer sees the connection.
-    if (!c || (me.role === 'coach' && c.status === 'disconnected')) return null;
-    return structuredClone(c);
-  }
-
-  async connectWearable(provider: WearableProvider, _returnUrl: string): Promise<WearableConnectStart> {
-    await this.wait();
-    const me = this.profile();
-    if (me.role !== 'client') throw new ServiceError('forbidden', 'Only the client can connect a device.');
-    const existing = this.db.wearables.find((w) => w.clientId === me.id);
-    const conn: WearableConnection = {
-      id: existing?.id ?? this.id('wc'),
-      clientId: me.id,
-      provider,
-      status: 'connected',
-      capabilities: [...PROVIDER_CAPABILITIES[provider]],
-    };
-    this.db.wearables = [...this.db.wearables.filter((w) => w.clientId !== me.id), conn];
-    this.persist();
-    return { kind: 'connected', connection: structuredClone(conn) };
-  }
-
-  async syncWearable(): Promise<WearableConnection | null> {
-    await this.wait();
-    const me = this.profile();
-    if (me.role !== 'client') throw new ServiceError('forbidden', 'Only the client can sync their device.');
-    return structuredClone(this.db.wearables.find((w) => w.clientId === me.id) ?? null);
-  }
-
-  async disconnectWearable(): Promise<void> {
-    await this.wait();
-    const me = this.profile();
-    if (me.role !== 'client') throw new ServiceError('forbidden', 'Only the client can disconnect a device.');
-    const c = this.db.wearables.find((w) => w.clientId === me.id);
-    if (c) {
-      c.status = 'disconnected';
-      c.capabilities = [];
-    }
-    this.persist();
-  }
-
-  async getDailyMetrics(clientId: Id, from: ISODate, to: ISODate): Promise<DailyMetrics[]> {
-    await this.wait();
-    this.clientAccess(clientId);
-    const c = this.activeConnection(clientId);
-    return c ? metricsFor(c.provider, c.capabilities, from, to) : [];
-  }
-
-  async getReadiness(clientId: Id): Promise<Readiness | null> {
-    await this.wait();
-    this.clientAccess(clientId);
-    const c = this.activeConnection(clientId);
-    if (!c) return null;
-    const today = this.today();
-    return readinessFrom(c, metricsFor(c.provider, c.capabilities, today, today)[0]);
   }
 }

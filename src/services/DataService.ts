@@ -2,7 +2,6 @@ import type {
   Assignment,
   AssignmentStatus,
   Comment,
-  DailyMetrics,
   Exercise,
   ExerciseInput,
   ExerciseProgress,
@@ -17,10 +16,6 @@ import type {
   Profile,
   Program,
   ProgramInput,
-  Readiness,
-  WearableConnection,
-  WearableConnectStart,
-  WearableProvider,
   Workout,
   WorkoutInput,
   WorkoutLog,
@@ -91,15 +86,6 @@ export interface DataService {
   listPackages(clientId: Id): Promise<Package[]>;
   savePackage(p: PackageInput): Promise<Package>;
 
-  // wearables
-  getWearableConnection(clientId: Id): Promise<WearableConnection | null>;
-  /** `returnUrl` is where the brand sends the client back to after they approve sharing. */
-  connectWearable(provider: WearableProvider, returnUrl: string): Promise<WearableConnectStart>;
-  /** Pulls the latest data for the signed-in client and returns the connection as it stands. */
-  syncWearable(): Promise<WearableConnection | null>;
-  disconnectWearable(): Promise<void>;
-  getDailyMetrics(clientId: Id, from: ISODate, to: ISODate): Promise<DailyMetrics[]>;
-  getReadiness(clientId: Id): Promise<Readiness | null>;
 }
 
 /** Sign-in for the demo backend: pick one of the seeded accounts. */

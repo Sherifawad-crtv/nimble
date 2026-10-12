@@ -20,8 +20,5 @@ export const keys = {
   summary: (clientId: string) => ['progress', 'summary', clientId] as const,
   comments: (assignmentId: string) => ['comments', assignmentId] as const,
   packages: (clientId: string) => ['packages', clientId] as const,
-  wearable: (clientId: string) => ['wearable', clientId] as const,
-  metrics: (clientId: string, from: string, to: string) => ['metrics', clientId, from, to] as const,
-  readiness: (clientId: string) => ['readiness', clientId] as const,
   invites: ['invites'] as const,
 };

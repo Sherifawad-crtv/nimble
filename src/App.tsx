@@ -26,7 +26,6 @@ const ProgressScreen = screen(() => import('./screens/client/ProgressScreen'), '
 const ClientSettings = screen(() => import('./screens/client/ClientSettings'), 'ClientSettings');
 const WorkoutScreen = screen(() => import('./screens/client/WorkoutScreen'), 'WorkoutScreen');
 const TimerScreen = screen(() => import('./screens/client/TimerScreen'), 'TimerScreen');
-const WearableFlow = screen(() => import('./screens/client/WearableFlow'), 'WearableFlow');
 
 const home = (role: Role) => (role === 'coach' ? '/coach/clients' : '/app/today');
 
@@ -86,7 +85,6 @@ export function App() {
             <Route path="progress" element={<ProgressScreen />} />
             <Route path="settings" element={<ClientSettings />} />
             <Route path="workout/:assignmentId" element={<WorkoutScreen />} />
-            <Route path="wearable" element={<WearableFlow />} />
           </Route>
           <Route
             path="app/timer/:assignmentId/:blockId"

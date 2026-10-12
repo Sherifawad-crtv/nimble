@@ -9,7 +9,6 @@ import { SetLogger } from '../../components/SetLogger';
 import { VideoEmbed } from '../../components/VideoEmbed';
 import { WorkoutPlan } from '../../components/WorkoutPlan';
 import { WorkoutResults } from '../../components/WorkoutResults';
-import { WorkoutWearable } from '../../components/WearableBlocks';
 import { Banner, Button, StatusChip, TextField } from '../../design';
 import { errorMessage, useAction, useData } from '../../hooks/data';
 import { keys } from '../../hooks/keys';
@@ -73,7 +72,6 @@ function Completed({ assignment, log }: { assignment: Assignment; log: WorkoutLo
   return (
     <>
       <Banner message={t('workout.completed.body')} title={t('workout.completed.title')} />
-      <WorkoutWearable log={log} />
       <WorkoutResults assignment={assignment} log={log} />
     </>
   );

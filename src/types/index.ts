@@ -140,13 +140,6 @@ export interface WorkoutLog {
   itemResults: { itemId: Id; sets: SetResult[] }[];
   timerResults: { blockId: Id; result: TimerResult }[];
   clientNote?: string;
-  wearable?: {
-    provider: string;
-    avgHr?: number;
-    maxHr?: number;
-    caloriesBurned?: number;
-    strain?: number;
-  };
 }
 
 export interface Comment {
@@ -202,43 +195,3 @@ export interface Package {
 }
 
 export type PackageInput = Omit<Package, 'id' | 'sessionsRemaining' | 'state'> & { id?: Id };
-
-// ---------- wearables ----------
-export type WearableProvider = 'garmin' | 'whoop' | 'oura' | 'fitbit' | 'polar' | 'strava';
-export type WearableCapability =
-  | 'sleep'
-  | 'resting_hr'
-  | 'hrv'
-  | 'workout_hr'
-  | 'calories'
-  | 'strain'
-  | 'live_hr';
-
-export interface WearableConnection {
-  id: Id;
-  clientId: Id;
-  provider: WearableProvider;
-  status: 'connected' | 'disconnected' | 'error';
-  capabilities: WearableCapability[];
-}
-
-/** Starting a connection either finishes at once or sends the client to the brand to approve. */
-export type WearableConnectStart =
-  | { kind: 'connected'; connection: WearableConnection }
-  | { kind: 'redirect'; url: string };
-
-export interface DailyMetrics {
-  date: ISODate;
-  provider: WearableProvider;
-  sleepMinutes?: number;
-  restingHr?: number;
-  hrv?: number;
-  strain?: number;
-  caloriesBurned?: number;
-}
-
-export interface Readiness {
-  level: 'low' | 'ok' | 'high';
-  basedOn: WearableCapability[];
-  provider: WearableProvider;
-}

@@ -32,12 +32,6 @@ select id, workspace_id, client_id from public.assignments where client_id in (s
 insert into public.packages (workspace_id, client_id, name, sessions_included, expires_on)
 select workspace_id, id, 'Pack', 10, current_date + 30 from public.profiles where role = 'client' and email like '%@test.local';
 
-insert into public.wearable_connections (client_id, workspace_id, provider, status, capabilities)
-select id, workspace_id, 'garmin', 'connected', '{sleep}' from public.profiles where role = 'client' and email like '%@test.local';
-
-insert into public.daily_metrics (client_id, workspace_id, date, provider, sleep_minutes)
-select id, workspace_id, current_date, 'garmin', 420 from public.profiles where role = 'client' and email like '%@test.local';
-
 create temp table expect (who text, what text, got bigint, want bigint) on commit drop;
 grant all on expect to authenticated, anon;
 
@@ -50,8 +44,6 @@ insert into expect values
   ('coach A', 'assignments', (select count(*) from public.assignments), 2),
   ('coach A', 'logs', (select count(*) from public.workout_logs), 2),
   ('coach A', 'packages', (select count(*) from public.packages), 2),
-  ('coach A', 'connections', (select count(*) from public.wearable_connections), 2),
-  ('coach A', 'metrics', (select count(*) from public.daily_metrics), 2),
   ('coach A', 'workspaces', (select count(*) from public.workspaces), 1),
   ('coach A', 'B data visible', (select count(*) from public.profiles where email like '%.b%@test.local' or email like 'coach.b%'), 0);
 
@@ -60,7 +52,7 @@ do $$
 begin
   begin
     insert into public.assignments (workspace_id, client_id, date, workout)
-    values ((select workspace_id from public.wearable_connections limit 1), 'b1000000-0000-0000-0000-0000000000b1', current_date, '{}');
+    values ((select workspace_id from public.workspaces limit 1), 'b1000000-0000-0000-0000-0000000000b1', current_date, '{}');
     raise exception 'LEAK: coach A assigned to a client in workspace B';
   exception when insufficient_privilege or check_violation then null;
   end;
@@ -74,8 +66,6 @@ insert into expect values
   ('client A1', 'assignments', (select count(*) from public.assignments), 1),
   ('client A1', 'logs', (select count(*) from public.workout_logs), 1),
   ('client A1', 'packages', (select count(*) from public.packages), 1),
-  ('client A1', 'connections', (select count(*) from public.wearable_connections), 1),
-  ('client A1', 'metrics', (select count(*) from public.daily_metrics), 1),
   ('client A1', 'templates', (select count(*) from public.workouts), 0);
 
 -- A client cannot write to the library.
@@ -97,15 +87,6 @@ begin
   exception when no_data_found then null;
   end;
 end $$;
-
--- ---------- coach loses access when the client disconnects ----------
-reset role;
-update public.wearable_connections set status = 'disconnected' where client_id = 'a1000000-0000-0000-0000-0000000000a1';
-set local role authenticated;
-select set_config('request.jwt.claims', '{"sub":"a0000000-0000-0000-0000-00000000000a","role":"authenticated"}', true);
-insert into expect values
-  ('coach A after A1 disconnects', 'connections', (select count(*) from public.wearable_connections), 1),
-  ('coach A after A1 disconnects', 'metrics', (select count(*) from public.daily_metrics), 1);
 
 -- ---------- signed out ----------
 reset role;
