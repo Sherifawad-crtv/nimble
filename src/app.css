@@ -164,7 +164,7 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  padding-block-end: calc(var(--space-10) + var(--space-6));
+  padding-block-end: var(--space-8);
 }
 
 .app-shell.desktop .app-main {
@@ -1333,11 +1333,11 @@ body:has(.app-shell.desktop) .app-toast {
 }
 
 /* ---------- fade above the tab bar ----------
-   The screen's own content fades out (a mask, not an overlay colour), so the fade is exact on any
-   background, in both themes, with no banding. The ramp is eased, not linear, so there is no
-   visible line where it starts or ends. */
+   The scroll area's own content fades (a mask, not an overlay colour), so it matches the
+   background in both themes. Short and light: content keeps 45% opacity at the bar edge,
+   on an eased ramp so there is no visible start line. */
 .app-shell:not(.desktop) .app-main {
-  --fade: 72px;
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) calc(100% - var(--fade) + var(--fade) * 0.000), rgba(0, 0, 0, 0.738) calc(100% - var(--fade) + var(--fade) * 0.190), rgba(0, 0, 0, 0.541) calc(100% - var(--fade) + var(--fade) * 0.340), rgba(0, 0, 0, 0.382) calc(100% - var(--fade) + var(--fade) * 0.470), rgba(0, 0, 0, 0.278) calc(100% - var(--fade) + var(--fade) * 0.565), rgba(0, 0, 0, 0.194) calc(100% - var(--fade) + var(--fade) * 0.650), rgba(0, 0, 0, 0.126) calc(100% - var(--fade) + var(--fade) * 0.730), rgba(0, 0, 0, 0.075) calc(100% - var(--fade) + var(--fade) * 0.802), rgba(0, 0, 0, 0.042) calc(100% - var(--fade) + var(--fade) * 0.861), rgba(0, 0, 0, 0.021) calc(100% - var(--fade) + var(--fade) * 0.910), rgba(0, 0, 0, 0.008) calc(100% - var(--fade) + var(--fade) * 0.952), rgba(0, 0, 0, 0.002) calc(100% - var(--fade) + var(--fade) * 0.982), rgba(0, 0, 0, 0) calc(100% - var(--fade) + var(--fade) * 1.000));
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) calc(100% - var(--fade) + var(--fade) * 0.000), rgba(0, 0, 0, 0.738) calc(100% - var(--fade) + var(--fade) * 0.190), rgba(0, 0, 0, 0.541) calc(100% - var(--fade) + var(--fade) * 0.340), rgba(0, 0, 0, 0.382) calc(100% - var(--fade) + var(--fade) * 0.470), rgba(0, 0, 0, 0.278) calc(100% - var(--fade) + var(--fade) * 0.565), rgba(0, 0, 0, 0.194) calc(100% - var(--fade) + var(--fade) * 0.650), rgba(0, 0, 0, 0.126) calc(100% - var(--fade) + var(--fade) * 0.730), rgba(0, 0, 0, 0.075) calc(100% - var(--fade) + var(--fade) * 0.802), rgba(0, 0, 0, 0.042) calc(100% - var(--fade) + var(--fade) * 0.861), rgba(0, 0, 0, 0.021) calc(100% - var(--fade) + var(--fade) * 0.910), rgba(0, 0, 0, 0.008) calc(100% - var(--fade) + var(--fade) * 0.952), rgba(0, 0, 0, 0.002) calc(100% - var(--fade) + var(--fade) * 0.982), rgba(0, 0, 0, 0) calc(100% - var(--fade) + var(--fade) * 1.000));
+  --fade: var(--space-6);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1.0) calc(100% - var(--fade) + var(--fade) * 0.000), rgba(0, 0, 0, 0.856) calc(100% - var(--fade) + var(--fade) * 0.190), rgba(0, 0, 0, 0.748) calc(100% - var(--fade) + var(--fade) * 0.340), rgba(0, 0, 0, 0.66) calc(100% - var(--fade) + var(--fade) * 0.470), rgba(0, 0, 0, 0.603) calc(100% - var(--fade) + var(--fade) * 0.565), rgba(0, 0, 0, 0.557) calc(100% - var(--fade) + var(--fade) * 0.650), rgba(0, 0, 0, 0.519) calc(100% - var(--fade) + var(--fade) * 0.730), rgba(0, 0, 0, 0.491) calc(100% - var(--fade) + var(--fade) * 0.802), rgba(0, 0, 0, 0.473) calc(100% - var(--fade) + var(--fade) * 0.861), rgba(0, 0, 0, 0.462) calc(100% - var(--fade) + var(--fade) * 0.910), rgba(0, 0, 0, 0.454) calc(100% - var(--fade) + var(--fade) * 0.952), rgba(0, 0, 0, 0.451) calc(100% - var(--fade) + var(--fade) * 0.982), rgba(0, 0, 0, 0.45) calc(100% - var(--fade) + var(--fade) * 1.000));
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1.0) calc(100% - var(--fade) + var(--fade) * 0.000), rgba(0, 0, 0, 0.856) calc(100% - var(--fade) + var(--fade) * 0.190), rgba(0, 0, 0, 0.748) calc(100% - var(--fade) + var(--fade) * 0.340), rgba(0, 0, 0, 0.66) calc(100% - var(--fade) + var(--fade) * 0.470), rgba(0, 0, 0, 0.603) calc(100% - var(--fade) + var(--fade) * 0.565), rgba(0, 0, 0, 0.557) calc(100% - var(--fade) + var(--fade) * 0.650), rgba(0, 0, 0, 0.519) calc(100% - var(--fade) + var(--fade) * 0.730), rgba(0, 0, 0, 0.491) calc(100% - var(--fade) + var(--fade) * 0.802), rgba(0, 0, 0, 0.473) calc(100% - var(--fade) + var(--fade) * 0.861), rgba(0, 0, 0, 0.462) calc(100% - var(--fade) + var(--fade) * 0.910), rgba(0, 0, 0, 0.454) calc(100% - var(--fade) + var(--fade) * 0.952), rgba(0, 0, 0, 0.451) calc(100% - var(--fade) + var(--fade) * 0.982), rgba(0, 0, 0, 0.45) calc(100% - var(--fade) + var(--fade) * 1.000));
 }
