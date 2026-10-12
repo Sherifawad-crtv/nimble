@@ -1,5 +1,6 @@
 import React from 'react';
 import type * as P from './origin-components';
+import { SOLAR_ICONS } from './solar-icons';
 import './tokens.css';
 import './origin-bundle.css';
 
@@ -9,9 +10,11 @@ declare global {
   interface Window {
     React: typeof React;
     Origin: Record<string, React.ComponentType<never>>;
+    OriginIconSet: Record<string, string>;
   }
 }
 window.React = React;
+window.OriginIconSet = SOLAR_ICONS;
 await import('./origin-bundle.js');
 
 const O = window.Origin as unknown as { [K in keyof Components]: Components[K] };

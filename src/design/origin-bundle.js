@@ -2,69 +2,12 @@
 (function () {
   var React = window.React, h = React.createElement, useState = React.useState;
   function cx() { return Array.prototype.filter.call(arguments, Boolean).join(' '); }
-  var S = { fill: 'none', stroke: 'currentColor', strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round' };
-  function st(d) { return ['path', Object.assign({ d: d }, S)]; }
-  function ci(x, y, r) { return ['circle', Object.assign({ cx: x, cy: y, r: r }, S)]; }
-  function fl(d) { return ['path', { d: d }]; }
-  var SPK = fl('M4 9.5h4l5-4v13l-5-4H4z');
-  var ICONS = {
-    heart: [fl('M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.7 4.5 6.4 4.5c2 0 3.7 1.1 5.6 3.2 1.9-2.1 3.6-3.2 5.6-3.2 3.7 0 5.5 3.9 4 7.3C19.5 16.4 12 21 12 21z')],
-    flame: [fl('M12 2c.6 3.2-1.4 4.8-3.2 6.9C7.2 10.8 6 12.6 6 15a6 6 0 0 0 12 0c0-2.2-.9-3.8-2.2-5.2-.3 1.2-1 2-1.8 2.4.5-3.6-.6-7.8-2-10.2z')],
-    flag: [fl('M4.5 21V3h2.2v18z'), fl('M8 4h12l-3 4 3 4H8z')],
-    target: [ci(12, 12, 8.5), ['circle', { cx: 12, cy: 12, r: 3.6 }]],
-    plus: [st('M5 12h14M12 5v14')],
-    minus: [st('M5 12h14')],
-    'chev-l': [st('M15 5l-7 7 7 7')], 'chev-r': [st('M9 5l7 7-7 7')], 'chev-u': [st('M5 15l7-7 7 7')], 'chev-d': [st('M5 9l7 7 7-7')],
-    pie: [fl('M11 3.1A9 9 0 1 0 20.9 13H11z'), fl('M13 2.1V11h8.9A9 9 0 0 0 13 2.1z')],
-    user: [['circle', { cx: 12, cy: 8, r: 4 }], fl('M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z')],
-    run: [['circle', { cx: 15.5, cy: 4.5, r: 2.4 }], st('M13.5 8.5l-3.5 4 3.5 2.5-1 5.5M10 12.5l-4.5 1M13.5 8.5l4 3h3M3 8h4M2 12h2M4 16h3')],
-    dumbbell: [st('M3 9.5v5M6.5 7v10M17.5 7v10M21 9.5v5M6.5 12h11')],
-    home: [st('M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z')],
-    users: [ci(9, 8, 3.5), st('M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6'), st('M16 5a3.5 3.5 0 0 1 0 7M18 14.4c2.2.6 3.5 2.4 3.5 5.6')],
-    book: [st('M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z'), st('M5 17a3 3 0 0 1 3-3h11')],
-    gear: [ci(12, 12, 3), st('M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1')],
-    search: [ci(11, 11, 6.5), st('M16 16l5 5')],
-    close: [st('M6 6l12 12M18 6L6 18')],
-    check: [st('M5 12.5l4.5 4.5L19 7.5')],
-    alert: [st('M12 4l9 16H3z'), st('M12 10v4M12 17.5v.01')],
-    info: [ci(12, 12, 9), st('M12 11v6M12 7.5v.01')],
-    play: [fl('M7 4.5v15l13-7.5z')],
-    pause: [fl('M6 4h4v16H6zM14 4h4v16h-4z')],
-    stop: [fl('M6 6h12v12H6z')],
-    skip: [fl('M5 5l10 7-10 7zM17 5h2.5v14H17z')],
-    volume: [SPK, st('M16.5 9a4 4 0 0 1 0 6M19 6.5a7.5 7.5 0 0 1 0 11')],
-    'volume-off': [SPK, st('M17 9.5l5 5M22 9.5l-5 5')],
-    mic: [st('M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z'), st('M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21')],
-    sun: [ci(12, 12, 4), st('M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.2 5.2l1.8 1.8M17 17l1.8 1.8M18.8 5.2L17 7M7 17l-1.8 1.8')],
-    dots: [['circle', { cx: 12, cy: 5, r: 1.9 }], ['circle', { cx: 12, cy: 12, r: 1.9 }], ['circle', { cx: 12, cy: 19, r: 1.9 }]],
-    grip: [[9, 6], [15, 6], [9, 12], [15, 12], [9, 18], [15, 18]].map(function (p) { return ['circle', { cx: p[0], cy: p[1], r: 1.7 }]; }),
-    'arrow-up': [st('M12 19V5M6 11l6-6 6 6')], 'arrow-down': [st('M12 5v14M6 13l6 6 6-6')],
-    calendar: [st('M4 6h16v14H4zM4 10h16M8 3v4M16 3v4')],
-    link: [st('M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1')],
-    external: [st('M14 4h6v6M20 4l-9 9M18 14v5H5V6h5')],
-    trash: [st('M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13')],
-    edit: [st('M4 20l1-5L16 4l4 4L9 19z')],
-    copy: [st('M9 9h11v11H9zM5 15V4h11')],
-    'wifi-off': [st('M3 3l18 18M5 10a10 10 0 0 1 4-2.4M19 10a10 10 0 0 0-3.5-2.2M8.5 13.5a5 5 0 0 1 3-1.3M15.5 13.5a5 5 0 0 0-1.2-.9'), ['circle', { cx: 12, cy: 18.5, r: 1.5 }]],
-    clock: [ci(12, 12, 9), st('M12 7v5l3 2')],
-    trophy: [st('M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3M12 14v4M8 20h8')],
-    comment: [st('M4 5h16v11H9l-5 4z')],
-    refresh: [st('M20 5v5h-5M4 19v-5h5M19 10A8 8 0 0 0 5.5 8M5 14a8 8 0 0 0 13.5 2')],
-    watch: [st('M8 7h8v10H8zM9 7l.6-3.5h4.8L15 7M9 17l.6 3.5h4.8L15 17')],
-    moon: [st('M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z')],
-    zap: [fl('M13 2L4 14h6l-1 8 9-12h-6z')],
-    pulse: [st('M3 12h4l2.5-6 4 12 2.5-6H21')],
-    logout: [st('M10 4H5v16h5M15 8l4 4-4 4M19 12H9')],
-    lock: [st('M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3')],
-    list: [st('M8 6h12M8 12h12M8 18h12M4 6v.01M4 12v.01M4 18v.01')],
-    circle: [ci(12, 12, 8)]
-  };
   var FLIP = { 'chev-l': 1, 'chev-r': 1, skip: 1, external: 0 };
 
   function Icon(p) {
-    var n = ICONS[p.name] || [], size = p.size || 24;
-    return h('svg', { className: cx('v-icon', FLIP[p.name] && 'v-flip'), width: size, height: size, viewBox: '0 0 24 24', fill: 'currentColor', 'aria-hidden': 'true', style: p.color ? { color: p.color } : undefined },
-      n.map(function (c, i) { return h(c[0], Object.assign({ key: i }, c[1])); }));
+    // Glyphs come from the Solar icon set the app registers on window.OriginIconSet (src/design/solar-icons.ts).
+    var body = (window.OriginIconSet || {})[p.name] || '', size = p.size || 24;
+    return h('svg', { className: cx('v-icon', FLIP[p.name] && 'v-flip'), width: size, height: size, viewBox: '0 0 24 24', 'aria-hidden': 'true', style: p.color ? { color: p.color } : undefined, dangerouslySetInnerHTML: { __html: body } });
   }
 
   /* ---------- Actions ---------- */

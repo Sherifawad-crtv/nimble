@@ -6,10 +6,11 @@
   "scripts": {
     "test": "vitest run",
     "dev": "vite",
-    "build": "npm run tokens && tsc && vite build",
+    "build": "npm run tokens && npm run icons && tsc && vite build",
     "preview": "vite preview",
     "tokens": "node scripts/build-tokens.mjs",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "icons": "node scripts/build-icons.mjs"
   },
   "repository": {
     "type": "git",
@@ -33,6 +34,7 @@
     "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
+    "@iconify-json/solar": "^1.2.13",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",

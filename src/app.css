@@ -1349,3 +1349,9 @@ body:has(.app-shell.desktop) .app-toast {
   }
 }
 
+
+/* Solar linear icons are drawn at 1.5 stroke; at UI sizes a touch heavier reads better next to
+   the heavy italic type. */
+.v-icon [stroke] {
+  stroke-width: 2;
+}
