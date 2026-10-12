@@ -137,6 +137,7 @@ img {
 /* ---------- shells ---------- */
 
 .app-shell {
+  position: relative;
   display: flex;
   flex-direction: column;
   block-size: 100%;
@@ -164,7 +165,7 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  padding-block-end: var(--space-8);
+  padding-block-end: calc(var(--tab-height) + var(--space-2) + max(env(safe-area-inset-bottom), var(--space-2)) + var(--space-6));
 }
 
 .app-shell.desktop .app-main {
@@ -178,11 +179,26 @@ img {
 }
 
 .app-tabbar {
-  position: relative;
-  flex: none;
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
   z-index: 20;
   padding: var(--space-2) var(--space-4) max(env(safe-area-inset-bottom), var(--space-2));
+  pointer-events: none;
+}
+
+/* No solid bar: the tabs float over the content. Behind the icons the page colour is full
+   strength so they stay legible; across the top of the bar it eases out to nothing, so there is
+   no hard edge. The scrim is the
+   page colour shaped by a mask, so it matches either theme exactly. */
+.app-tabbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   background: var(--bg);
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 55.0%, rgba(0, 0, 0, 0.738) 63.5%, rgba(0, 0, 0, 0.541) 70.3%, rgba(0, 0, 0, 0.382) 76.2%, rgba(0, 0, 0, 0.278) 80.4%, rgba(0, 0, 0, 0.194) 84.2%, rgba(0, 0, 0, 0.126) 87.8%, rgba(0, 0, 0, 0.075) 91.1%, rgba(0, 0, 0, 0.042) 93.7%, rgba(0, 0, 0, 0.021) 96.0%, rgba(0, 0, 0, 0.008) 97.8%, rgba(0, 0, 0, 0.002) 99.2%, rgba(0, 0, 0, 0) 100.0%);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 55.0%, rgba(0, 0, 0, 0.738) 63.5%, rgba(0, 0, 0, 0.541) 70.3%, rgba(0, 0, 0, 0.382) 76.2%, rgba(0, 0, 0, 0.278) 80.4%, rgba(0, 0, 0, 0.194) 84.2%, rgba(0, 0, 0, 0.126) 87.8%, rgba(0, 0, 0, 0.075) 91.1%, rgba(0, 0, 0, 0.042) 93.7%, rgba(0, 0, 0, 0.021) 96.0%, rgba(0, 0, 0, 0.008) 97.8%, rgba(0, 0, 0, 0.002) 99.2%, rgba(0, 0, 0, 0) 100.0%);
 }
 
 .app-tabbar .v-tabs {
@@ -190,6 +206,7 @@ img {
   margin-inline: auto;
   padding: 0;
   gap: var(--space-2);
+  pointer-events: auto;
 }
 
 .app-tabbar .v-tab {
@@ -1332,12 +1349,3 @@ body:has(.app-shell.desktop) .app-toast {
   }
 }
 
-/* ---------- fade above the tab bar ----------
-   The scroll area's own content fades (a mask, not an overlay colour), so it matches the
-   background in both themes. Short and light: content keeps 45% opacity at the bar edge,
-   on an eased ramp so there is no visible start line. */
-.app-shell:not(.desktop) .app-main {
-  --fade: var(--space-6);
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1.0) calc(100% - var(--fade) + var(--fade) * 0.000), rgba(0, 0, 0, 0.856) calc(100% - var(--fade) + var(--fade) * 0.190), rgba(0, 0, 0, 0.748) calc(100% - var(--fade) + var(--fade) * 0.340), rgba(0, 0, 0, 0.66) calc(100% - var(--fade) + var(--fade) * 0.470), rgba(0, 0, 0, 0.603) calc(100% - var(--fade) + var(--fade) * 0.565), rgba(0, 0, 0, 0.557) calc(100% - var(--fade) + var(--fade) * 0.650), rgba(0, 0, 0, 0.519) calc(100% - var(--fade) + var(--fade) * 0.730), rgba(0, 0, 0, 0.491) calc(100% - var(--fade) + var(--fade) * 0.802), rgba(0, 0, 0, 0.473) calc(100% - var(--fade) + var(--fade) * 0.861), rgba(0, 0, 0, 0.462) calc(100% - var(--fade) + var(--fade) * 0.910), rgba(0, 0, 0, 0.454) calc(100% - var(--fade) + var(--fade) * 0.952), rgba(0, 0, 0, 0.451) calc(100% - var(--fade) + var(--fade) * 0.982), rgba(0, 0, 0, 0.45) calc(100% - var(--fade) + var(--fade) * 1.000));
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1.0) calc(100% - var(--fade) + var(--fade) * 0.000), rgba(0, 0, 0, 0.856) calc(100% - var(--fade) + var(--fade) * 0.190), rgba(0, 0, 0, 0.748) calc(100% - var(--fade) + var(--fade) * 0.340), rgba(0, 0, 0, 0.66) calc(100% - var(--fade) + var(--fade) * 0.470), rgba(0, 0, 0, 0.603) calc(100% - var(--fade) + var(--fade) * 0.565), rgba(0, 0, 0, 0.557) calc(100% - var(--fade) + var(--fade) * 0.650), rgba(0, 0, 0, 0.519) calc(100% - var(--fade) + var(--fade) * 0.730), rgba(0, 0, 0, 0.491) calc(100% - var(--fade) + var(--fade) * 0.802), rgba(0, 0, 0, 0.473) calc(100% - var(--fade) + var(--fade) * 0.861), rgba(0, 0, 0, 0.462) calc(100% - var(--fade) + var(--fade) * 0.910), rgba(0, 0, 0, 0.454) calc(100% - var(--fade) + var(--fade) * 0.952), rgba(0, 0, 0, 0.451) calc(100% - var(--fade) + var(--fade) * 0.982), rgba(0, 0, 0, 0.45) calc(100% - var(--fade) + var(--fade) * 1.000));
-}
