@@ -187,9 +187,11 @@ img {
   pointer-events: none;
 }
 
-/* No solid bar: the tabs float over the content. Behind the icons the page colour is full
-   strength so they stay legible; only the top 24px of the bar eases out to nothing, whatever the
-   bar's height (home-indicator inset included), so there is no hard edge. The scrim is the
+/* No solid bar: the tabs float over the content on a scrim of the page colour that never goes
+   fully opaque (90% at most) and ramps in on a smootherstep curve across the upper half of the
+   bar, which has no visible start or end. The same mask feathers a backdrop blur (the iOS
+   tab bar material), so content passing under the icons is softened, not just darkened. The bar
+   keeps its own height; nothing extends above it. The scrim is the
    page colour shaped by a mask, so it matches either theme exactly. */
 .app-tabbar::before {
   content: '';
@@ -197,9 +199,10 @@ img {
   inset: 0;
   z-index: -1;
   background: var(--bg);
-  --fade: var(--space-6);
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) calc(var(--fade) * 0.000), rgba(0, 0, 0, 0.002) calc(var(--fade) * 0.018), rgba(0, 0, 0, 0.008) calc(var(--fade) * 0.048), rgba(0, 0, 0, 0.021) calc(var(--fade) * 0.090), rgba(0, 0, 0, 0.042) calc(var(--fade) * 0.139), rgba(0, 0, 0, 0.075) calc(var(--fade) * 0.198), rgba(0, 0, 0, 0.126) calc(var(--fade) * 0.270), rgba(0, 0, 0, 0.194) calc(var(--fade) * 0.350), rgba(0, 0, 0, 0.278) calc(var(--fade) * 0.435), rgba(0, 0, 0, 0.382) calc(var(--fade) * 0.530), rgba(0, 0, 0, 0.541) calc(var(--fade) * 0.660), rgba(0, 0, 0, 0.738) calc(var(--fade) * 0.810), rgba(0, 0, 0, 1) calc(var(--fade) * 1.000), rgba(0, 0, 0, 1) 100%);
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) calc(var(--fade) * 0.000), rgba(0, 0, 0, 0.002) calc(var(--fade) * 0.018), rgba(0, 0, 0, 0.008) calc(var(--fade) * 0.048), rgba(0, 0, 0, 0.021) calc(var(--fade) * 0.090), rgba(0, 0, 0, 0.042) calc(var(--fade) * 0.139), rgba(0, 0, 0, 0.075) calc(var(--fade) * 0.198), rgba(0, 0, 0, 0.126) calc(var(--fade) * 0.270), rgba(0, 0, 0, 0.194) calc(var(--fade) * 0.350), rgba(0, 0, 0, 0.278) calc(var(--fade) * 0.435), rgba(0, 0, 0, 0.382) calc(var(--fade) * 0.530), rgba(0, 0, 0, 0.541) calc(var(--fade) * 0.660), rgba(0, 0, 0, 0.738) calc(var(--fade) * 0.810), rgba(0, 0, 0, 1) calc(var(--fade) * 1.000), rgba(0, 0, 0, 1) 100%);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.0) 0.0%, rgba(0, 0, 0, 0.002) 3.1%, rgba(0, 0, 0, 0.014) 6.2%, rgba(0, 0, 0, 0.044) 9.4%, rgba(0, 0, 0, 0.093) 12.5%, rgba(0, 0, 0, 0.162) 15.6%, rgba(0, 0, 0, 0.248) 18.8%, rgba(0, 0, 0, 0.346) 21.9%, rgba(0, 0, 0, 0.45) 25.0%, rgba(0, 0, 0, 0.554) 28.1%, rgba(0, 0, 0, 0.652) 31.2%, rgba(0, 0, 0, 0.738) 34.4%, rgba(0, 0, 0, 0.807) 37.5%, rgba(0, 0, 0, 0.856) 40.6%, rgba(0, 0, 0, 0.886) 43.8%, rgba(0, 0, 0, 0.898) 46.9%, rgba(0, 0, 0, 0.9) 50.0%, rgba(0, 0, 0, 0.9) 100%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.0) 0.0%, rgba(0, 0, 0, 0.002) 3.1%, rgba(0, 0, 0, 0.014) 6.2%, rgba(0, 0, 0, 0.044) 9.4%, rgba(0, 0, 0, 0.093) 12.5%, rgba(0, 0, 0, 0.162) 15.6%, rgba(0, 0, 0, 0.248) 18.8%, rgba(0, 0, 0, 0.346) 21.9%, rgba(0, 0, 0, 0.45) 25.0%, rgba(0, 0, 0, 0.554) 28.1%, rgba(0, 0, 0, 0.652) 31.2%, rgba(0, 0, 0, 0.738) 34.4%, rgba(0, 0, 0, 0.807) 37.5%, rgba(0, 0, 0, 0.856) 40.6%, rgba(0, 0, 0, 0.886) 43.8%, rgba(0, 0, 0, 0.898) 46.9%, rgba(0, 0, 0, 0.9) 50.0%, rgba(0, 0, 0, 0.9) 100%);
 }
 
 .app-tabbar .v-tabs {
