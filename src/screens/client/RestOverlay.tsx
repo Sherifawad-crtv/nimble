@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { overlayRoot } from '../../lib/viewport';
 import { RestTimer } from '../../design';
 import { buildRestPlan } from '../../timer/engine';
 import { useTimer } from '../../timer/useTimer';
@@ -34,6 +35,6 @@ export function RestOverlay({ seconds, next, onClose }: Props) {
         onSkip={onClose}
       />
     </div>,
-    document.body,
+    overlayRoot(),
   );
 }

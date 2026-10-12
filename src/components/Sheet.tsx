@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { overlayRoot } from '../lib/viewport';
 import { BottomSheet, Button, Dialog } from '../design';
 import { useIsDesktop } from '../hooks/media';
 import { t } from '../i18n';
@@ -62,7 +63,7 @@ export function Sheet({ open, title, onClose, footer, children }: SheetProps) {
         </BottomSheet>
       </div>
     </div>,
-    document.body,
+    overlayRoot(),
   );
 }
 
@@ -103,6 +104,6 @@ export function ConfirmDialog({ open, title, body, confirmLabel, destructive, da
         </Dialog>
       </div>
     </div>,
-    document.body,
+    overlayRoot(),
   );
 }

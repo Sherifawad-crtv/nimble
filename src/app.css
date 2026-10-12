@@ -39,8 +39,18 @@ body.app-locked {
   overflow: hidden;
 }
 
-#root {
+/* --app-height is set from the real screen in the installed iOS app (see lib/viewport.ts). */
+#app {
   position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: var(--app-height, 100%);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+#root {
+  position: absolute;
   inset: 0;
   overflow: hidden;
 }
@@ -206,7 +216,7 @@ img {
 }
 
 .app-toast {
-  position: fixed;
+  position: absolute;
   inset-inline: var(--space-4);
   inset-block-end: calc(max(env(safe-area-inset-bottom), var(--space-2)) + var(--tab-height) + var(--space-2) + var(--space-4));
   z-index: 80;
@@ -827,7 +837,7 @@ body:has(.app-shell.desktop) .app-toast {
 /* ---------- overlays ---------- */
 
 .app-overlay {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 60;
   display: flex;
@@ -882,7 +892,7 @@ body:has(.app-shell.desktop) .app-toast {
 }
 
 .app-rest {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 70;
   display: grid;
