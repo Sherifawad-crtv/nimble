@@ -16,6 +16,8 @@ const clearDemoData = () => {
   window.location.replace('/');
 };
 
+const demo = !import.meta.env.VITE_SUPABASE_URL;
+
 /** A render error must never leave a blank screen: show what failed and a way out. */
 export class AppErrorBoundary extends Component<{ children: ReactNode }, State> {
   state: State = { error: null };
@@ -34,15 +36,17 @@ export class AppErrorBoundary extends Component<{ children: ReactNode }, State> 
     return (
       <main className="app-crash" role="alert">
         <h1 className="t-title app-title">{t('crash.title')}</h1>
-        <p className="t-body">{t('crash.body')}</p>
+        <p className="t-body">{demo ? t('crash.body') : t('crash.body.account')}</p>
         <pre className="app-crash-detail">{String(error.message || error)}</pre>
         <div className="app-form-actions">
           <button type="button" className="v-btn v-btn-md v-btn-primary t-button-md full" onClick={() => window.location.reload()}>
             {t('crash.reload')}
           </button>
-          <button type="button" className="v-btn v-btn-md v-btn-secondary t-button-md full" onClick={clearDemoData}>
-            {t('crash.reset')}
-          </button>
+          {demo && (
+            <button type="button" className="v-btn v-btn-md v-btn-secondary t-button-md full" onClick={clearDemoData}>
+              {t('crash.reset')}
+            </button>
+          )}
         </div>
       </main>
     );

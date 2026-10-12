@@ -3,7 +3,7 @@ import { addDays } from '../../lib/date';
 import { ServiceError } from '../DataService';
 import { CLIENT_IDS, COACH_ID } from './seed';
 import { MockDataService } from './MockDataService';
-import { parseVideoUrl } from './videoLink';
+import { parseVideoUrl } from '../videoLink';
 
 const TODAY = '2026-10-12';
 const make = () => new MockDataService({ latencyMs: [0, 0], today: () => TODAY });
@@ -234,8 +234,8 @@ describe('wearables', () => {
 
   it('lets a client connect and disconnect, and the coach loses access', async () => {
     await svc.signIn(CLIENT_IDS.sara);
-    const c = await svc.connectWearable('fitbit');
-    expect(c.status).toBe('connected');
+    const c = await svc.connectWearable('fitbit', 'https://example.test/app/wearable');
+    expect(c.kind === 'connected' && c.connection.status).toBe('connected');
     await svc.signIn(COACH_ID);
     expect((await svc.getWearableConnection(CLIENT_IDS.sara))?.provider).toBe('fitbit');
     await svc.signIn(CLIENT_IDS.sara);

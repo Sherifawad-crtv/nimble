@@ -14,6 +14,12 @@ export interface Profile {
   email: string;
 }
 
+/** A code the coach shares so a client can join their workspace. */
+export interface Invite {
+  code: string;
+  createdAt: ISOTime;
+}
+
 // ---------- library ----------
 export type MeasuredAs = 'reps' | 'weight_reps' | 'time' | 'distance' | 'rounds';
 export type VideoProvider = 'youtube' | 'vimeo';
@@ -215,6 +221,11 @@ export interface WearableConnection {
   status: 'connected' | 'disconnected' | 'error';
   capabilities: WearableCapability[];
 }
+
+/** Starting a connection either finishes at once or sends the client to the brand to approve. */
+export type WearableConnectStart =
+  | { kind: 'connected'; connection: WearableConnection }
+  | { kind: 'redirect'; url: string };
 
 export interface DailyMetrics {
   date: ISODate;

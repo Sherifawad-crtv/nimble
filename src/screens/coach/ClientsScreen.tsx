@@ -1,13 +1,15 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataBoundary } from '../../components/DataBoundary';
 import { Page } from '../../components/Page';
-import { Avatar, DataTable, ListRow, StatusChip } from '../../design';
+import { Avatar, DataTable, IconButton, ListRow, StatusChip } from '../../design';
 import { useData } from '../../hooks/data';
 import { useIsDesktop } from '../../hooks/media';
 import { keys } from '../../hooks/keys';
 import { t } from '../../i18n';
 import { todayISO } from '../../lib/date';
 import type { Assignment, Profile } from '../../types';
+import { InviteSheet } from './InviteSheet';
 
 export function ClientsScreen() {
   const navigate = useNavigate();
@@ -18,10 +20,18 @@ export function ClientsScreen() {
   const byClient = new Map<string, Assignment>();
   for (const a of todays.data ?? []) byClient.set(a.clientId, a);
   const open = (c: Profile) => navigate(`/coach/clients/${c.id}`);
+  const [inviting, setInviting] = useState(false);
 
   return (
-    <Page title={t('clients.title')} subtitle={t('clients.subtitle')}>
-      <DataBoundary query={clients} empty={{ icon: 'users', title: t('clients.empty.title'), body: t('clients.empty.body') }}>
+    <Page
+      title={t('clients.title')}
+      subtitle={t('clients.subtitle')}
+      trailing={<IconButton icon="plus" label={t('clients.invite')} onClick={() => setInviting(true)} />}
+    >
+      <DataBoundary
+        query={clients}
+        empty={{ icon: 'users', title: t('clients.empty.title'), body: t('clients.empty.body'), action: t('clients.invite'), onAction: () => setInviting(true) }}
+      >
         {(list) =>
           desktop ? (
             <DataTable
@@ -79,6 +89,7 @@ export function ClientsScreen() {
           )
         }
       </DataBoundary>
+      <InviteSheet open={inviting} onClose={() => setInviting(false)} />
     </Page>
   );
 }

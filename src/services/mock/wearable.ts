@@ -11,8 +11,8 @@ export const PROVIDER_CAPABILITIES: Record<WearableProvider, WearableCapability[
   strava: ['workout_hr', 'calories'],
 };
 
-const RECOVERY: WearableCapability[] = ['sleep', 'resting_hr', 'hrv'];
-export const recoveryCapabilities = (caps: WearableCapability[]) => RECOVERY.filter((c) => caps.includes(c));
+
+
 
 const wobble = (seed: string, spread: number) => {
   const h = [...seed].reduce((a, c) => (a * 33 + c.charCodeAt(0)) >>> 0, 5381);

@@ -3,12 +3,12 @@ type Kind = 'assignment' | 'link' | 'package' | 'wearable';
 type Measured = 'reps' | 'weight_reps' | 'time' | 'distance' | 'rounds';
 type BlockType = 'standard' | 'amrap' | 'emom' | 'for_time' | 'tabata' | 'custom';
 export interface IconProps { name: string; size?: number; color?: string }
-export interface ButtonProps { children?: React.ReactNode; variant?: 'primary' | 'secondary' | 'tertiary' | 'destructive'; size?: 'lg' | 'md' | 'sm'; icon?: string; iconOnly?: boolean; label?: string; loading?: boolean; disabled?: boolean; fullWidth?: boolean; onClick?: () => void }
+export interface ButtonProps { children?: React.ReactNode; variant?: 'primary' | 'secondary' | 'tertiary' | 'destructive'; size?: 'lg' | 'md' | 'sm'; icon?: string; iconOnly?: boolean; label?: string; loading?: boolean; disabled?: boolean; fullWidth?: boolean; onClick?: () => void; type?: 'button' | 'submit' }
 export interface IconButtonProps { icon: string; label: string; variant?: 'control' | 'ghost' | 'action'; size?: number; disabled?: boolean; onClick?: () => void }
 export interface PillNavProps { items: { id: string; icon: string; label: string; badge?: boolean }[]; active: string; onChange?: (id: string) => void; action?: { icon: string; label: string; onClick?: () => void } }
 export interface SidebarProps { workspace: string; items: { id: string; icon: string; label: string }[]; active: string; onChange?: (id: string) => void; user?: { name: string; role: string } }
 export interface TopBarProps { variant?: 'large' | 'compact' | 'back' | 'desktop'; title?: string; eyebrow?: string; trailing?: React.ReactNode; onBack?: () => void }
-export interface TextFieldProps { label?: string; required?: boolean; placeholder?: string; value?: string; defaultValue?: string; onChange?: (e: any) => void; icon?: string; trailing?: React.ReactNode; hint?: string; error?: string; success?: string; multiline?: boolean; disabled?: boolean; type?: string }
+export interface TextFieldProps { label?: string; required?: boolean; placeholder?: string; value?: string; defaultValue?: string; onChange?: (e: any) => void; icon?: string; trailing?: React.ReactNode; hint?: string; error?: string; success?: string; multiline?: boolean; disabled?: boolean; type?: string; name?: string; autoComplete?: string; inputMode?: 'text' | 'email' | 'numeric'; autoCapitalize?: 'off' | 'characters' | 'words' }
 export interface SearchFieldProps { placeholder?: string; value?: string; onChange?: (v: string) => void; results?: { label: string; meta?: string; icon?: string }[] }
 export interface NumberFieldProps { label?: string; value?: number; defaultValue?: number; min?: number; max?: number; step?: number; unit?: string; large?: boolean; onChange?: (n: number) => void }
 export interface DateFieldProps { label?: string; value?: string; onChange?: (e: any) => void; required?: boolean; error?: string; locale?: string }

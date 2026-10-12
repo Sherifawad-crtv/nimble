@@ -1,4 +1,4 @@
-import { addDays, daysBetween, todayISO } from '../../lib/date';
+import { addDays, todayISO } from '../../lib/date';
 import type {
   Assignment,
   AssignmentStatus,
@@ -8,6 +8,7 @@ import type {
   ExerciseInput,
   ExerciseProgress,
   Id,
+  Invite,
   ISODate,
   LinkPreview,
   MeasuredAs,
@@ -20,16 +21,17 @@ import type {
   ProgramInput,
   Readiness,
   WearableConnection,
+  WearableConnectStart,
   WearableProvider,
   Workout,
   WorkoutInput,
   WorkoutLog,
 } from '../../types';
-import { ServiceError, type DataService, type ExerciseQuery, type SessionService } from '../DataService';
+import { ServiceError, type DataService, type DemoSession, type ExerciseQuery } from '../DataService';
 import { cloneWorkout, createSeed, VIDEO_TITLES, type MockDB } from './seed';
-import { exerciseProgress, personalRecords } from './stats';
-import { mockOembed, parseVideoUrl, thumbnailFor, videoUrlFor } from './videoLink';
-import { metricsFor, PROVIDER_CAPABILITIES, recoveryCapabilities } from './wearable';
+import { exerciseProgress, personalRecords, progressSummary, readinessFrom, withPackageState } from '../stats';
+import { mockOembed, parseVideoUrl, thumbnailFor, videoUrlFor } from '../videoLink';
+import { metricsFor, PROVIDER_CAPABILITIES } from './wearable';
 
 export interface KeyValueStore {
   getItem(key: string): string | null;
@@ -46,8 +48,6 @@ export interface MockOptions {
 
 const DB_KEY = 'origin.mock.db.v1';
 const SESSION_KEY = 'origin.mock.session.v1';
-const EXPIRING_WITHIN_DAYS = 14;
-const SUMMARY_DAYS = 28;
 
 function browserStorage(): KeyValueStore {
   const memory = new Map<string, string>();
@@ -72,7 +72,8 @@ const emptyStore = (): KeyValueStore => {
 };
 
 /** In-memory, localStorage-backed implementation of the backend contract. */
-export class MockDataService implements DataService, SessionService {
+export class MockDataService implements DataService, DemoSession {
+  readonly kind = 'demo' as const;
   private readonly storage: KeyValueStore;
   private readonly latency: [number, number];
   private readonly today: () => ISODate;
@@ -172,9 +173,7 @@ export class MockDataService implements DataService, SessionService {
   }
 
   private withDerived(p: MockDB['packages'][number]): Package {
-    const remaining = Math.max(0, p.sessionsIncluded - p.sessionsUsed);
-    const left = daysBetween(this.today(), p.expiresOn);
-    return { ...p, sessionsRemaining: remaining, state: left < 0 ? 'expired' : left <= EXPIRING_WITHIN_DAYS ? 'expiring' : 'active' };
+    return withPackageState(p, this.today());
   }
 
   // ---------- session ----------
@@ -355,6 +354,29 @@ export class MockDataService implements DataService, SessionService {
     return structuredClone(this.db.profiles.filter((p) => p.role === 'client' && p.workspaceId === me.workspaceId));
   }
 
+  async listInvites(): Promise<Invite[]> {
+    await this.wait();
+    this.coach();
+    return structuredClone(this.db.invites ?? []);
+  }
+
+  async createInvite(): Promise<Invite> {
+    await this.wait();
+    this.coach();
+    const code = Array.from({ length: 8 }, () => '0123456789ABCDEF'[Math.floor(Math.random() * 16)]).join('');
+    const invite: Invite = { code, createdAt: new Date().toISOString() };
+    this.db.invites = [invite, ...(this.db.invites ?? [])];
+    this.persist();
+    return structuredClone(invite);
+  }
+
+  async revokeInvite(code: string): Promise<void> {
+    await this.wait();
+    this.coach();
+    this.db.invites = (this.db.invites ?? []).filter((i) => i.code !== code);
+    this.persist();
+  }
+
   private createAssignment(clientId: Id, date: ISODate, template: Workout, programId?: Id): Assignment {
     const a: Assignment = {
       id: this.id('as'),
@@ -525,23 +547,8 @@ export class MockDataService implements DataService, SessionService {
   async getProgressSummary(clientId: Id): Promise<ProgressSummary> {
     await this.wait();
     this.clientAccess(clientId);
-    const to = this.today();
-    const from = addDays(to, -(SUMMARY_DAYS - 1));
     const { assignments, logs } = this.clientHistory(clientId);
-    const inWindow = assignments.filter((a) => a.date >= from && a.date <= to);
-    const ids = new Set(inWindow.map((a) => a.id));
-    const completed = inWindow.filter((a) => a.status === 'completed').length;
-    const setsLogged = logs.filter((l) => ids.has(l.assignmentId)).reduce((n, l) => n + l.itemResults.reduce((m, r) => m + r.sets.length, 0), 0);
-    const records = personalRecords(assignments, logs, this.measuredOf).filter((r) => r.achievedOn >= from && r.achievedOn <= to).length;
-    return {
-      from,
-      to,
-      assigned: inWindow.length,
-      completed,
-      completionPct: inWindow.length ? Math.round((completed / inWindow.length) * 100) : 0,
-      setsLogged,
-      personalRecords: records,
-    };
+    return progressSummary(assignments, logs, this.measuredOf, this.today());
   }
 
   // ---------- comments ----------
@@ -615,7 +622,7 @@ export class MockDataService implements DataService, SessionService {
     return structuredClone(c);
   }
 
-  async connectWearable(provider: WearableProvider): Promise<WearableConnection> {
+  async connectWearable(provider: WearableProvider, _returnUrl: string): Promise<WearableConnectStart> {
     await this.wait();
     const me = this.profile();
     if (me.role !== 'client') throw new ServiceError('forbidden', 'Only the client can connect a device.');
@@ -629,7 +636,14 @@ export class MockDataService implements DataService, SessionService {
     };
     this.db.wearables = [...this.db.wearables.filter((w) => w.clientId !== me.id), conn];
     this.persist();
-    return structuredClone(conn);
+    return { kind: 'connected', connection: structuredClone(conn) };
+  }
+
+  async syncWearable(): Promise<WearableConnection | null> {
+    await this.wait();
+    const me = this.profile();
+    if (me.role !== 'client') throw new ServiceError('forbidden', 'Only the client can sync their device.');
+    return structuredClone(this.db.wearables.find((w) => w.clientId === me.id) ?? null);
   }
 
   async disconnectWearable(): Promise<void> {
@@ -655,13 +669,8 @@ export class MockDataService implements DataService, SessionService {
     await this.wait();
     this.clientAccess(clientId);
     const c = this.activeConnection(clientId);
-    const basedOn = c ? recoveryCapabilities(c.capabilities) : [];
-    if (!c || !basedOn.length) return null;
-    // Placeholder rule until the readiness formula is defined with the owner.
+    if (!c) return null;
     const today = this.today();
-    const last = metricsFor(c.provider, c.capabilities, today, today)[0];
-    const sleep = last?.sleepMinutes;
-    const level: Readiness['level'] = sleep === undefined ? 'ok' : sleep < 400 ? 'low' : sleep >= 460 ? 'high' : 'ok';
-    return { level, basedOn, provider: c.provider };
+    return readinessFrom(c, metricsFor(c.provider, c.capabilities, today, today)[0]);
   }
 }

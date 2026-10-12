@@ -60,6 +60,8 @@ const MAP = {
   pulse: 'pulse-bold',
   logout: 'logout-2-bold',
   lock: 'lock-bold',
+  mail: 'letter-bold',
+  share: 'share-bold',
   list: 'list-bold',
   circle: 'record-linear',
 };

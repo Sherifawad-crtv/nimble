@@ -1,11 +1,11 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Splash } from '../design';
 import { keys } from '../hooks/keys';
 import { dataService, sessionService } from '../services';
 import type { Profile } from '../types';
-import { SignInScreen } from '../screens/SignIn';
+import { NewPasswordScreen, SignInScreen } from '../screens/SignIn';
 
 const MeContext = createContext<Profile | null>(null);
 
@@ -18,22 +18,44 @@ export function useMe(): Profile {
 
 export function useSessionActions() {
   const client = useQueryClient();
+  const reset = async () => {
+    client.clear();
+    await client.invalidateQueries({ queryKey: keys.me });
+  };
   return {
-    async signIn(profileId: string) {
+    /** Demo backend only: continue as one of the seeded accounts. */
+    async signInAs(profileId: string) {
+      if (sessionService.kind !== 'demo') return;
       await sessionService.signIn(profileId);
-      client.clear();
-      await client.invalidateQueries({ queryKey: keys.me });
+      await reset();
     },
     async signOut() {
       await sessionService.signOut();
-      client.clear();
-      await client.invalidateQueries({ queryKey: keys.me });
+      await reset();
     },
+    refresh: reset,
   };
 }
 
 export function AuthGate() {
+  const client = useQueryClient();
+  const [recovering, setRecovering] = useState(false);
   const me = useQuery({ queryKey: keys.me, queryFn: () => dataService.getMe(), retry: false, staleTime: Infinity });
+
+  // Real accounts can change outside the app: email links, expiry, another tab signing out.
+  useEffect(() => {
+    if (sessionService.kind !== 'account') return;
+    return sessionService.onChange((event) => {
+      if (event === 'password_recovery') {
+        setRecovering(true);
+        return;
+      }
+      client.clear();
+      void client.invalidateQueries({ queryKey: keys.me });
+    });
+  }, [client]);
+
+  if (recovering) return <NewPasswordScreen onDone={() => setRecovering(false)} />;
   if (me.isPending) return <Splash />;
   if (me.isError) return <SignInScreen />;
   return (

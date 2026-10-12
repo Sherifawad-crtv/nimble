@@ -1,5 +1,5 @@
-import type { LinkPreview, VideoProvider } from '../../types';
-import { ServiceError } from '../DataService';
+import type { LinkPreview, VideoProvider } from '../types';
+import { ServiceError } from './DataService';
 
 export interface ParsedVideo {
   provider: VideoProvider;

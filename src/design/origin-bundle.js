@@ -59,7 +59,7 @@
 
   function TextField(p) {
     var cls = cx('v-input', p.error && 'err', p.success && 'ok', p.disabled && 'dis', p.multiline && 'multi', p.state === 'focus' && 'is-focus-in');
-    var props = { className: 't-input', value: p.value, defaultValue: p.defaultValue, placeholder: p.placeholder, disabled: p.disabled, onChange: p.onChange, required: p.required, 'aria-invalid': p.error ? 'true' : undefined, id: p.id, type: p.type || 'text' };
+    var props = { className: 't-input', value: p.value, defaultValue: p.defaultValue, placeholder: p.placeholder, disabled: p.disabled, onChange: p.onChange, required: p.required, 'aria-invalid': p.error ? 'true' : undefined, id: p.id, type: p.type || 'text', name: p.name, autoComplete: p.autoComplete, inputMode: p.inputMode, autoCapitalize: p.autoCapitalize };
     return h('label', { className: 'v-field' },
       p.label ? h('span', { className: 'v-label t-label' }, p.label, p.required ? h('span', { className: 'v-req', 'aria-hidden': 'true' }, ' *') : h('span', { className: 'v-opt-tag' }, ' (optional)')) : null,
       h('span', { className: cls }, p.icon ? h(Icon, { name: p.icon, size: 22 }) : null, p.multiline ? h('textarea', Object.assign({ rows: 3 }, props)) : h('input', props), p.trailing || null),

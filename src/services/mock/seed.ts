@@ -7,6 +7,7 @@ import type {
   BlockSettings,
   Comment,
   Exercise,
+  Invite,
   ISODate,
   ItemTarget,
   MeasuredAs,
@@ -17,7 +18,7 @@ import type {
   Workout,
   WorkoutLog,
 } from '../../types';
-import { parseVideoUrl, thumbnailFor, videoUrlFor } from './videoLink';
+import { parseVideoUrl, thumbnailFor, videoUrlFor } from '../videoLink';
 
 export interface MockDB {
   version: 1;
@@ -30,6 +31,8 @@ export interface MockDB {
   comments: Comment[];
   packages: Omit<Package, 'sessionsRemaining' | 'state'>[];
   wearables: WearableConnection[];
+  /** Added after v1 shipped; older saved demo data has none. */
+  invites?: Invite[];
   seq: number;
 }
 

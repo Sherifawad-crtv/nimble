@@ -7,6 +7,7 @@ import type {
   ExerciseInput,
   ExerciseProgress,
   Id,
+  Invite,
   ISODate,
   LinkPreview,
   Package,
@@ -18,6 +19,7 @@ import type {
   ProgramInput,
   Readiness,
   WearableConnection,
+  WearableConnectStart,
   WearableProvider,
   Workout,
   WorkoutInput,
@@ -62,6 +64,9 @@ export interface DataService {
 
   // clients and assigning
   listClients(): Promise<Profile[]>;
+  listInvites(): Promise<Invite[]>;
+  createInvite(): Promise<Invite>;
+  revokeInvite(code: string): Promise<void>;
   assignWorkout(input: { clientIds: Id[]; workoutId: Id; dates: ISODate[] }): Promise<Assignment[]>;
   assignProgram(input: { clientId: Id; programId: Id; startDate: ISODate }): Promise<Assignment[]>;
   getAssignment(id: Id): Promise<Assignment>;
@@ -88,16 +93,41 @@ export interface DataService {
 
   // wearables
   getWearableConnection(clientId: Id): Promise<WearableConnection | null>;
-  connectWearable(provider: WearableProvider): Promise<WearableConnection>;
+  /** `returnUrl` is where the brand sends the client back to after they approve sharing. */
+  connectWearable(provider: WearableProvider, returnUrl: string): Promise<WearableConnectStart>;
+  /** Pulls the latest data for the signed-in client and returns the connection as it stands. */
+  syncWearable(): Promise<WearableConnection | null>;
   disconnectWearable(): Promise<void>;
   getDailyMetrics(clientId: Id, from: ISODate, to: ISODate): Promise<DailyMetrics[]>;
   getReadiness(clientId: Id): Promise<Readiness | null>;
 }
 
-/** Sign-in surface. The mock lists demo accounts; the real backend uses Supabase Auth. */
-export interface SessionService {
+/** Sign-in for the demo backend: pick one of the seeded accounts. */
+export interface DemoSession {
+  readonly kind: 'demo';
   listDemoAccounts(): Promise<Profile[]>;
   signIn(profileId: Id): Promise<Profile>;
   signOut(): Promise<void>;
-  currentProfileId(): Id | null;
 }
+
+export type SignUpInput =
+  | { role: 'coach'; name: string; email: string; password: string; workspaceName: string }
+  | { role: 'client'; name: string; email: string; password: string; inviteCode: string };
+
+export type AuthEvent = 'signed_in' | 'signed_out' | 'password_recovery';
+
+/** Sign-in for the real backend: email and password accounts. */
+export interface AccountSession {
+  readonly kind: 'account';
+  signIn(email: string, password: string): Promise<void>;
+  /** Resolves 'confirm_email' when the account must be confirmed from the inbox first. */
+  signUp(input: SignUpInput): Promise<'signed_in' | 'confirm_email'>;
+  /** The workspace name an invite code joins, or null when the code is not valid. */
+  checkInvite(code: string): Promise<string | null>;
+  requestPasswordReset(email: string): Promise<void>;
+  updatePassword(password: string): Promise<void>;
+  signOut(): Promise<void>;
+  onChange(listener: (event: AuthEvent) => void): () => void;
+}
+
+export type SessionService = DemoSession | AccountSession;
