@@ -1342,3 +1342,19 @@ body:has(.app-shell.desktop) .app-toast {
   white-space: nowrap;
   padding-inline: 14px;
 }
+
+/* ---------- no scroll indicators on phones ----------
+   Native apps show no scrollbar gutter; content just moves. Desktop keeps its scrollbars for
+   mouse users. */
+@media (pointer: coarse), (max-width: 1023px) {
+  * {
+    scrollbar-width: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+    inline-size: 0;
+    block-size: 0;
+    background: transparent;
+  }
+}
