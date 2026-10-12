@@ -165,7 +165,7 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  padding-block-end: calc(var(--tab-height) + var(--space-2) + max(env(safe-area-inset-bottom), var(--space-2)) + 56px + var(--space-2));
+  padding-block-end: calc(var(--tab-height) + var(--space-2) + max(env(safe-area-inset-bottom), var(--space-2)) + var(--space-4));
 }
 
 .app-shell.desktop .app-main {
@@ -187,12 +187,14 @@ img {
   pointer-events: none;
 }
 
-/* The fade starts above the tabs: a band of --fade over the content eases from clear to the full
-   page colour on a curve whose opening third barely tints (smootherstep^1.6), so the top has no
-   visible start, which then stays solid behind the icons and
-   down to the bottom edge. The tabs themselves do not move. */
+/* As in the source screens: content dissolves in a short eased band (smootherstep, no visible
+   start) that becomes the solid page colour exactly at the top of the tab pills, then stays solid
+   behind the icons and down to the bottom edge. The tabs do not move. */
 .app-tabbar {
-  --fade: 56px;
+  /* Measured from the source screens: content dissolves over ~20 px, reaching solid exactly at
+     the top of the tab pills. 12 px of it sits above the bar, 8 px is the bar's top padding. */
+  --fade: 20px;
+  --fade-above: 12px;
 }
 
 .app-tabbar::before {
@@ -200,11 +202,11 @@ img {
   position: absolute;
   inset-inline: 0;
   inset-block-end: 0;
-  inset-block-start: calc(var(--fade) * -1);
+  inset-block-start: calc(var(--fade-above) * -1);
   z-index: -1;
   background: var(--bg);
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.0) calc(var(--fade) * 0.0000), rgba(0, 0, 0, 0.0) calc(var(--fade) * 0.0417), rgba(0, 0, 0, 0.0) calc(var(--fade) * 0.0833), rgba(0, 0, 0, 0.001) calc(var(--fade) * 0.1250), rgba(0, 0, 0, 0.005) calc(var(--fade) * 0.1667), rgba(0, 0, 0, 0.012) calc(var(--fade) * 0.2083), rgba(0, 0, 0, 0.027) calc(var(--fade) * 0.2500), rgba(0, 0, 0, 0.049) calc(var(--fade) * 0.2917), rgba(0, 0, 0, 0.082) calc(var(--fade) * 0.3333), rgba(0, 0, 0, 0.127) calc(var(--fade) * 0.3750), rgba(0, 0, 0, 0.184) calc(var(--fade) * 0.4167), rgba(0, 0, 0, 0.252) calc(var(--fade) * 0.4583), rgba(0, 0, 0, 0.33) calc(var(--fade) * 0.5000), rgba(0, 0, 0, 0.416) calc(var(--fade) * 0.5417), rgba(0, 0, 0, 0.506) calc(var(--fade) * 0.5833), rgba(0, 0, 0, 0.598) calc(var(--fade) * 0.6250), rgba(0, 0, 0, 0.686) calc(var(--fade) * 0.6667), rgba(0, 0, 0, 0.768) calc(var(--fade) * 0.7083), rgba(0, 0, 0, 0.84) calc(var(--fade) * 0.7500), rgba(0, 0, 0, 0.899) calc(var(--fade) * 0.7917), rgba(0, 0, 0, 0.944) calc(var(--fade) * 0.8333), rgba(0, 0, 0, 0.974) calc(var(--fade) * 0.8750), rgba(0, 0, 0, 0.992) calc(var(--fade) * 0.9167), rgba(0, 0, 0, 0.999) calc(var(--fade) * 0.9583), rgba(0, 0, 0, 1.0) calc(var(--fade) * 1.0000), rgba(0, 0, 0, 1) 100%);
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.0) calc(var(--fade) * 0.0000), rgba(0, 0, 0, 0.0) calc(var(--fade) * 0.0417), rgba(0, 0, 0, 0.0) calc(var(--fade) * 0.0833), rgba(0, 0, 0, 0.001) calc(var(--fade) * 0.1250), rgba(0, 0, 0, 0.005) calc(var(--fade) * 0.1667), rgba(0, 0, 0, 0.012) calc(var(--fade) * 0.2083), rgba(0, 0, 0, 0.027) calc(var(--fade) * 0.2500), rgba(0, 0, 0, 0.049) calc(var(--fade) * 0.2917), rgba(0, 0, 0, 0.082) calc(var(--fade) * 0.3333), rgba(0, 0, 0, 0.127) calc(var(--fade) * 0.3750), rgba(0, 0, 0, 0.184) calc(var(--fade) * 0.4167), rgba(0, 0, 0, 0.252) calc(var(--fade) * 0.4583), rgba(0, 0, 0, 0.33) calc(var(--fade) * 0.5000), rgba(0, 0, 0, 0.416) calc(var(--fade) * 0.5417), rgba(0, 0, 0, 0.506) calc(var(--fade) * 0.5833), rgba(0, 0, 0, 0.598) calc(var(--fade) * 0.6250), rgba(0, 0, 0, 0.686) calc(var(--fade) * 0.6667), rgba(0, 0, 0, 0.768) calc(var(--fade) * 0.7083), rgba(0, 0, 0, 0.84) calc(var(--fade) * 0.7500), rgba(0, 0, 0, 0.899) calc(var(--fade) * 0.7917), rgba(0, 0, 0, 0.944) calc(var(--fade) * 0.8333), rgba(0, 0, 0, 0.974) calc(var(--fade) * 0.8750), rgba(0, 0, 0, 0.992) calc(var(--fade) * 0.9167), rgba(0, 0, 0, 0.999) calc(var(--fade) * 0.9583), rgba(0, 0, 0, 1.0) calc(var(--fade) * 1.0000), rgba(0, 0, 0, 1) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.0) calc(var(--fade) * 0.0000), rgba(0, 0, 0, 0.002) calc(var(--fade) * 0.0625), rgba(0, 0, 0, 0.016) calc(var(--fade) * 0.1250), rgba(0, 0, 0, 0.049) calc(var(--fade) * 0.1875), rgba(0, 0, 0, 0.104) calc(var(--fade) * 0.2500), rgba(0, 0, 0, 0.18) calc(var(--fade) * 0.3125), rgba(0, 0, 0, 0.275) calc(var(--fade) * 0.3750), rgba(0, 0, 0, 0.384) calc(var(--fade) * 0.4375), rgba(0, 0, 0, 0.5) calc(var(--fade) * 0.5000), rgba(0, 0, 0, 0.616) calc(var(--fade) * 0.5625), rgba(0, 0, 0, 0.725) calc(var(--fade) * 0.6250), rgba(0, 0, 0, 0.82) calc(var(--fade) * 0.6875), rgba(0, 0, 0, 0.896) calc(var(--fade) * 0.7500), rgba(0, 0, 0, 0.951) calc(var(--fade) * 0.8125), rgba(0, 0, 0, 0.984) calc(var(--fade) * 0.8750), rgba(0, 0, 0, 0.998) calc(var(--fade) * 0.9375), rgba(0, 0, 0, 1.0) calc(var(--fade) * 1.0000), rgba(0, 0, 0, 1) 100%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.0) calc(var(--fade) * 0.0000), rgba(0, 0, 0, 0.002) calc(var(--fade) * 0.0625), rgba(0, 0, 0, 0.016) calc(var(--fade) * 0.1250), rgba(0, 0, 0, 0.049) calc(var(--fade) * 0.1875), rgba(0, 0, 0, 0.104) calc(var(--fade) * 0.2500), rgba(0, 0, 0, 0.18) calc(var(--fade) * 0.3125), rgba(0, 0, 0, 0.275) calc(var(--fade) * 0.3750), rgba(0, 0, 0, 0.384) calc(var(--fade) * 0.4375), rgba(0, 0, 0, 0.5) calc(var(--fade) * 0.5000), rgba(0, 0, 0, 0.616) calc(var(--fade) * 0.5625), rgba(0, 0, 0, 0.725) calc(var(--fade) * 0.6250), rgba(0, 0, 0, 0.82) calc(var(--fade) * 0.6875), rgba(0, 0, 0, 0.896) calc(var(--fade) * 0.7500), rgba(0, 0, 0, 0.951) calc(var(--fade) * 0.8125), rgba(0, 0, 0, 0.984) calc(var(--fade) * 0.8750), rgba(0, 0, 0, 0.998) calc(var(--fade) * 0.9375), rgba(0, 0, 0, 1.0) calc(var(--fade) * 1.0000), rgba(0, 0, 0, 1) 100%);
   pointer-events: none;
 }
 
