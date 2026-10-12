@@ -188,8 +188,8 @@ img {
 }
 
 /* No solid bar: the tabs float over the content. Behind the icons the page colour is full
-   strength so they stay legible; across the top of the bar it eases out to nothing, so there is
-   no hard edge. The scrim is the
+   strength so they stay legible; only the top 24px of the bar eases out to nothing, whatever the
+   bar's height (home-indicator inset included), so there is no hard edge. The scrim is the
    page colour shaped by a mask, so it matches either theme exactly. */
 .app-tabbar::before {
   content: '';
@@ -197,8 +197,9 @@ img {
   inset: 0;
   z-index: -1;
   background: var(--bg);
-  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 55.0%, rgba(0, 0, 0, 0.738) 63.5%, rgba(0, 0, 0, 0.541) 70.3%, rgba(0, 0, 0, 0.382) 76.2%, rgba(0, 0, 0, 0.278) 80.4%, rgba(0, 0, 0, 0.194) 84.2%, rgba(0, 0, 0, 0.126) 87.8%, rgba(0, 0, 0, 0.075) 91.1%, rgba(0, 0, 0, 0.042) 93.7%, rgba(0, 0, 0, 0.021) 96.0%, rgba(0, 0, 0, 0.008) 97.8%, rgba(0, 0, 0, 0.002) 99.2%, rgba(0, 0, 0, 0) 100.0%);
-  mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 55.0%, rgba(0, 0, 0, 0.738) 63.5%, rgba(0, 0, 0, 0.541) 70.3%, rgba(0, 0, 0, 0.382) 76.2%, rgba(0, 0, 0, 0.278) 80.4%, rgba(0, 0, 0, 0.194) 84.2%, rgba(0, 0, 0, 0.126) 87.8%, rgba(0, 0, 0, 0.075) 91.1%, rgba(0, 0, 0, 0.042) 93.7%, rgba(0, 0, 0, 0.021) 96.0%, rgba(0, 0, 0, 0.008) 97.8%, rgba(0, 0, 0, 0.002) 99.2%, rgba(0, 0, 0, 0) 100.0%);
+  --fade: var(--space-6);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) calc(var(--fade) * 0.000), rgba(0, 0, 0, 0.002) calc(var(--fade) * 0.018), rgba(0, 0, 0, 0.008) calc(var(--fade) * 0.048), rgba(0, 0, 0, 0.021) calc(var(--fade) * 0.090), rgba(0, 0, 0, 0.042) calc(var(--fade) * 0.139), rgba(0, 0, 0, 0.075) calc(var(--fade) * 0.198), rgba(0, 0, 0, 0.126) calc(var(--fade) * 0.270), rgba(0, 0, 0, 0.194) calc(var(--fade) * 0.350), rgba(0, 0, 0, 0.278) calc(var(--fade) * 0.435), rgba(0, 0, 0, 0.382) calc(var(--fade) * 0.530), rgba(0, 0, 0, 0.541) calc(var(--fade) * 0.660), rgba(0, 0, 0, 0.738) calc(var(--fade) * 0.810), rgba(0, 0, 0, 1) calc(var(--fade) * 1.000), rgba(0, 0, 0, 1) 100%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) calc(var(--fade) * 0.000), rgba(0, 0, 0, 0.002) calc(var(--fade) * 0.018), rgba(0, 0, 0, 0.008) calc(var(--fade) * 0.048), rgba(0, 0, 0, 0.021) calc(var(--fade) * 0.090), rgba(0, 0, 0, 0.042) calc(var(--fade) * 0.139), rgba(0, 0, 0, 0.075) calc(var(--fade) * 0.198), rgba(0, 0, 0, 0.126) calc(var(--fade) * 0.270), rgba(0, 0, 0, 0.194) calc(var(--fade) * 0.350), rgba(0, 0, 0, 0.278) calc(var(--fade) * 0.435), rgba(0, 0, 0, 0.382) calc(var(--fade) * 0.530), rgba(0, 0, 0, 0.541) calc(var(--fade) * 0.660), rgba(0, 0, 0, 0.738) calc(var(--fade) * 0.810), rgba(0, 0, 0, 1) calc(var(--fade) * 1.000), rgba(0, 0, 0, 1) 100%);
 }
 
 .app-tabbar .v-tabs {
