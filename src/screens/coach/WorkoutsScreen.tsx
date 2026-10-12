@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useShellAction } from '../../app/ShellAction';
 import { useToast } from '../../app/Toast';
 import { DataBoundary } from '../../components/DataBoundary';
 import { Page } from '../../components/Page';
@@ -41,8 +40,6 @@ export function WorkoutsScreen() {
       .then((copy) => toast.show(t('workouts.duplicated', { title: copy.title })))
       .catch((e: unknown) => toast.show(errorMessage(e), 'error'));
 
-  useShellAction(desktop ? null : { icon: 'plus', label: t(tab === 'templates' ? 'workouts.new' : 'programs.new'), onClick: create });
-
   const rowTools = (w: Workout) => (
     <span className="app-row-actions" onClick={(e) => e.stopPropagation()}>
       <IconButton icon="calendar" label={t('workouts.assign', { title: w.title })} size={20} onClick={() => setAssigning({ workoutId: w.id })} />
@@ -53,8 +50,8 @@ export function WorkoutsScreen() {
   return (
     <Page
       title={t('workouts.title')}
-      eyebrow={t('workouts.eyebrow')}
-      trailing={desktop ? <Button icon="plus" size="md" onClick={create}>{t(tab === 'templates' ? 'workouts.new' : 'programs.new')}</Button> : undefined}
+      subtitle={t('workouts.subtitle')}
+      trailing={desktop ? <Button icon="plus" size="md" onClick={create}>{t(tab === 'templates' ? 'workouts.new' : 'programs.new')}</Button> : <IconButton icon="plus" label={t(tab === 'templates' ? 'workouts.new' : 'programs.new')} onClick={create} />}
     >
       <div className="app-stack">
         <Segmented

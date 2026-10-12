@@ -21,7 +21,7 @@ export function ClientSettings() {
   const disconnect = useAction((s, _: void) => s.disconnectWearable(), { invalidate: [keys.wearable(me.id), keys.readiness(me.id)] });
 
   return (
-    <Page title={t('settings.title')} eyebrow={t('settings.eyebrow')}>
+    <Page title={t('settings.title')} subtitle={t('settings.subtitle')}>
       <div className="app-stack">
         <section className="app-card profile-card">
           <Avatar name={me.name} size="lg" />
@@ -32,7 +32,7 @@ export function ClientSettings() {
         </section>
 
         <section className="app-section" aria-label={t('settings.wearable')}>
-          <h2 className="t-heading">{t('settings.wearable')}</h2>
+          <h2 className="t-eyebrow app-h2">{t('settings.wearable')}</h2>
           <DataBoundary
             query={conn}
             skeleton="card"

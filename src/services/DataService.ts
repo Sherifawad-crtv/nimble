@@ -12,6 +12,7 @@ import type {
   Package,
   PackageInput,
   PersonalRecord,
+  ProgressSummary,
   Profile,
   Program,
   ProgramInput,
@@ -75,6 +76,7 @@ export interface DataService {
   getLog(assignmentId: Id): Promise<WorkoutLog | null>;
   listPersonalRecords(clientId: Id): Promise<PersonalRecord[]>;
   listExerciseProgress(clientId: Id): Promise<ExerciseProgress[]>;
+  getProgressSummary(clientId: Id): Promise<ProgressSummary>;
 
   // comments
   listComments(assignmentId: Id): Promise<Comment[]>;

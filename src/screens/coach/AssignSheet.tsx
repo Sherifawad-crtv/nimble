@@ -118,11 +118,11 @@ function AssignForm({ onClose, clientId, workoutId, programId }: Props) {
         <DateField label={t('assign.startDate')} value={startDate} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value)} />
       ) : (
         <fieldset className="app-fieldset">
-          <legend className="v-label t-label">{t('assign.dates')}</legend>
+          <legend className="v-sr">{t('assign.dates')}</legend>
           {dates.map((d, i) => (
             <div key={i} className="app-date-row">
               <DateField
-                label={t('assign.dateN', { n: i + 1 })}
+                label={dates.length > 1 ? t('assign.dateN', { n: i + 1 }) : t('assign.date')}
                 value={d}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDates(dates.map((x, j) => (j === i ? e.target.value : x)))}
               />

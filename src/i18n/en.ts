@@ -31,6 +31,7 @@ export const en = {
   'notFound.action': 'Go home',
 
   // navigation and roles
+  'nav.label': 'Main',
   'nav.clients': 'Clients',
   'nav.library': 'Library',
   'nav.workouts': 'Workouts',
@@ -49,7 +50,7 @@ export const en = {
 
   // settings
   'settings.title': 'Settings',
-  'settings.eyebrow': 'Account',
+  'settings.subtitle': 'Your account and devices.',
   'settings.signOut': 'Sign out',
   'settings.wearable': 'Wearable',
   'settings.wearable.none.title': 'No wearable connected',
@@ -65,7 +66,7 @@ export const en = {
 
   // clients (coach)
   'clients.title': 'Clients',
-  'clients.eyebrow': 'Your workspace',
+  'clients.subtitle': 'Everyone training with you.',
   'clients.empty.title': 'No clients yet',
   'clients.empty.body': 'Clients appear here once they join your workspace.',
   'clients.col.name': 'Client',
@@ -97,6 +98,7 @@ export const en = {
   'assign.clients': 'Clients',
   'assign.dates': 'Dates',
   'assign.dateN': 'Date {n}',
+  'assign.date': 'Date',
   'assign.addDate': 'Add another date',
   'assign.removeDate': 'Remove date {n}',
   'assign.startDate': 'Start date',
@@ -148,7 +150,7 @@ export const en = {
 
   // library
   'library.title': 'Library',
-  'library.eyebrow': 'Exercises',
+  'library.subtitle': 'Your exercises.',
   'library.count.one': '{n} exercise',
   'library.count.other': '{n} exercises',
   'library.add': 'Add exercise',
@@ -225,6 +227,7 @@ export const en = {
   'block.summary.custom.other': '{n} steps',
   'target.rest': 'rest {time}',
   'target.sets': 'Sets',
+  'target.restLabel': 'Rest',
   'target.reps': 'Reps',
   'target.rounds': 'Rounds',
   'target.duration': 'Duration',
@@ -236,7 +239,7 @@ export const en = {
 
   // workouts and builder
   'workouts.title': 'Workouts',
-  'workouts.eyebrow': 'Templates and programs',
+  'workouts.subtitle': 'Build once, assign to anyone.',
   'workouts.tab.templates': 'Templates',
   'workouts.tab.programs': 'Programs',
   'workouts.new': 'New workout',
@@ -344,14 +347,25 @@ export const en = {
   'today.rest.body': 'Nothing is assigned today. Recover well.',
   'today.rest.bodyNext': 'Nothing is assigned today. Your next workout is below.',
   'today.upNext': 'Up next',
+  'today.workout': "Today's workout",
+  'today.pill.blocks': 'Blocks',
+  'today.pill.exercises': 'Exercises',
+  'today.pill.timed': 'Timed',
   'calendar.title': 'Calendar',
-  'calendar.eyebrow': 'Your workouts',
+  'calendar.subtitle': 'Past and upcoming workouts.',
   'calendar.prev': 'Previous month',
   'calendar.next': 'Next month',
   'calendar.day.empty': 'Nothing assigned on this day.',
   'progress.title': 'Progress',
-  'progress.eyebrow': 'Your results',
+  'progress.subtitle': 'Your last four weeks.',
   'progress.records': 'Personal records',
+  'progress.dots': '{done}/{total} workouts',
+  'progress.none.title': 'No workouts in the last four weeks',
+  'progress.none.body': 'Your coach has not assigned anything yet.',
+  'progress.stat.assigned': 'Assigned',
+  'progress.stat.workouts': 'Workouts done',
+  'progress.stat.sets': 'Sets logged',
+  'progress.stat.records': 'New records',
   'progress.history': 'Exercise history',
   'progress.empty.title': 'Not enough history yet',
   'progress.empty.body': 'Charts appear once you have logged an exercise in two or more workouts.',

@@ -36,7 +36,7 @@ function ReviewView({ assignment: a }: { assignment: Assignment }) {
   return (
     <Page
       title={a.workout.title}
-      eyebrow={`${client?.name ?? ''} · ${formatDateLong(a.date)}`}
+      subtitle={`${client?.name ?? ''} · ${formatDateLong(a.date)}`}
       back={`/coach/clients/${a.clientId}`}
       trailing={<StatusChip kind="assignment" value={a.status} />}
     >
@@ -64,7 +64,7 @@ function ReviewView({ assignment: a }: { assignment: Assignment }) {
         <div className="app-col side">
           {a.status === 'completed' && current && (
             <section className="app-section" aria-label={t('review.package')}>
-              <h2 className="t-heading">{t('review.package')}</h2>
+              <h2 className="t-eyebrow app-h2">{t('review.package')}</h2>
               <p className="t-body v-muted">{t('review.package.body', { name: current.name, left: current.sessionsRemaining })}</p>
               <Button
                 size="md"

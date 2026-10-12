@@ -176,6 +176,23 @@ describe('logging', () => {
   });
 });
 
+describe('progress summary', () => {
+  it('counts the last four weeks in the service', async () => {
+    const s = await svc.getProgressSummary(CLIENT_IDS.sara);
+    expect(s.from).toBe(addDays(TODAY, -27));
+    expect(s.assigned).toBe(8); // six done, one skipped, today's
+    expect(s.completed).toBe(6);
+    expect(s.completionPct).toBe(75);
+    expect(s.setsLogged).toBeGreaterThan(0);
+    expect(s.personalRecords).toBeGreaterThan(0);
+  });
+
+  it('is private to the client', async () => {
+    await svc.signIn(CLIENT_IDS.sara);
+    expect(await code(svc.getProgressSummary(CLIENT_IDS.karim))).toBe('forbidden');
+  });
+});
+
 describe('packages', () => {
   it('derives remaining sessions and expiry state', async () => {
     const sara = (await svc.listPackages(CLIENT_IDS.sara))[0]!;

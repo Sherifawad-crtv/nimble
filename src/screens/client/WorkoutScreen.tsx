@@ -40,7 +40,7 @@ function WorkoutView({ assignment: a }: { assignment: Assignment }) {
   const begin = () => void start.run().catch((e: unknown) => toast.show(errorMessage(e), 'error'));
 
   return (
-    <Page title={a.workout.title} eyebrow={formatDateLong(a.date)} back="/app/today" trailing={<StatusChip kind="assignment" value={a.status} />}>
+    <Page title={a.workout.title} subtitle={formatDateLong(a.date)} back="/app/today" trailing={<StatusChip kind="assignment" value={a.status} />}>
       <div className="app-stack">
         <DataBoundary query={exercises} skeleton="detail">
           {(exList) => (
@@ -51,10 +51,10 @@ function WorkoutView({ assignment: a }: { assignment: Assignment }) {
                 if (!l || a.status === 'not_started') {
                   return (
                     <>
-                      <WorkoutPlan assignment={a} exercises={exList} />
                       <Button fullWidth size="lg" loading={start.isPending} onClick={begin}>
                         {t('workout.start')}
                       </Button>
+                      <WorkoutPlan assignment={a} exercises={exList} />
                     </>
                   );
                 }

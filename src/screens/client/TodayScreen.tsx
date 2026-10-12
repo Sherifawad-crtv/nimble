@@ -3,20 +3,42 @@ import { useMe } from '../../app/auth';
 import { DataBoundary } from '../../components/DataBoundary';
 import { Page } from '../../components/Page';
 import { ReadinessHint } from '../../components/WearableBlocks';
-import { Button, EmptyState, ListRow, StatusChip } from '../../design';
+import { Button, EmptyState, ListRow, MetricPill, StatusChip } from '../../design';
 import { useData } from '../../hooks/data';
 import { keys } from '../../hooks/keys';
-import { formatDateLong, formatDateShort, t, tp } from '../../i18n';
+import { formatDateShort, t } from '../../i18n';
 import { addDays, todayISO } from '../../lib/date';
 import { readPref, wearablePromptKey } from '../../lib/prefs';
-import { blockTypeLabel } from '../../lib/workout';
+import { blockTypeLabel, isTimerBlock } from '../../lib/workout';
 import type { Assignment } from '../../types';
-
-const overview = (a: Assignment) =>
-  `${tp('workouts.blocks', a.workout.blocks.length)} · ${[...new Set(a.workout.blocks.map((b) => blockTypeLabel(b.settings.type)))].join(', ')}`;
 
 const ctaLabel = (a: Assignment) =>
   a.status === 'completed' ? t('today.cta.results') : a.status === 'in_progress' ? t('today.cta.continue') : t('today.cta.start');
+
+function TodayCard({ a, onOpen }: { a: Assignment; onOpen: () => void }) {
+  const exercises = a.workout.blocks.reduce((n, b) => n + b.items.length, 0);
+  const timed = a.workout.blocks.filter(isTimerBlock).length;
+  return (
+    <section className="app-today" aria-label={a.workout.title}>
+      <div className="app-today-head">
+        <div>
+          <p className="t-caption app-overline">{t('today.workout')}</p>
+          <h2 className="t-title app-today-title">{a.workout.title}</h2>
+        </div>
+        <StatusChip kind="assignment" value={a.status} />
+      </div>
+      <div className="app-pills">
+        <MetricPill tone="brand" icon="dumbbell" value={String(a.workout.blocks.length)} label={t('today.pill.blocks')} />
+        <MetricPill tone="blue" icon="run" value={String(exercises)} label={t('today.pill.exercises')} />
+        <MetricPill tone="pink" icon="clock" value={String(timed)} label={t('today.pill.timed')} />
+      </div>
+      <p className="t-label v-muted">{[...new Set(a.workout.blocks.map((b) => blockTypeLabel(b.settings.type)))].join(' · ')}</p>
+      <Button fullWidth size="lg" variant={a.status === 'completed' ? 'secondary' : 'primary'} onClick={onOpen}>
+        {ctaLabel(a)}
+      </Button>
+    </section>
+  );
+}
 
 export function TodayScreen() {
   const me = useMe();
@@ -30,9 +52,8 @@ export function TodayScreen() {
   if (wearable.data === null && readPref(wearablePromptKey(me.id)) === null) return <Navigate to="/app/wearable?first=1" replace />;
 
   return (
-    <Page title={t('today.title')} eyebrow={formatDateLong(today)}>
+    <Page title={t('today.title')} accent={formatDateShort(today)}>
       <div className="app-stack">
-        <ReadinessHint clientId={me.id} />
         <DataBoundary query={assignments} skeleton="card" rows={2}>
           {(list) => {
             const todays = list.filter((a) => a.date === today);
@@ -42,22 +63,12 @@ export function TodayScreen() {
                 {todays.length === 0 ? (
                   <EmptyState icon="moon" title={t('today.rest.title')} body={upcoming.length ? t('today.rest.bodyNext') : t('today.rest.body')} />
                 ) : (
-                  todays.map((a) => (
-                    <section key={a.id} className="app-card today-card" aria-label={a.workout.title}>
-                      <div className="app-card-head">
-                        <h2 className="t-heading">{a.workout.title}</h2>
-                        <StatusChip kind="assignment" value={a.status} />
-                      </div>
-                      <p className="t-label v-muted">{overview(a)}</p>
-                      <Button fullWidth size="lg" variant={a.status === 'completed' ? 'secondary' : 'primary'} onClick={() => navigate(`/app/workout/${a.id}`)}>
-                        {ctaLabel(a)}
-                      </Button>
-                    </section>
-                  ))
+                  todays.map((a) => <TodayCard key={a.id} a={a} onOpen={() => navigate(`/app/workout/${a.id}`)} />)
                 )}
+                <ReadinessHint clientId={me.id} />
                 {upcoming.length > 0 && (
                   <section className="app-section" aria-label={t('today.upNext')}>
-                    <h2 className="t-heading">{t('today.upNext')}</h2>
+                    <h2 className="t-eyebrow app-h2">{t('today.upNext')}</h2>
                     <ul className="app-list">
                       {upcoming.map((a) => (
                         <li key={a.id}>
@@ -75,4 +86,3 @@ export function TodayScreen() {
     </Page>
   );
 }
-

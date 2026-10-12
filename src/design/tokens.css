@@ -95,6 +95,11 @@
   --space-10: 40px;
   --tap-min: 44px;
   --sidebar-width: 264px;
+  --control-size-sm: 44px;
+  --control-size-md: 48px;
+  --button-md-height: 52px;
+  --tab-height: 64px;
+  --header-compact: 52px;
   --radius-card: 24px;
   --radius-pill: 999px;
   --radius-screen: 56px;
@@ -104,20 +109,20 @@
   --font-brand: "BBH Hegarty", "Archivo", sans-serif;
 }
 .t-display { font-family: var(--font-sans); font-size: 200px; line-height: 190px; font-weight: 900; font-style: italic; letter-spacing: -0.02em; }
-.t-headline { font-family: var(--font-sans); font-size: 40px; line-height: 40px; font-weight: 900; font-style: italic; letter-spacing: -0.01em; }
-.t-title { font-family: var(--font-sans); font-size: 36px; line-height: 40px; font-weight: 900; font-style: italic; }
-.t-metric { font-family: var(--font-sans); font-size: 26px; line-height: 30px; font-weight: 800; font-style: italic; }
-.t-stat { font-family: var(--font-sans); font-size: 26px; line-height: 30px; font-weight: 800; font-style: italic; }
-.t-eyebrow { font-family: var(--font-sans); font-size: 22px; line-height: 26px; font-weight: 800; font-style: italic; letter-spacing: 0.01em; }
+.t-headline { font-family: var(--font-sans); font-size: 40px; line-height: 38px; font-weight: 900; font-style: italic; letter-spacing: -0.01em; }
+.t-title { font-family: var(--font-sans); font-size: 32px; line-height: 34px; font-weight: 900; font-style: italic; }
+.t-metric { font-family: var(--font-sans); font-size: 22px; line-height: 26px; font-weight: 800; font-style: italic; }
+.t-stat { font-family: var(--font-sans); font-size: 24px; line-height: 28px; font-weight: 800; font-style: italic; }
+.t-eyebrow { font-family: var(--font-sans); font-size: 16px; line-height: 20px; font-weight: 800; font-style: italic; letter-spacing: 0.01em; }
 .t-label { font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 500; }
 .t-caption { font-family: var(--font-sans); font-size: 13px; line-height: 16px; font-weight: 500; }
-.t-button { font-family: var(--font-sans); font-size: 26px; line-height: 30px; font-weight: 900; font-style: italic; }
-.t-heading { font-family: var(--font-sans); font-size: 22px; line-height: 26px; font-weight: 800; font-style: italic; }
+.t-button { font-family: var(--font-sans); font-size: 18px; line-height: 22px; font-weight: 900; font-style: italic; }
+.t-heading { font-family: var(--font-sans); font-size: 20px; line-height: 24px; font-weight: 800; font-style: italic; }
 .t-body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 500; }
 .t-body-strong { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 700; }
 .t-input { font-family: var(--font-sans); font-size: 17px; line-height: 24px; font-weight: 600; }
 .t-chip { font-family: var(--font-sans); font-size: 13px; line-height: 16px; font-weight: 700; }
-.t-button-md { font-family: var(--font-sans); font-size: 18px; line-height: 22px; font-weight: 900; font-style: italic; }
+.t-button-md { font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 900; font-style: italic; }
 .t-timer { font-family: var(--font-sans); font-size: 96px; line-height: 96px; font-weight: 900; font-style: italic; letter-spacing: -0.02em; }
 .t-timer-xl { font-family: var(--font-sans); font-size: 160px; line-height: 150px; font-weight: 900; font-style: italic; letter-spacing: -0.02em; }
 .t-wordmark { font-family: var(--font-brand); font-size: 32px; line-height: 32px; font-weight: 400; letter-spacing: 0.02em; }

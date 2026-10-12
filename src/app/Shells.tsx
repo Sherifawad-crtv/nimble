@@ -1,10 +1,9 @@
 import { Suspense, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Banner, Sidebar, Skeleton, PillNav } from '../design';
+import { Banner, Icon, Sidebar, Skeleton } from '../design';
 import { useIsDesktop } from '../hooks/media';
 import { t } from '../i18n';
 import { useMe } from './auth';
-import { ShellActionProvider, useShellActionState } from './ShellAction';
 
 function useOnline(): boolean {
   const [online, setOnline] = useState(() => navigator.onLine);
@@ -39,12 +38,29 @@ function Content() {
   );
 }
 
-function FloatingNav({ items, active, onChange }: { items: { id: string; icon: string; label: string }[]; active: string; onChange: (id: string) => void }) {
-  const action = useShellActionState();
+interface NavItem {
+  id: string;
+  icon: string;
+  label: string;
+}
+
+/**
+ * Bottom navigation from the source screens: icons only, evenly spaced, the current tab sits in a
+ * raised pill. No bar background, just a fade so content scrolls away under it. Labels stay
+ * available to assistive tech.
+ */
+function TabNav({ items, active, onChange }: { items: NavItem[]; active: string; onChange: (id: string) => void }) {
   return (
-    <div className="app-nav">
-      <PillNav items={items} active={active} onChange={onChange} action={action ?? undefined} />
-    </div>
+    <nav className="app-tabbar" aria-label={t('nav.label')}>
+      <div className="v-tabs">
+        {items.map((it) => (
+          <button key={it.id} type="button" className="v-tab" aria-current={it.id === active ? 'page' : undefined} onClick={() => onChange(it.id)}>
+            <Icon name={it.icon} size={26} />
+            <span className="v-sr">{it.label}</span>
+          </button>
+        ))}
+      </div>
+    </nav>
   );
 }
 
@@ -66,8 +82,7 @@ export function CoachShell() {
   const go = (id: string) => navigate(`/coach/${id}`);
 
   return (
-    <ShellActionProvider>
-      <div className={desktop ? 'app-shell desktop' : 'app-shell'}>
+    <div className={desktop ? 'app-shell desktop' : 'app-shell'}>
         {desktop && (
           <div className="app-side">
             <Sidebar workspace={t('workspace.name', { name: me.name.split(' ')[0] ?? me.name })} items={items} active={active} onChange={go} user={{ name: me.name, role: t('role.coach') }} />
@@ -77,9 +92,8 @@ export function CoachShell() {
           <OfflineBanner />
           <Content />
         </main>
-        {!desktop && <FloatingNav items={items} active={active} onChange={go} />}
-      </div>
-    </ShellActionProvider>
+      {!desktop && <TabNav items={items} active={active} onChange={go} />}
+    </div>
   );
 }
 
@@ -95,14 +109,12 @@ export function ClientShell() {
   const seg = segment(pathname, 2);
   const active = seg === 'workout' || seg === 'wearable' ? (seg === 'wearable' ? 'settings' : 'today') : seg;
   return (
-    <ShellActionProvider>
-      <div className="app-shell client">
+    <div className="app-shell client">
         <main className="app-main" id="main">
           <OfflineBanner />
           <Content />
         </main>
-        <FloatingNav items={items} active={active} onChange={(id) => navigate(`/app/${id}`)} />
-      </div>
-    </ShellActionProvider>
+      <TabNav items={items} active={active} onChange={(id) => navigate(`/app/${id}`)} />
+    </div>
   );
 }

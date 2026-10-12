@@ -41,7 +41,7 @@ function ClientView({ client }: { client: Profile }) {
   return (
     <Page
       title={client.name}
-      eyebrow={client.email}
+      subtitle={client.email}
       back="/coach/clients"
       trailing={<Button size="sm" icon="plus" onClick={() => setAssignOpen(true)}>{t('client.assign')}</Button>}
     >
@@ -79,7 +79,7 @@ function CalendarSection({ client }: { client: Profile }) {
 
   return (
     <section className="app-section" aria-label={t('client.calendar')}>
-      <h2 className="t-heading">{t('client.calendar')}</h2>
+      <h2 className="t-eyebrow app-h2">{t('client.calendar')}</h2>
       <CalendarView
         month={month}
         selected={selected}
@@ -185,7 +185,7 @@ function RecentLogs({ client }: { client: Profile }) {
   const recent = useData(keys.assignments(client.id, from, today), (s) => s.listAssignments({ clientId: client.id, from, to: today }));
   return (
     <section className="app-section" aria-label={t('client.logs')}>
-      <h2 className="t-heading">{t('client.logs')}</h2>
+      <h2 className="t-eyebrow app-h2">{t('client.logs')}</h2>
       <DataBoundary
         query={recent}
         rows={3}
@@ -220,7 +220,7 @@ function RecordsSection({ client }: { client: Profile }) {
   const records = useData(keys.records(client.id), (s) => s.listPersonalRecords(client.id));
   return (
     <section className="app-section" aria-label={t('client.records')}>
-      <h2 className="t-heading">{t('client.records')}</h2>
+      <h2 className="t-eyebrow app-h2">{t('client.records')}</h2>
       <DataBoundary query={records} rows={2} empty={{ icon: 'trophy', title: t('records.empty.title'), body: t('records.empty.coach') }}>
         {(list) => (
           <ul className="app-list tight">
@@ -246,7 +246,7 @@ function PackageSection({ client }: { client: Profile }) {
   return (
     <section className="app-section" aria-label={t('client.package')}>
       <div className="app-section-head">
-        <h2 className="t-heading">{t('client.package')}</h2>
+        <h2 className="t-eyebrow app-h2">{t('client.package')}</h2>
         <Button size="sm" variant="secondary" icon="plus" onClick={() => setEditing('new')}>
           {t('package.new')}
         </Button>

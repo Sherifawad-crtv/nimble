@@ -17,6 +17,7 @@ export const keys = {
   progress: (clientId: string) => ['progress', clientId] as const,
   recordsAll: ['records'] as const,
   progressAll: ['progress'] as const,
+  summary: (clientId: string) => ['progress', 'summary', clientId] as const,
   comments: (assignmentId: string) => ['comments', assignmentId] as const,
   packages: (clientId: string) => ['packages', clientId] as const,
   wearable: (clientId: string) => ['wearable', clientId] as const,

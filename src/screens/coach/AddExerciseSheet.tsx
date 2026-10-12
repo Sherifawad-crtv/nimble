@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { DataBoundary } from '../../components/DataBoundary';
 import { Sheet } from '../../components/Sheet';
-import { Button, ExerciseRow, SearchField } from '../../design';
+import { Button, Icon, SearchField } from '../../design';
+import { Thumb } from '../../components/VideoEmbed';
+import { measuredLabel } from '../../lib/workout';
 import { useData } from '../../hooks/data';
 import { keys } from '../../hooks/keys';
 import { t, tp } from '../../i18n';
@@ -70,7 +72,16 @@ function PickList({ onCreate, onAdd }: { onCreate: () => void; onAdd: (list: Exe
               return (
                 <li key={e.id}>
                   <button type="button" className="app-pick" aria-pressed={on} onClick={() => toggle(e)}>
-                    <ExerciseRow variant="add" name={e.name} tags={e.tags} measuredAs={e.measuredAs} link={e.linkStatus} selected={on} />
+                    <span className="app-pick-row">
+                      <Thumb url={e.thumbnailUrl} status={e.linkStatus} />
+                      <span className="app-pick-b">
+                        <span className="t-body-strong">{e.name}</span>
+                        <span className="t-label v-muted">{[...e.tags, measuredLabel(e.measuredAs)].join(' · ')}</span>
+                      </span>
+                      <span className={on ? 'v-pick on' : 'v-pick'} aria-hidden="true">
+                        {on && <Icon name="check" size={18} />}
+                      </span>
+                    </span>
                   </button>
                 </li>
               );

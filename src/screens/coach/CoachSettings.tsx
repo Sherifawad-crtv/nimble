@@ -7,7 +7,7 @@ export function CoachSettings() {
   const me = useMe();
   const { signOut } = useSessionActions();
   return (
-    <Page title={t('settings.title')} eyebrow={t('settings.eyebrow')}>
+    <Page title={t('settings.title')} subtitle={t('settings.subtitle')}>
       <div className="app-stack narrow">
         <section className="app-card profile-card">
           <Avatar name={me.name} size="lg" />

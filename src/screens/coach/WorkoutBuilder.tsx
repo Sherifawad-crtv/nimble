@@ -4,7 +4,7 @@ import { useToast } from '../../app/Toast';
 import { DataBoundary } from '../../components/DataBoundary';
 import { Page } from '../../components/Page';
 import { ConfirmDialog, Sheet } from '../../components/Sheet';
-import { Button, EmptyState, ExerciseRow, IconButton, ListRow, TextField } from '../../design';
+import { Button, EmptyState, IconButton, ListRow, TextField } from '../../design';
 import { errorMessage, useAction, useData } from '../../hooks/data';
 import { keys } from '../../hooks/keys';
 import { t } from '../../i18n';
@@ -147,10 +147,11 @@ function BuilderForm({ initial }: { initial?: Workout }) {
           return (
             <section key={block.id} className="app-card builder-block" aria-label={block.title}>
               <div className="app-block-head">
-                <TextField
-                  label={t('builder.block.title')}
+                <input
+                  className="t-heading app-block-title"
                   value={block.title}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => patchBlock(block.id, { title: e.target.value })}
+                  aria-label={t('builder.block.title')}
+                  onChange={(e) => patchBlock(block.id, { title: e.target.value })}
                 />
                 <div className="app-row-actions">
                   <IconButton icon="arrow-up" label={t('builder.block.up', { title: block.title })} size={20} disabled={bi === 0} onClick={() => moveBlock(bi, -1)} />
@@ -172,22 +173,20 @@ function BuilderForm({ initial }: { initial?: Workout }) {
                       const measured = measuredOf(it.exerciseId);
                       return (
                         <li key={it.id}>
-                          <ExerciseRow
-                            variant="block"
-                            drag={false}
-                            name={it.exerciseName}
-                            target={targetText(it.target, measured, timer) || t('builder.target.none')}
-                            log={
-                              <div className="app-row-actions">
-                                {hasTargetFields(block.settings.type) && (
-                                  <IconButton icon="edit" label={t('builder.item.edit', { name: it.exerciseName })} size={20} onClick={() => setEditing({ blockId: block.id, itemId: it.id })} />
-                                )}
-                                <IconButton icon="arrow-up" label={t('builder.item.up', { name: it.exerciseName })} size={20} disabled={i === 0} onClick={() => moveItem(block, i, -1)} />
-                                <IconButton icon="arrow-down" label={t('builder.item.down', { name: it.exerciseName })} size={20} disabled={i === block.items.length - 1} onClick={() => moveItem(block, i, 1)} />
-                                <IconButton icon="close" label={t('builder.item.remove', { name: it.exerciseName })} size={20} onClick={() => patchBlock(block.id, { items: block.items.filter((x) => x.id !== it.id) })} />
-                              </div>
-                            }
-                          />
+                          <div className="app-item">
+                            <div className="app-item-b">
+                              <span className="t-body-strong">{it.exerciseName}</span>
+                              <span className="t-label v-muted">{targetText(it.target, measured, timer) || t('builder.target.none')}</span>
+                            </div>
+                            <div className="app-row-actions">
+                              {hasTargetFields(block.settings.type) && (
+                                <IconButton icon="edit" label={t('builder.item.edit', { name: it.exerciseName })} size={20} onClick={() => setEditing({ blockId: block.id, itemId: it.id })} />
+                              )}
+                              <IconButton icon="arrow-up" label={t('builder.item.up', { name: it.exerciseName })} size={20} disabled={i === 0} onClick={() => moveItem(block, i, -1)} />
+                              <IconButton icon="arrow-down" label={t('builder.item.down', { name: it.exerciseName })} size={20} disabled={i === block.items.length - 1} onClick={() => moveItem(block, i, 1)} />
+                              <IconButton icon="close" label={t('builder.item.remove', { name: it.exerciseName })} size={20} onClick={() => patchBlock(block.id, { items: block.items.filter((x) => x.id !== it.id) })} />
+                            </div>
+                          </div>
                         </li>
                       );
                     })}

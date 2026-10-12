@@ -44,7 +44,7 @@ export function RecoveryBlock({ clientId }: { clientId: Id }) {
   return (
     <section className="app-section" aria-label={t('wearable.recovery.title')}>
       <div className="app-section-head">
-        <h2 className="t-heading">{t('wearable.recovery.title')}</h2>
+        <h2 className="t-eyebrow app-h2">{t('wearable.recovery.title')}</h2>
         <StatusChip kind="wearable" value={c.status} label={`${brand} · ${t(`wearable.status.${c.status}`)}`} />
       </div>
       {c.status === 'error' && <p className="t-body v-muted">{t('wearable.error.coach', { brand })}</p>}
@@ -104,7 +104,7 @@ export function WorkoutWearable({ log }: { log: WorkoutLog | null | undefined })
   if (!tiles.length) return null;
   return (
     <section className="app-section" aria-label={t('wearable.workout.title')}>
-      <h2 className="t-heading">{t('wearable.workout.title')}</h2>
+      <h2 className="t-eyebrow app-h2">{t('wearable.workout.title')}</h2>
       <div className="app-tiles">{tiles}</div>
     </section>
   );

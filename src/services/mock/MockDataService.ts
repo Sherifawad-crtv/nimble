@@ -14,6 +14,7 @@ import type {
   Package,
   PackageInput,
   PersonalRecord,
+  ProgressSummary,
   Profile,
   Program,
   ProgramInput,
@@ -46,6 +47,7 @@ export interface MockOptions {
 const DB_KEY = 'origin.mock.db.v1';
 const SESSION_KEY = 'origin.mock.session.v1';
 const EXPIRING_WITHIN_DAYS = 14;
+const SUMMARY_DAYS = 28;
 
 function browserStorage(): KeyValueStore {
   const memory = new Map<string, string>();
@@ -518,6 +520,28 @@ export class MockDataService implements DataService, SessionService {
     this.clientAccess(clientId);
     const { assignments, logs } = this.clientHistory(clientId);
     return exerciseProgress(assignments, logs, this.measuredOf);
+  }
+
+  async getProgressSummary(clientId: Id): Promise<ProgressSummary> {
+    await this.wait();
+    this.clientAccess(clientId);
+    const to = this.today();
+    const from = addDays(to, -(SUMMARY_DAYS - 1));
+    const { assignments, logs } = this.clientHistory(clientId);
+    const inWindow = assignments.filter((a) => a.date >= from && a.date <= to);
+    const ids = new Set(inWindow.map((a) => a.id));
+    const completed = inWindow.filter((a) => a.status === 'completed').length;
+    const setsLogged = logs.filter((l) => ids.has(l.assignmentId)).reduce((n, l) => n + l.itemResults.reduce((m, r) => m + r.sets.length, 0), 0);
+    const records = personalRecords(assignments, logs, this.measuredOf).filter((r) => r.achievedOn >= from && r.achievedOn <= to).length;
+    return {
+      from,
+      to,
+      assigned: inWindow.length,
+      completed,
+      completionPct: inWindow.length ? Math.round((completed / inWindow.length) * 100) : 0,
+      setsLogged,
+      personalRecords: records,
+    };
   }
 
   // ---------- comments ----------

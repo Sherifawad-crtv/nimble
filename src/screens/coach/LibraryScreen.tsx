@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useShellAction } from '../../app/ShellAction';
 import { DataBoundary } from '../../components/DataBoundary';
 import { Page } from '../../components/Page';
 import { Sheet } from '../../components/Sheet';
 import { Thumb } from '../../components/VideoEmbed';
-import { Banner, Button, Chip, DataTable, ListRow, SearchField, StatusChip } from '../../design';
+import { Banner, Button, Chip, DataTable, IconButton, ListRow, SearchField, StatusChip } from '../../design';
 import { useData } from '../../hooks/data';
 import { useIsDesktop } from '../../hooks/media';
 import { keys } from '../../hooks/keys';
@@ -39,13 +38,11 @@ export function LibraryScreen() {
   const equipmentOptions = useMemo(() => [...new Set((everything.data ?? []).flatMap((e) => e.equipment))].sort(), [everything.data]);
   const broken = (everything.data ?? []).filter((e) => e.linkStatus === 'unavailable').length;
 
-  useShellAction(desktop ? null : { icon: 'plus', label: t('library.add'), onClick: () => setEditing('new') });
-
   return (
     <Page
       title={t('library.title')}
-      eyebrow={everything.data ? tp('library.count', everything.data.length) : t('library.eyebrow')}
-      trailing={desktop ? <Button icon="plus" size="md" onClick={() => setEditing('new')}>{t('library.add')}</Button> : undefined}
+      subtitle={everything.data ? tp('library.count', everything.data.length) : t('library.subtitle')}
+      trailing={desktop ? <Button icon="plus" size="md" onClick={() => setEditing('new')}>{t('library.add')}</Button> : <IconButton icon="plus" label={t('library.add')} onClick={() => setEditing('new')} />}
     >
       <div className="app-stack">
         {broken > 0 && <Banner kind="video" title={tp('library.broken.title', broken)} message={t('library.broken.body')} />}

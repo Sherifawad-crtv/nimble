@@ -14,7 +14,7 @@ export function Comments({ assignmentId, viewer }: { assignmentId: Id; viewer: R
 
   return (
     <section className="app-section" aria-label={t('comments.title')}>
-      <h2 className="t-heading">{t('comments.title')}</h2>
+      <h2 className="t-eyebrow app-h2">{t('comments.title')}</h2>
       {comments.isPending ? (
         <Skeleton variant="list" rows={2} />
       ) : (

@@ -20,7 +20,7 @@ export function ClientsScreen() {
   const open = (c: Profile) => navigate(`/coach/clients/${c.id}`);
 
   return (
-    <Page title={t('clients.title')} eyebrow={t('clients.eyebrow')}>
+    <Page title={t('clients.title')} subtitle={t('clients.subtitle')}>
       <DataBoundary query={clients} empty={{ icon: 'users', title: t('clients.empty.title'), body: t('clients.empty.body') }}>
         {(list) =>
           desktop ? (

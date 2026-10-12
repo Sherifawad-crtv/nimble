@@ -20,7 +20,7 @@ export function CalendarScreen() {
   const day = (assignments.data ?? []).filter((a) => a.date === selected);
 
   return (
-    <Page title={t('calendar.title')} eyebrow={t('calendar.eyebrow')}>
+    <Page title={t('calendar.title')} subtitle={t('calendar.subtitle')}>
       <div className="app-stack">
         <CalendarView
           month={month}
@@ -32,7 +32,7 @@ export function CalendarScreen() {
             setSelected(m);
           }}
         />
-        <h2 className="t-heading">{formatDateLong(selected)}</h2>
+        <h2 className="t-eyebrow app-h2">{formatDateLong(selected)}</h2>
         <DataBoundary query={assignments} rows={2} isEmpty={() => day.length === 0} empty={<p className="t-body v-muted">{t('calendar.day.empty')}</p>}>
           {() => (
             <ul className="app-list">

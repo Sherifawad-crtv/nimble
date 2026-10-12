@@ -167,6 +167,17 @@ export interface ExerciseProgress {
   points: { date: ISODate; value: number }[];
 }
 
+/** Consistency over a recent window, computed by the service. */
+export interface ProgressSummary {
+  from: ISODate;
+  to: ISODate;
+  assigned: number;
+  completed: number;
+  completionPct: number;
+  setsLogged: number;
+  personalRecords: number;
+}
+
 // ---------- packages (tracking only) ----------
 export type PackageState = 'active' | 'expiring' | 'expired';
 

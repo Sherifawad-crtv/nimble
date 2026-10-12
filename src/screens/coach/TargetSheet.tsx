@@ -37,7 +37,7 @@ function TargetForm({ blockType, measuredAs, target, onSave }: Omit<Props, 'open
         )}
         {measuredAs === 'time' && <NumberField label={t('target.duration')} unit="s" step={5} min={5} max={3600} value={draft.durationSec ?? 30} onChange={(n) => set('durationSec', n)} />}
         {measuredAs === 'distance' && <NumberField label={t('target.distance')} unit="m" step={50} min={10} max={50000} value={draft.distanceM ?? 200} onChange={(n) => set('distanceM', n)} />}
-        {standard && <NumberField label={t('target.rest')} unit="s" step={5} min={0} max={900} value={draft.restSec ?? 60} onChange={(n) => set('restSec', n)} />}
+        {standard && <NumberField label={t('target.restLabel')} unit="s" step={5} min={0} max={900} value={draft.restSec ?? 60} onChange={(n) => set('restSec', n)} />}
       </div>
       {measuredAs === 'weight_reps' && (
         <TextField label={t('target.load')} placeholder={t('target.load.placeholder')} value={draft.loadNote ?? ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('loadNote', e.target.value)} />

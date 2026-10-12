@@ -53,7 +53,7 @@ export function WearableFlow() {
 
         {step === 'ask' && (
           <div className="app-stack">
-            <h2 className="t-heading">{t('wearable.ask.title')}</h2>
+            <h2 className="t-title app-title">{t('wearable.ask.title')}</h2>
             <p className="t-body v-muted">{t('wearable.ask.body')}</p>
             <Button fullWidth size="lg" onClick={() => setStep('brand')}>
               {t('wearable.ask.yes')}
@@ -112,7 +112,7 @@ export function WearableFlow() {
         {step === 'done' && connection && (
           <div className="app-stack">
             <EmptyState icon="check" title={t('wearable.done.title', { brand })} body={t('wearable.done.body')} />
-            <h2 className="t-heading">{t('wearable.done.provides')}</h2>
+            <h2 className="t-eyebrow app-h2">{t('wearable.done.provides')}</h2>
             <CapabilityList items={connection.capabilities.map(capabilityLabel)} />
             <Button fullWidth size="lg" onClick={finish}>
               {t('common.done')}

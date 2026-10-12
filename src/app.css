@@ -113,7 +113,7 @@ img {
 
 .app-main {
   min-inline-size: 0;
-  padding-block-end: calc(120px + env(safe-area-inset-bottom));
+  padding-block-end: calc(max(env(safe-area-inset-bottom), var(--space-3)) + var(--tab-height) + var(--space-8));
 }
 
 .app-shell.desktop .app-main {
@@ -126,31 +126,40 @@ img {
   margin-inline: auto;
 }
 
-.app-nav {
+.app-tabbar {
   position: fixed;
   inset-inline: 0;
   inset-block-end: 0;
   z-index: 20;
-  display: flex;
-  justify-content: center;
-  padding: 0 var(--space-4) calc(env(safe-area-inset-bottom) + var(--space-3));
+  padding: var(--space-8) var(--space-4) max(env(safe-area-inset-bottom), var(--space-3));
+  background: linear-gradient(to top, var(--bg) 58%, transparent);
   pointer-events: none;
 }
 
-.app-nav > * {
+.app-tabbar .v-tabs {
+  max-inline-size: 480px;
+  margin-inline: auto;
+  padding: 0;
+  gap: var(--space-2);
   pointer-events: auto;
 }
 
-.app-nav .v-pn {
-  min-inline-size: 56px;
-  padding-inline: 4px;
+.app-tabbar .v-tab {
+  inline-size: 100%;
+  max-inline-size: 115px;
+  block-size: var(--tab-height);
+  color: var(--muted);
+  transition: background-color 0.16s ease-out, color 0.16s ease-out;
 }
 
-@media (min-width: 400px) {
-  .app-nav .v-pn {
-    min-inline-size: 68px;
-    padding-inline: 12px;
-  }
+.app-tabbar .v-tab[aria-current='page'] {
+  background: var(--surface-raised);
+  color: var(--ink);
+}
+
+.app-tabbar .v-tab:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .app-banner {
@@ -160,7 +169,7 @@ img {
 .app-toast {
   position: fixed;
   inset-inline: var(--space-4);
-  inset-block-end: calc(env(safe-area-inset-bottom) + 108px);
+  inset-block-end: calc(max(env(safe-area-inset-bottom), var(--space-3)) + var(--tab-height) + var(--space-4));
   z-index: 80;
   display: flex;
   justify-content: center;
@@ -182,54 +191,159 @@ body:has(.app-shell.desktop) .app-toast {
   padding-block-start: env(safe-area-inset-top);
 }
 
-.app-page > .v-top {
-  position: sticky;
-  inset-block-start: 0;
-  z-index: 10;
-  background: var(--bg);
-}
-
-.app-page-body {
-  padding: var(--space-2) var(--space-4) var(--space-6);
-}
-
-.app-shell.desktop .app-page {
-  max-inline-size: 1200px;
-  padding: var(--space-8) var(--space-8) 0;
-}
-
-.app-shell.desktop .app-page-body {
-  padding-inline: 0;
-}
-
-.app-page-head {
+.app-head {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--space-4);
-  padding-block-end: var(--space-6);
+  padding: var(--space-4) var(--space-4) var(--space-6);
 }
 
-.app-page-title {
+.app-head-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.app-head-text {
   flex: 1;
   min-inline-size: 0;
 }
 
-.app-page-trailing {
+.app-title {
+  margin: 0;
+  color: var(--text-brand);
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.app-accent {
+  display: block;
+  color: var(--text-pink);
+}
+
+.app-subtitle {
+  margin-block-start: var(--space-2);
+  color: var(--muted);
+}
+
+.app-head-trailing {
   display: flex;
+  flex: none;
   align-items: center;
   gap: var(--space-2);
 }
 
-.v-top-trail {
-  display: inline-flex;
+.app-head-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-block-size: var(--control-size-md);
+}
+
+.app-head-bar > .v-iconbtn {
+  inline-size: var(--control-size-md);
+  block-size: var(--control-size-md);
+}
+
+.app-head-sentinel {
+  block-size: 1px;
+}
+
+.app-compact {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 15;
+  block-size: 0;
+}
+
+.app-compact-in {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-block-size: calc(var(--header-compact) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) var(--space-4) 0;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow: 0 1px 0 var(--line);
+  opacity: 0;
+  transform: translateY(-6px);
+  visibility: hidden;
+  transition: opacity 0.18s ease-out, transform 0.18s ease-out, visibility 0.18s;
+}
+
+.app-compact.on .app-compact-in {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+}
+
+.app-compact-title {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  color: var(--ink);
+  font: italic 800 17px/22px var(--font-sans);
+  text-transform: uppercase;
+}
+
+.app-compact .v-iconbtn {
+  inline-size: var(--control-size-sm);
+  block-size: var(--control-size-sm);
+}
+
+.app-compact-spacer {
+  inline-size: var(--control-size-sm);
+  flex: none;
+}
+
+.app-compact-trailing {
+  display: flex;
+  flex: none;
   align-items: center;
   gap: var(--space-2);
+}
+
+.app-compact-trailing .v-btn-sm {
+  min-block-size: 36px;
+}
+
+.app-page-body {
+  padding: 0 var(--space-4) var(--space-6);
+}
+
+.app-shell.desktop .app-page {
+  max-inline-size: 1200px;
+  padding: var(--space-6) var(--space-8) 0;
+}
+
+.app-shell.desktop .app-head,
+.app-shell.desktop .app-page-body,
+.app-shell.desktop .app-compact-in {
+  padding-inline: 0;
+}
+
+.app-h2 {
+  color: var(--ink);
+  text-transform: uppercase;
 }
 
 .app-stack {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+.app-stack > .app-section + .app-section,
+.app-stack > * + .app-section {
+  margin-block-start: var(--space-4);
 }
 
 .app-stack.narrow {
@@ -425,7 +539,7 @@ body:has(.app-shell.desktop) .app-toast {
 
 .app-target-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: var(--space-4);
 }
 
@@ -942,4 +1056,216 @@ body:has(.app-shell.desktop) .app-toast {
     font-size: clamp(40px, 16dvh, 88px);
     line-height: 1;
   }
+}
+
+/* ---------- design-system sizing adjustments ----------
+   The bundle sizes every control at 56 px and every button label at its display size.
+   These keep inline controls at the 44 px HIG target and buttons on the measured scale. */
+
+.v-btn-md {
+  min-height: var(--button-md-height);
+  padding-inline: 22px;
+}
+
+.v-btn-sm {
+  min-height: var(--tap-min);
+  padding-inline: 16px;
+  gap: 6px;
+}
+
+.v-btn-sm .v-icon {
+  inline-size: 18px;
+  block-size: 18px;
+}
+
+.v-btn-tertiary.v-btn-sm,
+.v-btn-tertiary.v-btn-md {
+  padding-inline: 10px;
+}
+
+.app-row-actions .v-iconbtn,
+.v-sheet-h .v-iconbtn,
+.app-cal-nav .v-iconbtn,
+.app-date-row .v-iconbtn,
+.v-step-row .v-iconbtn,
+.v-set .v-iconbtn,
+.app-card-foot .v-iconbtn {
+  inline-size: var(--control-size-sm);
+  block-size: var(--control-size-sm);
+}
+
+.app-row-actions .v-iconbtn,
+.v-set .v-iconbtn,
+.app-card-foot .v-iconbtn {
+  background: transparent;
+  color: var(--muted);
+}
+
+.v-sheet-h {
+  padding-block: var(--space-1) var(--space-2);
+}
+
+.v-sheet-h h2 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+.v-row {
+  min-height: 60px;
+}
+
+.v-schip {
+  min-height: 28px;
+}
+
+.v-mt,
+.v-card {
+  border-radius: var(--radius-card);
+}
+
+.v-empty {
+  padding: var(--space-6) var(--space-4);
+}
+
+.v-empty-ic {
+  inline-size: 64px;
+  block-size: 64px;
+}
+
+.v-banner {
+  border-radius: var(--radius-card);
+}
+
+/* ---------- source-screen compositions ---------- */
+
+.app-overline {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.app-today {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.app-today-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.app-today-title {
+  margin-block-start: var(--space-1);
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.app-pills {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.app-pills .v-pill-face .v-icon {
+  inline-size: 32px;
+  block-size: 32px;
+}
+
+.app-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.app-stat-grid .v-card {
+  min-height: 136px;
+}
+
+.app-dots {
+  gap: 4px;
+}
+
+/* ---------- builder ---------- */
+
+.app-block-title {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: var(--tap-min);
+  padding: 0 var(--space-2);
+  margin-inline-start: calc(var(--space-2) * -1);
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+}
+
+.app-block-title:hover {
+  background: var(--surface-control);
+}
+
+.app-block-title:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 0;
+  background: var(--surface-control);
+}
+
+.app-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-3) var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--surface-control);
+}
+
+.app-item-b {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-inline: var(--space-1);
+}
+
+.app-item .app-row-actions {
+  margin-inline-start: calc(var(--space-2) * -1);
+}
+
+.app-pick-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-block-size: 64px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+.app-pick[aria-pressed='true'] .app-pick-row {
+  background: var(--surface-control);
+}
+
+.app-pick-b {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.v-numfield .v-num-wrap {
+  gap: var(--space-2);
+}
+
+.v-numfield:not(.large) .v-iconbtn {
+  inline-size: var(--control-size-sm);
+  block-size: var(--control-size-sm);
+}
+
+.v-numfield .v-num-val {
+  min-inline-size: 3ch;
+}
+
+.app-seg-scroll .v-seg-o {
+  white-space: nowrap;
+  padding-inline: 14px;
 }
