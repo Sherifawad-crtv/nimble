@@ -164,7 +164,7 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  padding-block-end: var(--space-10);
+  padding-block-end: calc(var(--space-10) + var(--space-6));
 }
 
 .app-shell.desktop .app-main {
@@ -183,33 +183,6 @@ img {
   z-index: 20;
   padding: var(--space-2) var(--space-4) max(env(safe-area-inset-bottom), var(--space-2));
   background: var(--bg);
-}
-
-/* Content fades out above the bar. An eased (not linear) ramp avoids a visible band where the
-   fade starts, so the transparent end melts into the screen. */
-.app-tabbar::before {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: 100%;
-  block-size: var(--space-10);
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--bg) 100%, transparent) 0%,
-    color-mix(in srgb, var(--bg) 73.8%, transparent) 19%,
-    color-mix(in srgb, var(--bg) 54.1%, transparent) 34%,
-    color-mix(in srgb, var(--bg) 38.2%, transparent) 47%,
-    color-mix(in srgb, var(--bg) 27.8%, transparent) 56.5%,
-    color-mix(in srgb, var(--bg) 19.4%, transparent) 65%,
-    color-mix(in srgb, var(--bg) 12.6%, transparent) 73%,
-    color-mix(in srgb, var(--bg) 7.5%, transparent) 80.2%,
-    color-mix(in srgb, var(--bg) 4.2%, transparent) 86.1%,
-    color-mix(in srgb, var(--bg) 2.1%, transparent) 91%,
-    color-mix(in srgb, var(--bg) 0.8%, transparent) 95.2%,
-    color-mix(in srgb, var(--bg) 0.2%, transparent) 98.2%,
-    color-mix(in srgb, var(--bg) 0%, transparent) 100%
-  );
-  pointer-events: none;
 }
 
 .app-tabbar .v-tabs {
@@ -1357,4 +1330,14 @@ body:has(.app-shell.desktop) .app-toast {
     block-size: 0;
     background: transparent;
   }
+}
+
+/* ---------- fade above the tab bar ----------
+   The screen's own content fades out (a mask, not an overlay colour), so the fade is exact on any
+   background, in both themes, with no banding. The ramp is eased, not linear, so there is no
+   visible line where it starts or ends. */
+.app-shell:not(.desktop) .app-main {
+  --fade: 72px;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) calc(100% - var(--fade) + var(--fade) * 0.000), rgba(0, 0, 0, 0.738) calc(100% - var(--fade) + var(--fade) * 0.190), rgba(0, 0, 0, 0.541) calc(100% - var(--fade) + var(--fade) * 0.340), rgba(0, 0, 0, 0.382) calc(100% - var(--fade) + var(--fade) * 0.470), rgba(0, 0, 0, 0.278) calc(100% - var(--fade) + var(--fade) * 0.565), rgba(0, 0, 0, 0.194) calc(100% - var(--fade) + var(--fade) * 0.650), rgba(0, 0, 0, 0.126) calc(100% - var(--fade) + var(--fade) * 0.730), rgba(0, 0, 0, 0.075) calc(100% - var(--fade) + var(--fade) * 0.802), rgba(0, 0, 0, 0.042) calc(100% - var(--fade) + var(--fade) * 0.861), rgba(0, 0, 0, 0.021) calc(100% - var(--fade) + var(--fade) * 0.910), rgba(0, 0, 0, 0.008) calc(100% - var(--fade) + var(--fade) * 0.952), rgba(0, 0, 0, 0.002) calc(100% - var(--fade) + var(--fade) * 0.982), rgba(0, 0, 0, 0) calc(100% - var(--fade) + var(--fade) * 1.000));
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) calc(100% - var(--fade) + var(--fade) * 0.000), rgba(0, 0, 0, 0.738) calc(100% - var(--fade) + var(--fade) * 0.190), rgba(0, 0, 0, 0.541) calc(100% - var(--fade) + var(--fade) * 0.340), rgba(0, 0, 0, 0.382) calc(100% - var(--fade) + var(--fade) * 0.470), rgba(0, 0, 0, 0.278) calc(100% - var(--fade) + var(--fade) * 0.565), rgba(0, 0, 0, 0.194) calc(100% - var(--fade) + var(--fade) * 0.650), rgba(0, 0, 0, 0.126) calc(100% - var(--fade) + var(--fade) * 0.730), rgba(0, 0, 0, 0.075) calc(100% - var(--fade) + var(--fade) * 0.802), rgba(0, 0, 0, 0.042) calc(100% - var(--fade) + var(--fade) * 0.861), rgba(0, 0, 0, 0.021) calc(100% - var(--fade) + var(--fade) * 0.910), rgba(0, 0, 0, 0.008) calc(100% - var(--fade) + var(--fade) * 0.952), rgba(0, 0, 0, 0.002) calc(100% - var(--fade) + var(--fade) * 0.982), rgba(0, 0, 0, 0) calc(100% - var(--fade) + var(--fade) * 1.000));
 }
