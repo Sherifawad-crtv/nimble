@@ -1,52 +1,14 @@
-// App-shell service worker: pre-caches the shell so Origin opens offline, and
-// serves built assets from cache first. Data always comes from the app, never from here.
-const VERSION = 'origin-shell-v2';
-const SHELL = ['/', '/manifest.webmanifest', '/apple-touch-icon.png', '/icon-192.png', '/icon-512.png'];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(VERSION).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));
-});
+// Retired service worker. Earlier builds installed an app-shell worker; this version removes it
+// from any device that still has it: it clears every cache, unregisters itself and reloads open
+// windows so they load straight from the network.
+self.addEventListener('install', () => self.skipWaiting());
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((names) => Promise.all(names.filter((n) => n !== VERSION).map((n) => caches.delete(n))))
-      .then(() => self.clients.claim()),
+    (async () => {
+      for (const name of await caches.keys()) await caches.delete(name);
+      await self.registration.unregister();
+      for (const client of await self.clients.matchAll({ type: 'window' })) client.navigate(client.url);
+    })(),
   );
-});
-
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
-
-  // Navigations: network first so deploys show up, cached shell when offline.
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          void caches.open(VERSION).then((cache) => cache.put('/', copy));
-          return response;
-        })
-        .catch(() => caches.match('/').then((r) => r ?? Response.error())),
-    );
-    return;
-  }
-
-  // Hashed build assets and brand images: cache first.
-  if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/brand/') || /\.(png|svg|woff2?)$/.test(url.pathname)) {
-    event.respondWith(
-      caches.match(request).then(
-        (hit) =>
-          hit ??
-          fetch(request).then((response) => {
-            const copy = response.clone();
-            void caches.open(VERSION).then((cache) => cache.put(request, copy));
-            return response;
-          }),
-      ),
-    );
-  }
 });

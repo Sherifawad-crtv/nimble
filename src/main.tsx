@@ -8,6 +8,7 @@ import '@fontsource-variable/cairo/wght.css';
 import './design';
 import './app.css';
 import { App } from './App';
+import { AppErrorBoundary } from './app/AppErrorBoundary';
 import { ToastProvider } from './app/Toast';
 import { DIR, LOCALE } from './i18n';
 import { ServiceError } from './services';
@@ -33,16 +34,23 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <App />
-        </BrowserRouter>
-      </ToastProvider>
-    </QueryClientProvider>
+    <AppErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ToastProvider>
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <App />
+          </BrowserRouter>
+        </ToastProvider>
+      </QueryClientProvider>
+    </AppErrorBoundary>
   </StrictMode>,
 );
 
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => void navigator.serviceWorker.register('/sw.js'));
+// The app-shell service worker is retired until it can be verified on iOS; drop any copy a device
+// still has (public/sw.js also removes itself when the browser checks it for updates).
+if ('serviceWorker' in navigator) {
+  void navigator.serviceWorker.getRegistrations().then((list) => list.forEach((r) => void r.unregister()));
 }
+
+// Tells the boot check in index.html that the app started.
+(window as Window & { __originBooted?: boolean }).__originBooted = true;
