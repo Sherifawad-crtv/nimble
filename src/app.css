@@ -39,12 +39,11 @@ body.app-locked {
   overflow: hidden;
 }
 
-/* --app-height is set from the real screen in the installed iOS app (see lib/viewport.ts). */
 #app {
   position: fixed;
   inset-block-start: 0;
   inset-inline: 0;
-  block-size: var(--app-height, 100%);
+  block-size: 100%;
   overflow: hidden;
   background: var(--bg);
 }
@@ -53,6 +52,17 @@ body.app-locked {
   position: absolute;
   inset: 0;
   overflow: hidden;
+}
+
+/* Installed iOS app (viewport-fit=cover + translucent status bar): 100%, 100dvh and 100svh all
+   come up short by the top safe-area inset, leaving a dead band under the tab bar. The large
+   viewport unit is the only one that reports the full screen there. */
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  html,
+  body,
+  #app {
+    block-size: 100lvh;
+  }
 }
 
 /* Full-height screens that are not inside a shell scroll on their own. */

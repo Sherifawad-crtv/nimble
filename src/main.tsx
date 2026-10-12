@@ -10,12 +10,10 @@ import './app.css';
 import { App } from './App';
 import { ToastProvider } from './app/Toast';
 import { DIR, LOCALE } from './i18n';
-import { fitAppToScreen } from './lib/viewport';
 import { ServiceError } from './services';
 
 document.documentElement.lang = LOCALE;
 document.documentElement.dir = DIR;
-fitAppToScreen();
 
 // Follow the device's light or dark setting. Timer screens pin themselves to dark.
 const scheme = window.matchMedia('(prefers-color-scheme: light)');
