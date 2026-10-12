@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Banner, Icon, Sidebar, Skeleton } from '../design';
 import { useIsDesktop } from '../hooks/media';
@@ -64,6 +64,21 @@ function TabNav({ items, active, onChange }: { items: NavItem[]; active: string;
   );
 }
 
+/** The shell's scroll area. Each new screen starts at the top, as in a native navigation stack. */
+function Main() {
+  const ref = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
+  useEffect(() => {
+    ref.current?.scrollTo({ top: 0 });
+  }, [pathname]);
+  return (
+    <main className="app-main" id="main" ref={ref}>
+      <OfflineBanner />
+      <Content />
+    </main>
+  );
+}
+
 const segment = (pathname: string, index: number) => pathname.split('/')[index] ?? '';
 
 export function CoachShell() {
@@ -88,10 +103,7 @@ export function CoachShell() {
             <Sidebar workspace={t('workspace.name', { name: me.name.split(' ')[0] ?? me.name })} items={items} active={active} onChange={go} user={{ name: me.name, role: t('role.coach') }} />
           </div>
         )}
-        <main className="app-main" id="main">
-          <OfflineBanner />
-          <Content />
-        </main>
+        <Main />
       {!desktop && <TabNav items={items} active={active} onChange={go} />}
     </div>
   );
@@ -110,10 +122,7 @@ export function ClientShell() {
   const active = seg === 'workout' || seg === 'wearable' ? (seg === 'wearable' ? 'settings' : 'today') : seg;
   return (
     <div className="app-shell client">
-        <main className="app-main" id="main">
-          <OfflineBanner />
-          <Content />
-        </main>
+        <Main />
       <TabNav items={items} active={active} onChange={(id) => navigate(`/app/${id}`)} />
     </div>
   );

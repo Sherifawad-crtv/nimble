@@ -42,7 +42,7 @@ function RequireRole({ role, children }: { role: Role; children: React.ReactNode
 function NotFound() {
   const me = useMe();
   return (
-    <main className="app-page">
+    <main className="app-page app-scroll">
       <EmptyState icon="compass" title={t('notFound.title')} body={t('notFound.body')} action={t('notFound.action')} onAction={() => window.location.assign(home(me.role))} />
     </main>
   );

@@ -14,9 +14,18 @@ html {
   background: var(--bg);
 }
 
+/* The document itself never scrolls. A fixed root fills the visible viewport and each screen
+   scrolls inside it, so browser toolbars never collapse and nothing anchored to the bottom
+   moves: the same model as a native app. */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
-  min-height: 100dvh;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
@@ -31,7 +40,23 @@ body.app-locked {
 }
 
 #root {
-  min-height: 100dvh;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Full-height screens that are not inside a shell scroll on their own. */
+.app-scroll,
+.app-signin,
+.app-timer {
+  block-size: 100%;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.v-splash {
+  min-block-size: 100%;
 }
 
 h1,
@@ -92,7 +117,9 @@ img {
 /* ---------- shells ---------- */
 
 .app-shell {
-  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
 }
 
 .app-shell.desktop {
@@ -101,35 +128,38 @@ img {
 }
 
 .app-side {
-  position: sticky;
-  inset-block-start: 0;
-  block-size: 100dvh;
+  block-size: 100%;
+  overflow-y: auto;
 }
 
 .app-side .v-side {
   inline-size: 100%;
-  block-size: 100%;
+  min-block-size: 100%;
 }
 
 .app-main {
+  flex: 1;
+  min-block-size: 0;
   min-inline-size: 0;
-  padding-block-end: calc(max(env(safe-area-inset-bottom), var(--space-2)) + var(--tab-height) + var(--space-2) + var(--space-6));
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-block-end: var(--space-8);
 }
 
 .app-shell.desktop .app-main {
   padding-block-end: var(--space-10);
 }
 
-.app-shell.client .app-main {
+.app-shell.client .app-main > * {
   inline-size: 100%;
   max-inline-size: 640px;
   margin-inline: auto;
 }
 
 .app-tabbar {
-  position: fixed;
-  inset-inline: 0;
-  inset-block-end: 0;
+  position: relative;
+  flex: none;
   z-index: 20;
   padding: var(--space-2) var(--space-4) max(env(safe-area-inset-bottom), var(--space-2));
   background: var(--bg);
@@ -275,7 +305,7 @@ body:has(.app-shell.desktop) .app-toast {
   gap: var(--space-3);
   min-block-size: calc(var(--header-compact) + env(safe-area-inset-top));
   padding: env(safe-area-inset-top) var(--space-4) 0;
-  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  background: var(--bg);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
   backdrop-filter: blur(20px) saturate(1.4);
   box-shadow: 0 1px 0 var(--line);
@@ -864,7 +894,6 @@ body:has(.app-shell.desktop) .app-toast {
 /* ---------- sign in ---------- */
 
 .app-signin {
-  min-block-size: 100dvh;
   display: grid;
   place-items: center;
   padding: var(--space-6) var(--space-4);
@@ -919,7 +948,6 @@ body:has(.app-shell.desktop) .app-toast {
 /* ---------- timer (always dark) ---------- */
 
 .app-timer {
-  min-block-size: 100dvh;
   background: var(--bg);
   color: var(--ink);
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
