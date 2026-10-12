@@ -164,7 +164,7 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  padding-block-end: var(--space-8);
+  padding-block-end: var(--space-10);
 }
 
 .app-shell.desktop .app-main {
@@ -185,14 +185,30 @@ img {
   background: var(--bg);
 }
 
-/* Content fades out just above the bar instead of being cut by a hard edge. */
+/* Content fades out above the bar. An eased (not linear) ramp avoids a visible band where the
+   fade starts, so the transparent end melts into the screen. */
 .app-tabbar::before {
   content: '';
   position: absolute;
   inset-inline: 0;
   inset-block-end: 100%;
-  block-size: var(--space-6);
-  background: linear-gradient(to top, var(--bg), transparent);
+  block-size: var(--space-10);
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--bg) 100%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 73.8%, transparent) 19%,
+    color-mix(in srgb, var(--bg) 54.1%, transparent) 34%,
+    color-mix(in srgb, var(--bg) 38.2%, transparent) 47%,
+    color-mix(in srgb, var(--bg) 27.8%, transparent) 56.5%,
+    color-mix(in srgb, var(--bg) 19.4%, transparent) 65%,
+    color-mix(in srgb, var(--bg) 12.6%, transparent) 73%,
+    color-mix(in srgb, var(--bg) 7.5%, transparent) 80.2%,
+    color-mix(in srgb, var(--bg) 4.2%, transparent) 86.1%,
+    color-mix(in srgb, var(--bg) 2.1%, transparent) 91%,
+    color-mix(in srgb, var(--bg) 0.8%, transparent) 95.2%,
+    color-mix(in srgb, var(--bg) 0.2%, transparent) 98.2%,
+    color-mix(in srgb, var(--bg) 0%, transparent) 100%
+  );
   pointer-events: none;
 }
 
