@@ -113,7 +113,7 @@ img {
 
 .app-main {
   min-inline-size: 0;
-  padding-block-end: calc(max(env(safe-area-inset-bottom), var(--space-3)) + var(--tab-height) + var(--space-8));
+  padding-block-end: calc(max(env(safe-area-inset-bottom), var(--space-2)) + var(--tab-height) + var(--space-2) + var(--space-6));
 }
 
 .app-shell.desktop .app-main {
@@ -131,8 +131,18 @@ img {
   inset-inline: 0;
   inset-block-end: 0;
   z-index: 20;
-  padding: var(--space-8) var(--space-4) max(env(safe-area-inset-bottom), var(--space-3));
-  background: linear-gradient(to top, var(--bg) 58%, transparent);
+  padding: var(--space-2) var(--space-4) max(env(safe-area-inset-bottom), var(--space-2));
+  background: var(--bg);
+}
+
+/* Content fades out just above the bar instead of being cut by a hard edge. */
+.app-tabbar::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 100%;
+  block-size: var(--space-6);
+  background: linear-gradient(to top, var(--bg), transparent);
   pointer-events: none;
 }
 
@@ -141,7 +151,6 @@ img {
   margin-inline: auto;
   padding: 0;
   gap: var(--space-2);
-  pointer-events: auto;
 }
 
 .app-tabbar .v-tab {
@@ -169,7 +178,7 @@ img {
 .app-toast {
   position: fixed;
   inset-inline: var(--space-4);
-  inset-block-end: calc(max(env(safe-area-inset-bottom), var(--space-3)) + var(--tab-height) + var(--space-4));
+  inset-block-end: calc(max(env(safe-area-inset-bottom), var(--space-2)) + var(--tab-height) + var(--space-2) + var(--space-4));
   z-index: 80;
   display: flex;
   justify-content: center;
