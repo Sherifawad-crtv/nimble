@@ -10,7 +10,7 @@ export function createSupabase(url: string, key: string): SupabaseClient {
   });
 }
 
-const OFFLINE = 'Could not reach Origin. Check your connection and try again.';
+const OFFLINE = 'Could not reach Nimble. Check your connection and try again.';
 const CODES = new Set<ServiceErrorCode>(['not_found', 'forbidden', 'invalid_link', 'unauthenticated', 'invalid']);
 
 interface DbError {
@@ -19,7 +19,7 @@ interface DbError {
 }
 
 /**
- * Maps a database error to the app's error shape. Messages raised by Origin's own SQL are written
+ * Maps a database error to the app's error shape. Messages raised by Nimble's own SQL are written
  * for people, so they pass through; constraint and policy errors get a plain sentence instead.
  */
 export function dbError(e: DbError): Error {
@@ -48,7 +48,7 @@ export function must<T>(r: { data: T | null; error: DbError | null }): T {
   return r.data as T;
 }
 
-/** Calls an Origin edge function. Errors come back as { error: { code, message } }. */
+/** Calls a Nimble edge function. Errors come back as { error: { code, message } }. */
 export async function callFunction<T>(sb: SupabaseClient, name: string, body: object = {}): Promise<T> {
   const { data, error } = await sb.functions.invoke<T>(name, { body });
   if (!error) return data as T;

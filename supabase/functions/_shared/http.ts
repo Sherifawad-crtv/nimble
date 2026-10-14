@@ -1,4 +1,4 @@
-// Shared HTTP helpers for Origin edge functions. Errors use the app's ServiceError shape.
+// Shared HTTP helpers for Nimble edge functions. Errors use the app's ServiceError shape.
 export const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',

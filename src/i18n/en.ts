@@ -27,9 +27,9 @@ export const en = {
   'offline.title': "You're offline",
   'offline.body': 'Changes will not save until you reconnect.',
   'crash.title': 'Something broke',
-  'crash.body': 'Origin hit an error while opening this screen. Reload to try again. If it keeps happening, reset the demo data.',
+  'crash.body': 'Nimble hit an error while opening this screen. Reload to try again. If it keeps happening, reset the demo data.',
   'crash.reload': 'Reload',
-  'crash.body.account': 'Origin hit an error while opening this screen. Reload to try again.',
+  'crash.body.account': 'Nimble hit an error while opening this screen. Reload to try again.',
   'crash.reset': 'Reset demo data',
   'notFound.title': 'Page not found',
   'notFound.body': 'That page does not exist or has moved.',
@@ -98,7 +98,7 @@ export const en = {
   'invites.revoke': 'Revoke',
   'invites.revoked': 'Invite code revoked',
   'invites.created': 'Created {date}',
-  'invites.shareText': 'Join me on Origin. Sign up with invite code {code}: {link}',
+  'invites.shareText': 'Join me on Nimble. Sign up with invite code {code}: {link}',
   'clients.invite': 'Invite a client',
 
   // settings

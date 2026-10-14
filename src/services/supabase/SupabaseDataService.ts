@@ -194,7 +194,7 @@ export class SupabaseDataService implements DataService {
     if (!user) throw new ServiceError('unauthenticated', 'Sign in to continue.');
     const r = await this.sb.from('profiles').select('id, workspace_id, role, name, email').eq('id', user.id).maybeSingle<ProfileRow>();
     const row = must(r);
-    if (!row) throw new ServiceError('unauthenticated', 'This account has no Origin profile. Sign up again or contact your coach.');
+    if (!row) throw new ServiceError('unauthenticated', 'This account has no Nimble profile. Sign up again or contact your coach.');
     return toProfile(row);
   }
 

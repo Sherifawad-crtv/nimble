@@ -1,4 +1,4 @@
-# Origin backend
+# Nimble backend
 
 Supabase project `vvexpsqlmjrhrdxatifx` (eu-central-1). Everything here is already applied and deployed.
 
