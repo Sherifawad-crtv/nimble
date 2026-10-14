@@ -1,7 +1,6 @@
 import { useMe } from '../../app/auth';
 import { DataBoundary } from '../../components/DataBoundary';
 import { Page } from '../../components/Page';
-import { ProgressHero } from '../../components/ProgressHero';
 import { PersonalRecord, ProgressChart } from '../../design';
 import { useData } from '../../hooks/data';
 import { keys } from '../../hooks/keys';
@@ -16,8 +15,6 @@ export function ProgressScreen() {
   return (
     <Page title={t('progress.title')} accent={summary.data ? `${summary.data.completionPct}%` : undefined} subtitle={t('progress.subtitle')}>
       <div className="app-stack">
-        <ProgressHero />
-
         <section className="app-section" aria-label={t('progress.records')}>
           <h2 className="t-eyebrow app-h2">{t('progress.records')}</h2>
           <DataBoundary query={records} rows={3} empty={{ icon: 'trophy', title: t('records.empty.title'), body: t('records.empty.client') }}>
