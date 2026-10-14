@@ -33,6 +33,33 @@ body {
   line-height: 24px;
   overscroll-behavior-y: none;
   -webkit-tap-highlight-color: transparent;
+  /* Native feel: no page zoom, no double-tap zoom, no text selection or callout menu. */
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body,
+body * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Typing, selecting and pasting still work inside fields. */
+input,
+textarea,
+[contenteditable='true'] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+img,
+svg,
+a {
+  -webkit-user-drag: none;
+  user-drag: none;
 }
 
 body.app-locked {

@@ -15,6 +15,15 @@ import { ServiceError } from './services';
 document.documentElement.lang = LOCALE;
 document.documentElement.dir = DIR;
 
+// iOS Safari ignores user-scalable=no for pinch gestures, so stop them directly.
+for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
+  document.addEventListener(type, (e) => e.preventDefault(), { passive: false });
+}
+// No long-press or right-click menu outside fields (copy, share, look up).
+document.addEventListener('contextmenu', (e) => {
+  if (!(e.target instanceof HTMLElement) || !e.target.closest('input, textarea')) e.preventDefault();
+});
+
 // The app has one theme: dark.
 document.documentElement.setAttribute('data-theme', 'dark');
 
