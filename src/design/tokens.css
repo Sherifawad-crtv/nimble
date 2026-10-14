@@ -1,10 +1,10 @@
 /* Origin — generated from tokens.json by scripts/build-tokens.mjs. Do not edit. */
 :root, [data-theme="dark"] {
-  --bg: #000000;
-  --surface-map: #0a0a0b;
-  --surface-control: #262628;
-  --surface-card: #1a1a1c;
-  --surface-raised: #323235;
+  --bg: #141414;
+  --surface-map: #1b1b1b;
+  --surface-control: #2a2a2d;
+  --surface-card: #202022;
+  --surface-raised: #353538;
   --brand: #e6fc03;
   --brand-yellow: #e6fc03;
   --brand-indigo: #442bee;
@@ -26,15 +26,15 @@
   --text-green: #5be37d;
   --danger: #ff5a5f;
   --on-danger: #000000;
-  --line: #2a2a2d;
+  --line: #2e2e31;
   --line-strong: #4a4a4e;
-  --field-bg: #2c2c2f;
-  --field-edge: #44444a;
+  --field-bg: #2e2e31;
+  --field-edge: #46464b;
   --card-edge: #00000000;
   --edge-accent: #e6fc03;
   --focus: #e6fc03;
   --scrim: #000000cc;
-  --glass: #1a1a1cd9;
+  --glass: #202022d9;
   --warning: #ffb340;
   --success: var(--text-green);
   --info: var(--text-blue);

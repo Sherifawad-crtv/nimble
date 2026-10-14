@@ -252,7 +252,7 @@ button.v-chip { cursor: pointer; min-height: var(--tap-min); }
 .v-splash { min-height: 480px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-6); background: var(--brand-black); color: var(--brand-white); font-family: var(--font-sans); }
 .v-wm { display: inline-block; flex: none; background: currentColor; -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; mask-mode: alpha; -webkit-mask-mode: alpha; }
 .wm-brand { color: var(--brand-yellow); } .wm-black { color: var(--brand-black); } .wm-white { color: var(--brand-white); } .wm-indigo { color: var(--brand-indigo); }
-.v-emblem { container-type: size; display: inline-grid; place-items: center; flex: none; } .bt-bb { background: var(--brand-black); } .bt-yb { background: var(--brand-yellow); } .bt-wb { background: var(--brand-black); } .bt-ib { background: var(--brand-beige); }
+.v-emblem { container-type: size; display: inline-grid; place-items: center; flex: none; } .bt-bb { background: var(--bg); } .bt-yb { background: var(--brand-yellow); } .bt-wb { background: var(--bg); } .bt-ib { background: var(--brand-beige); }
 .v-emblem-img { display: block; width: 100%; height: 100%; background: currentColor; -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; }
 .v-emblem-slot { width: 100%; height: 100%; display: grid; place-items: center; border: 2px dashed currentColor; border-radius: 24%;  font-size: 10px; opacity: .85; }
 .v-lockup { display: inline-flex; align-items: center; }
