@@ -97,8 +97,10 @@ function AssignForm({ onClose, clientId, workoutId, programId }: Props) {
       )}
 
       {!clientId && (
-        <fieldset className="app-fieldset">
-          <legend className="v-label t-label">{t('assign.clients')}</legend>
+        <div className="app-fieldset v-field" role="group" aria-labelledby="assign-clients-label">
+          <span className="v-label t-label" id="assign-clients-label">
+            {t('assign.clients')}
+          </span>
           <DataBoundary query={clients} skeleton="list" rows={3} inline empty={{ icon: 'users', title: t('clients.empty.title') }}>
             {(list) =>
               list.map((c) => (
@@ -111,14 +113,13 @@ function AssignForm({ onClose, clientId, workoutId, programId }: Props) {
               ))
             }
           </DataBoundary>
-        </fieldset>
+        </div>
       )}
 
       {isProgram ? (
         <DateField label={t('assign.startDate')} value={startDate} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value)} />
       ) : (
-        <fieldset className="app-fieldset">
-          <legend className="v-sr">{t('assign.dates')}</legend>
+        <div className="app-fieldset" role="group" aria-label={t('assign.dates')}>
           {dates.map((d, i) => (
             <div key={i} className="app-date-row">
               <DateField
@@ -130,7 +131,7 @@ function AssignForm({ onClose, clientId, workoutId, programId }: Props) {
             </div>
           ))}
           <Chip add label={t('assign.addDate')} onClick={() => setDates([...dates, dates.at(-1) ?? todayISO()])} />
-        </fieldset>
+        </div>
       )}
 
       {error && (

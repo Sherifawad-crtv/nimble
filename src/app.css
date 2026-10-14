@@ -600,7 +600,12 @@ body:has(.app-shell.desktop) .app-toast {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  align-items: flex-start;
+  align-items: stretch;
+}
+
+/* A titled group of options keeps the same title-to-content gap as every other field. */
+.app-fieldset.v-field {
+  gap: var(--space-2);
 }
 
 .app-fieldset .v-sel {
@@ -628,12 +633,6 @@ body:has(.app-shell.desktop) .app-toast {
 .app-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.app-tagpicker {
-  display: flex;
-  flex-direction: column;
   gap: var(--space-2);
 }
 

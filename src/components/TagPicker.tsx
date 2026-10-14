@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Chip } from '../design';
 import { t } from '../i18n';
 
@@ -13,6 +13,7 @@ interface Props {
 
 /** Chips for picking from known tags, plus an optional custom one. Controlled. */
 export function TagPicker({ label, value, options, onChange, custom }: Props) {
+  const labelId = useId();
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState('');
   const all = [...new Set([...options, ...value])];
@@ -25,8 +26,10 @@ export function TagPicker({ label, value, options, onChange, custom }: Props) {
   };
 
   return (
-    <fieldset className="app-tagpicker">
-      <legend className="v-label t-label">{label}</legend>
+    <div className="v-field" role="group" aria-labelledby={labelId}>
+      <span className="v-label t-label" id={labelId}>
+        {label}
+      </span>
       <div className="app-chips">
         {all.map((tag) => (
           <Chip key={tag} label={tag} selected={value.includes(tag)} onClick={() => toggle(tag)} />
@@ -56,6 +59,6 @@ export function TagPicker({ label, value, options, onChange, custom }: Props) {
           </button>
         </div>
       )}
-    </fieldset>
+    </div>
   );
 }
