@@ -559,7 +559,7 @@ export class SupabaseDataService implements DataService {
 
   async listPackages(clientId: Id): Promise<Package[]> {
     await this.clientAccess(clientId);
-    return must(await this.sb.from('packages').select('*').eq('client_id', clientId).order('expires_on').returns<PackageRow[]>()).map(this.toPackage);
+    return must(await this.sb.from('packages').select('*').eq('client_id', clientId).order('created_at', { ascending: false }).returns<PackageRow[]>()).map(this.toPackage);
   }
 
   async savePackage(p: PackageInput): Promise<Package> {

@@ -964,7 +964,7 @@ body:has(.app-shell.desktop) .app-toast {
 .app-signin {
   display: grid;
   place-items: center;
-  padding: var(--space-6) var(--space-4);
+  padding: max(env(safe-area-inset-top), var(--space-6)) var(--space-4) calc(max(env(safe-area-inset-bottom), var(--space-4)) + var(--space-10));
   background: var(--bg);
   color: var(--ink);
 }

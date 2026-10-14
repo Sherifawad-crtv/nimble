@@ -1,6 +1,6 @@
 import type { AuthError, SupabaseClient } from '@supabase/supabase-js';
 import { ServiceError, type AccountSession, type AuthEvent, type SignUpInput } from '../DataService';
-import { must } from './client';
+import { authStorageKey, must } from './client';
 
 /** Plain sentences for the auth errors people actually hit. */
 function authError(e: AuthError): Error {
@@ -23,7 +23,10 @@ export class SupabaseSession implements AccountSession {
   private readonly listeners = new Set<(event: AuthEvent) => void>();
   private recovering = false;
 
-  constructor(private readonly sb: SupabaseClient) {
+  constructor(
+    private readonly sb: SupabaseClient,
+    private readonly url: string,
+  ) {
     // Subscribe at once: a password-reset link is handled before the UI has mounted.
     // Only a change of account is reported: Supabase repeats SIGNED_IN on token refresh and tab focus.
     let user: string | null | undefined;
@@ -98,7 +101,21 @@ export class SupabaseSession implements AccountSession {
 
   async signOut(): Promise<void> {
     this.recovering = false;
-    const { error } = await this.sb.auth.signOut();
-    if (error) throw authError(error);
+    // Ask the server to end the session. supabase-js keeps the session when that call fails
+    // (offline, expired token, server error), so remove it from this device ourselves.
+    let ended = false;
+    try {
+      const { error } = await this.sb.auth.signOut();
+      ended = !error;
+    } catch {
+      /* removed below */
+    }
+    if (!ended) {
+      try {
+        window.localStorage.removeItem(authStorageKey(this.url));
+      } catch {
+        /* storage blocked: nothing was stored */
+      }
+    }
   }
 }

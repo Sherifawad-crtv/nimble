@@ -559,7 +559,11 @@ export class MockDataService implements DataService, DemoSession {
   async listPackages(clientId: Id): Promise<Package[]> {
     await this.wait();
     this.clientAccess(clientId);
-    return this.db.packages.filter((p) => p.clientId === clientId).map((p) => this.withDerived(p));
+    // Newest first: the screen shows the most recently added package that has not expired.
+    return this.db.packages
+      .filter((p) => p.clientId === clientId)
+      .map((p) => this.withDerived(p))
+      .reverse();
   }
 
   async savePackage(p: PackageInput): Promise<Package> {

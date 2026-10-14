@@ -1,6 +1,9 @@
 import { createClient, FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js';
 import { ServiceError, type ServiceErrorCode } from '../DataService';
 
+/** Where supabase-js keeps the session in localStorage by default. */
+export const authStorageKey = (url: string) => `sb-${new URL(url).hostname.split('.')[0]}-auth-token`;
+
 export function createSupabase(url: string, key: string): SupabaseClient {
   return createClient(url, key, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' },

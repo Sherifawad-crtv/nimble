@@ -86,7 +86,7 @@ function AccountSignIn({ session }: { session: AccountSession }) {
         <EmptyState icon="mail" title={notice.title} body={notice.body} />
         <Button
           fullWidth
-          size="lg"
+          size="md"
           variant="secondary"
           onClick={() => {
             setNotice(null);
@@ -162,7 +162,7 @@ function AccountSignIn({ session }: { session: AccountSession }) {
 
       {error && <ErrorState inline title={t('auth.error.title')} body={error} />}
 
-      <Button type="submit" fullWidth size="lg" loading={busy} disabled={busy || (mode === 'signup' && role === 'client' && invite.state === 'invalid')}>
+      <Button type="submit" fullWidth size="md" loading={busy} disabled={busy || (mode === 'signup' && role === 'client' && invite.state === 'invalid')}>
         {mode === 'signin' ? t('auth.signin.action') : mode === 'signup' ? t('auth.signup.action') : t('auth.reset.action')}
       </Button>
 
@@ -254,7 +254,7 @@ export function NewPasswordScreen({ onDone }: { onDone: () => void }) {
             hint={t('auth.password.hint')}
           />
           {error && <ErrorState inline title={t('auth.error.title')} body={error} />}
-          <Button type="submit" fullWidth size="lg" loading={busy} disabled={busy}>
+          <Button type="submit" fullWidth size="md" loading={busy} disabled={busy}>
             {t('auth.newPassword.action')}
           </Button>
         </form>

@@ -33,8 +33,11 @@ export function useSessionActions() {
       await reset();
     },
     async signOut() {
-      await sessionService.signOut();
-      await reset();
+      try {
+        await sessionService.signOut();
+      } finally {
+        await reset();
+      }
     },
     refresh: reset,
   };

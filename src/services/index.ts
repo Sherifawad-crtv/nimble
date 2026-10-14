@@ -11,7 +11,7 @@ const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 function pick(): { data: DataService; session: SessionService } {
   if (url && key) {
     const sb = createSupabase(url, key);
-    return { data: new SupabaseDataService(sb), session: new SupabaseSession(sb) };
+    return { data: new SupabaseDataService(sb), session: new SupabaseSession(sb, url) };
   }
   const mock = new MockDataService();
   return { data: mock, session: mock };
