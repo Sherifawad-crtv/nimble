@@ -20,7 +20,7 @@
         window.addEventListener('error', function (e) { note(e.message || (e.target && e.target.src ? 'Failed to load ' + e.target.src : '')); }, true);
         window.addEventListener('unhandledrejection', function (e) { note(e.reason && (e.reason.message || e.reason)); });
         setTimeout(function () {
-          if (window.__originBooted) return;
+          if (window.__nimbleBooted) return;
           var app = document.getElementById('app') || document.body;
           app.innerHTML =
             '<div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px;background:#141414;color:#d9d9d9;font:16px/24px system-ui,sans-serif">' +

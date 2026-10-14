@@ -258,7 +258,7 @@ button.v-chip { cursor: pointer; min-height: var(--tap-min); }
 .v-lockup { display: inline-flex; align-items: center; }
 .v-appicon { display: inline-grid; place-items: center; background: var(--brand-black); border-radius: 0; flex: none; overflow: hidden; } .v-appicon.masked { border-radius: 22.37%; }
 
-/* ===== Origin source components ===== */
+/* ===== Nimble source components ===== */
 .v-headline { margin: 0; color: var(--text-brand);  font-family: var(--font-sans); }
 .v-headline .v-accent { display: block; color: var(--text-brand); }
 .v-headline.v-center { text-align: center; }

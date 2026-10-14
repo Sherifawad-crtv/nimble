@@ -1,23 +1,23 @@
 import React from 'react';
-import type * as P from './origin-components';
+import type * as P from './nimble-components';
 import { SOLAR_ICONS } from './solar-icons';
 import './tokens.css';
-import './origin-bundle.css';
+import './nimble-bundle.css';
 
-// The Origin design-system bundle is a classic script that reads window.React.
+// The Nimble design-system bundle is a classic script that reads window.React.
 // It is loaded once, before any component module is evaluated (top-level await).
 declare global {
   interface Window {
     React: typeof React;
-    Origin: Record<string, React.ComponentType<never>>;
-    OriginIconSet: Record<string, string>;
+    Nimble: Record<string, React.ComponentType<never>>;
+    NimbleIconSet: Record<string, string>;
   }
 }
 window.React = React;
-window.OriginIconSet = SOLAR_ICONS;
-await import('./origin-bundle.js');
+window.NimbleIconSet = SOLAR_ICONS;
+await import('./nimble-bundle.js');
 
-const O = window.Origin as unknown as { [K in keyof Components]: Components[K] };
+const O = window.Nimble as unknown as { [K in keyof Components]: Components[K] };
 
 type Components = {
   Radio: React.ComponentType<P.CheckboxProps>;

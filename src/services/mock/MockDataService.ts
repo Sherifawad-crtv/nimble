@@ -40,8 +40,8 @@ export interface MockOptions {
   today?: () => ISODate;
 }
 
-const DB_KEY = 'origin.mock.db.v2';
-const SESSION_KEY = 'origin.mock.session.v1';
+const DB_KEY = 'nimble.mock.db.v2';
+const SESSION_KEY = 'nimble.mock.session.v1';
 
 function browserStorage(): KeyValueStore {
   const memory = new Map<string, string>();
@@ -51,7 +51,7 @@ function browserStorage(): KeyValueStore {
     removeItem: (k) => void memory.delete(k),
   };
   try {
-    const probe = '__origin_probe__';
+    const probe = '__nimble_probe__';
     window.localStorage.setItem(probe, '1');
     window.localStorage.removeItem(probe);
     return window.localStorage;

@@ -43,7 +43,7 @@ const styles = tokens.type.groups
   .join('\n');
 
 const css = [
-  '/* Origin — generated from tokens.json by scripts/build-tokens.mjs. Do not edit. */',
+  '/* Nimble — generated from tokens.json by scripts/build-tokens.mjs. Do not edit. */',
   `:root, [data-theme="${first}"] {\n${decls(themed, first)}\n}`,
   ...themes.slice(1).map((t) => `[data-theme="${t}"] {\n${decls(themed, t)}\n}`),
   `:root {\n${plain(tokens.spacing)}\n${plain(tokens.radius)}\n${fonts}\n}`,

@@ -59,4 +59,4 @@ if ('serviceWorker' in navigator) {
 }
 
 // Tells the boot check in index.html that the app started.
-(window as Window & { __originBooted?: boolean }).__originBooted = true;
+(window as Window & { __nimbleBooted?: boolean }).__nimbleBooted = true;

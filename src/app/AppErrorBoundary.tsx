@@ -8,7 +8,7 @@ interface State {
 const clearDemoData = () => {
   try {
     Object.keys(window.localStorage)
-      .filter((k) => k.startsWith('origin.'))
+      .filter((k) => k.startsWith('nimble.') || k.startsWith('origin.'))
       .forEach((k) => window.localStorage.removeItem(k));
   } catch {
     /* storage unavailable: nothing to clear */

@@ -24,7 +24,7 @@ Reset the demo data by clearing site data for the page.
 | `src/services` | `DataService` interface, the `ServiceError` shape, and `mock/` (in-memory, persisted to `localStorage`, seeded). Phase 2 replaces one line in `services/index.ts`. |
 | `src/hooks/data.ts` | `useData` and `useAction`: the only way screens read and write. |
 | `src/timer` | Pure timer engine (`engine.ts`, tested), cue sounds, wake lock, and the `useTimer` hook. |
-| `src/design` | The Nimble design system: vendored bundle (its global is still `window.Origin`), generated `tokens.css`, typed wrapper. |
+| `src/design` | The Nimble design system: vendored bundle (its global is `window.Nimble`), generated `tokens.css`, typed wrapper. |
 | `src/screens`, `src/components` | Coach and client screens, shared pieces. |
 | `src/i18n` | All strings, in one table. Layout uses logical CSS properties. |
 

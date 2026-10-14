@@ -27,7 +27,7 @@ Run each file in the SQL editor (both roll back):
 
 Authentication > URL Configuration:
 
-- Site URL: the production domain (for example `https://origin-xxx.vercel.app`).
+- Site URL: the production domain (for example `https://your-app.vercel.app`).
 - Redirect URLs: the same domain, plus `http://localhost:5173` for development.
 
 Email confirmation is on by default; sign-up then shows "Confirm your email". Use a custom SMTP
