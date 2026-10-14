@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { Splash } from '../design';
 import { keys } from '../hooks/keys';
 import { dataService, sessionService } from '../services';
@@ -16,12 +16,15 @@ export function useMe(): Profile {
   return me;
 }
 
+/** Forgets everything cached for the previous account, then asks again who is signed in. */
+const resetSession = async (client: QueryClient) => {
+  client.removeQueries({ predicate: (q) => q.queryKey[0] !== keys.me[0] });
+  await client.resetQueries({ queryKey: keys.me });
+};
+
 export function useSessionActions() {
   const client = useQueryClient();
-  const reset = async () => {
-    client.clear();
-    await client.invalidateQueries({ queryKey: keys.me });
-  };
+  const reset = () => resetSession(client);
   return {
     /** Demo backend only: continue as one of the seeded accounts. */
     async signInAs(profileId: string) {
@@ -50,8 +53,7 @@ export function AuthGate() {
         setRecovering(true);
         return;
       }
-      client.clear();
-      void client.invalidateQueries({ queryKey: keys.me });
+      void resetSession(client);
     });
   }, [client]);
 

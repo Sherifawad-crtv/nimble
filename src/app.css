@@ -110,8 +110,7 @@ img {
 }
 
 .app-title {
-  color: var(--text-brand);
-  text-transform: uppercase;
+  color: var(--ink);
 }
 
 .app-textbtn {
@@ -222,13 +221,24 @@ img {
   inline-size: 100%;
   max-inline-size: 115px;
   block-size: var(--tab-height);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
   color: var(--muted);
-  transition: background-color 0.16s ease-out, color 0.16s ease-out;
+  transition: color 0.16s ease-out;
+}
+
+.app-tab-label {
+  font: 500 11px/14px var(--font-sans);
 }
 
 .app-tabbar .v-tab[aria-current='page'] {
-  background: var(--surface-raised);
-  color: var(--ink);
+  background: transparent;
+  color: var(--text-brand);
 }
 
 .app-tabbar .v-tab:focus-visible {
@@ -285,14 +295,13 @@ body:has(.app-shell.desktop) .app-toast {
 
 .app-title {
   margin: 0;
-  color: var(--text-brand);
-  text-transform: uppercase;
+  color: var(--ink);
   overflow-wrap: anywhere;
 }
 
 .app-accent {
   display: block;
-  color: var(--text-pink);
+  color: var(--text-brand);
 }
 
 .app-subtitle {
@@ -364,8 +373,7 @@ body:has(.app-shell.desktop) .app-toast {
   white-space: nowrap;
   text-align: center;
   color: var(--ink);
-  font: italic 800 17px/22px var(--font-sans);
-  text-transform: uppercase;
+  font: 600 17px/22px var(--font-sans);
 }
 
 .app-compact .v-iconbtn {
@@ -406,7 +414,6 @@ body:has(.app-shell.desktop) .app-toast {
 
 .app-h2 {
   color: var(--ink);
-  text-transform: uppercase;
 }
 
 .app-stack {
@@ -951,8 +958,6 @@ body:has(.app-shell.desktop) .app-toast {
 }
 
 .app-signin-group h2 {
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .app-account {
@@ -1212,8 +1217,6 @@ body:has(.app-shell.desktop) .app-toast {
 
 .app-overline {
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .app-today {
@@ -1232,7 +1235,6 @@ body:has(.app-shell.desktop) .app-toast {
 .app-today-title {
   margin-block-start: var(--space-1);
   color: var(--ink);
-  text-transform: uppercase;
 }
 
 .app-pills {
@@ -1360,7 +1362,7 @@ body:has(.app-shell.desktop) .app-toast {
 
 
 /* Solar linear icons are drawn at 1.5 stroke; at UI sizes a touch heavier reads better next to
-   the heavy italic type. */
+   the type. */
 .v-icon [stroke] {
   stroke-width: 2;
 }

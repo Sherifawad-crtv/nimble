@@ -2,8 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import '@fontsource-variable/archivo/wght.css';
-import '@fontsource-variable/archivo/wght-italic.css';
+import '@fontsource-variable/inter/wght.css';
 import '@fontsource-variable/cairo/wght.css';
 import './design';
 import './app.css';
@@ -16,11 +15,8 @@ import { ServiceError } from './services';
 document.documentElement.lang = LOCALE;
 document.documentElement.dir = DIR;
 
-// Follow the device's light or dark setting. Timer screens pin themselves to dark.
-const scheme = window.matchMedia('(prefers-color-scheme: light)');
-const applyTheme = () => document.documentElement.setAttribute('data-theme', scheme.matches ? 'light' : 'dark');
-applyTheme();
-scheme.addEventListener('change', applyTheme);
+// The app has one theme: dark.
+document.documentElement.setAttribute('data-theme', 'dark');
 
 const queryClient = new QueryClient({
   defaultOptions: {

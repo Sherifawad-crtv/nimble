@@ -1,39 +1,39 @@
 /* Origin — generated from tokens.json by scripts/build-tokens.mjs. Do not edit. */
 :root, [data-theme="dark"] {
   --bg: #000000;
-  --surface-map: #080808;
-  --surface-control: #1c1c1c;
-  --surface-card: #201e1f;
-  --surface-raised: #2c2c2c;
-  --brand: #f0ff8a;
-  --brand-yellow: #f0ff8a;
+  --surface-map: #0a0a0b;
+  --surface-control: #262628;
+  --surface-card: #1a1a1c;
+  --surface-raised: #323235;
+  --brand: #e6fc03;
+  --brand-yellow: #e6fc03;
   --brand-indigo: #442bee;
   --brand-beige: #fbeecb;
   --on-brand: #000000;
-  --sub: #998aff;
-  --text-sub: #998aff;
+  --sub: #2f8cff;
+  --text-sub: #2f8cff;
   --on-sub: #000000;
-  --pink: #fa80b1;
-  --blue: #01a6ff;
-  --green: #8df584;
+  --pink: #ff6a2b;
+  --blue: #2f8cff;
+  --green: #5be37d;
   --on-accent: #000000;
-  --ink: #d9d9d9;
-  --muted: #8b8b8b;
-  --faint: #5c5c5c;
-  --text-brand: #f0ff8a;
-  --text-pink: #fa80b1;
-  --text-blue: #01a6ff;
-  --text-green: #8df584;
-  --danger: #ff7a7a;
+  --ink: #ffffff;
+  --muted: #8e8e93;
+  --faint: #5a5a5e;
+  --text-brand: #e6fc03;
+  --text-pink: #ff7a45;
+  --text-blue: #4a9dff;
+  --text-green: #5be37d;
+  --danger: #ff5a5f;
   --on-danger: #000000;
-  --line: #2c2c2c;
-  --line-strong: #6b6b6b;
+  --line: #2a2a2d;
+  --line-strong: #4a4a4e;
   --card-edge: #00000000;
-  --edge-accent: #fdff92;
-  --focus: #fdff92;
+  --edge-accent: #e6fc03;
+  --focus: #e6fc03;
   --scrim: #000000cc;
-  --glass: #201e1fb8;
-  --warning: #ffa94d;
+  --glass: #1a1a1cd9;
+  --warning: #ffb340;
   --success: var(--text-green);
   --info: var(--text-blue);
   --error: var(--danger);
@@ -41,45 +41,6 @@
   --brand-white: #ffffff;
   --glow-brand: 0 0 24px 0 rgba(253,255,146,0.35);
   --shadow-pop: 0 12px 32px 0 rgba(0,0,0,0.6);
-}
-[data-theme="light"] {
-  --bg: #f3eee2;
-  --surface-map: #eae4d4;
-  --surface-control: #e6dfcb;
-  --surface-card: #f8f4ea;
-  --surface-raised: #ddd5c0;
-  --brand: #442bee;
-  --brand-yellow: #f0ff8a;
-  --brand-indigo: #442bee;
-  --brand-beige: #fbeecb;
-  --on-brand: #f8f4ea;
-  --sub: #442bee;
-  --text-sub: #442bee;
-  --on-sub: #f8f4ea;
-  --ink: #14110d;
-  --muted: #615a4d;
-  --faint: #8f8776;
-  --text-brand: #442bee;
-  --text-pink: #b0295f;
-  --text-blue: #0067b3;
-  --text-green: #17692a;
-  --danger: #c01f2f;
-  --on-danger: #f8f4ea;
-  --line: #d9d1bd;
-  --line-strong: #7a7262;
-  --card-edge: #00000000;
-  --edge-accent: #14110d;
-  --focus: #442bee;
-  --scrim: #14110d66;
-  --glass: #f8f4eab8;
-  --warning: #9a4a00;
-  --success: var(--text-green);
-  --info: var(--text-blue);
-  --error: var(--danger);
-  --brand-black: #000000;
-  --brand-white: #ffffff;
-  --glow-brand: 0 0 24px 0 rgba(17,17,17,0.0);
-  --shadow-pop: 0 12px 32px 0 rgba(17,17,17,0.18);
 }
 :root {
   --space-1: 4px;
@@ -105,24 +66,24 @@
   --radius-screen: 56px;
   --radius-md: 16px;
   --radius-sheet: 28px;
-  --font-sans: "Archivo Variable", "Archivo", "Cairo Variable", "Cairo", "Helvetica Neue", Arial, sans-serif;
-  --font-brand: "BBH Hegarty", "Archivo", sans-serif;
+  --font-sans: "Inter Variable", "Inter", "Cairo Variable", "Cairo", "Helvetica Neue", Arial, sans-serif;
+  --font-brand: "BBH Hegarty", "Inter Variable", sans-serif;
 }
-.t-display { font-family: var(--font-sans); font-size: 200px; line-height: 190px; font-weight: 900; font-style: italic; letter-spacing: -0.02em; }
-.t-headline { font-family: var(--font-sans); font-size: 40px; line-height: 38px; font-weight: 900; font-style: italic; letter-spacing: -0.01em; }
-.t-title { font-family: var(--font-sans); font-size: 32px; line-height: 34px; font-weight: 900; font-style: italic; }
-.t-metric { font-family: var(--font-sans); font-size: 22px; line-height: 26px; font-weight: 800; font-style: italic; }
-.t-stat { font-family: var(--font-sans); font-size: 24px; line-height: 28px; font-weight: 800; font-style: italic; }
-.t-eyebrow { font-family: var(--font-sans); font-size: 16px; line-height: 20px; font-weight: 800; font-style: italic; letter-spacing: 0.01em; }
+.t-display { font-family: var(--font-sans); font-size: 120px; line-height: 190px; font-weight: 700; letter-spacing: -0.03em; }
+.t-headline { font-family: var(--font-sans); font-size: 32px; line-height: 38px; font-weight: 700; letter-spacing: -0.02em; }
+.t-title { font-family: var(--font-sans); font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -0.02em; }
+.t-metric { font-family: var(--font-sans); font-size: 20px; line-height: 26px; font-weight: 600; }
+.t-stat { font-family: var(--font-sans); font-size: 22px; line-height: 28px; font-weight: 600; }
+.t-eyebrow { font-family: var(--font-sans); font-size: 18px; line-height: 20px; font-weight: 600; }
 .t-label { font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 500; }
-.t-caption { font-family: var(--font-sans); font-size: 13px; line-height: 16px; font-weight: 500; }
-.t-button { font-family: var(--font-sans); font-size: 18px; line-height: 22px; font-weight: 900; font-style: italic; }
-.t-heading { font-family: var(--font-sans); font-size: 20px; line-height: 24px; font-weight: 800; font-style: italic; }
-.t-body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 500; }
-.t-body-strong { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 700; }
-.t-input { font-family: var(--font-sans); font-size: 17px; line-height: 24px; font-weight: 600; }
-.t-chip { font-family: var(--font-sans); font-size: 13px; line-height: 16px; font-weight: 700; }
-.t-button-md { font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 900; font-style: italic; }
-.t-timer { font-family: var(--font-sans); font-size: 96px; line-height: 96px; font-weight: 900; font-style: italic; letter-spacing: -0.02em; }
-.t-timer-xl { font-family: var(--font-sans); font-size: 160px; line-height: 150px; font-weight: 900; font-style: italic; letter-spacing: -0.02em; }
+.t-caption { font-family: var(--font-sans); font-size: 13px; line-height: 16px; font-weight: 400; }
+.t-button { font-family: var(--font-sans); font-size: 17px; line-height: 22px; font-weight: 600; }
+.t-heading { font-family: var(--font-sans); font-size: 20px; line-height: 24px; font-weight: 600; }
+.t-body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400; }
+.t-body-strong { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 600; }
+.t-input { font-family: var(--font-sans); font-size: 17px; line-height: 24px; font-weight: 500; }
+.t-chip { font-family: var(--font-sans); font-size: 13px; line-height: 16px; font-weight: 600; }
+.t-button-md { font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 600; }
+.t-timer { font-family: var(--font-sans); font-size: 96px; line-height: 96px; font-weight: 700; letter-spacing: -0.03em; }
+.t-timer-xl { font-family: var(--font-sans); font-size: 160px; line-height: 150px; font-weight: 700; letter-spacing: -0.03em; }
 .t-wordmark { font-family: var(--font-brand); font-size: 32px; line-height: 32px; font-weight: 400; letter-spacing: 0.02em; }

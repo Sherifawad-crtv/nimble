@@ -55,8 +55,8 @@ function TabNav({ items, active, onChange }: { items: NavItem[]; active: string;
       <div className="v-tabs">
         {items.map((it) => (
           <button key={it.id} type="button" className="v-tab" aria-current={it.id === active ? 'page' : undefined} onClick={() => onChange(it.id)}>
-            <Icon name={it.icon} size={26} />
-            <span className="v-sr">{it.label}</span>
+            <Icon name={it.icon} size={24} />
+            <span className="app-tab-label">{it.label}</span>
           </button>
         ))}
       </div>
