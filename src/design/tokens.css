@@ -68,24 +68,25 @@
   --radius-screen: 56px;
   --radius-md: 16px;
   --radius-sheet: 28px;
-  --font-sans: "Inter Variable", "Inter", "Cairo Variable", "Cairo", "Helvetica Neue", Arial, sans-serif;
-  --font-brand: "BBH Hegarty", "Inter Variable", sans-serif;
+  --font-sans: "Red Hat Display Variable", "Red Hat Display", "Cairo Variable", "Cairo", "Helvetica Neue", Arial, sans-serif;
+  --font-brand: "BBH Hegarty", "Urbanist Variable", sans-serif;
+  --font-display: "Urbanist Variable", "Urbanist", "Cairo Variable", "Cairo", "Helvetica Neue", Arial, sans-serif;
 }
-.t-display { font-family: var(--font-sans); font-size: 120px; line-height: 190px; font-weight: 700; letter-spacing: -0.03em; }
-.t-headline { font-family: var(--font-sans); font-size: 32px; line-height: 38px; font-weight: 700; letter-spacing: -0.02em; }
-.t-title { font-family: var(--font-sans); font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -0.02em; }
-.t-metric { font-family: var(--font-sans); font-size: 20px; line-height: 26px; font-weight: 600; }
-.t-stat { font-family: var(--font-sans); font-size: 22px; line-height: 28px; font-weight: 600; }
-.t-eyebrow { font-family: var(--font-sans); font-size: 18px; line-height: 20px; font-weight: 600; }
+.t-display { font-family: var(--font-display); font-size: 120px; line-height: 190px; font-weight: 700; letter-spacing: -0.03em; }
+.t-headline { font-family: var(--font-display); font-size: 32px; line-height: 38px; font-weight: 700; letter-spacing: -0.02em; }
+.t-title { font-family: var(--font-display); font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -0.02em; }
+.t-metric { font-family: var(--font-display); font-size: 20px; line-height: 26px; font-weight: 600; }
+.t-stat { font-family: var(--font-display); font-size: 22px; line-height: 28px; font-weight: 600; }
+.t-eyebrow { font-family: var(--font-display); font-size: 18px; line-height: 20px; font-weight: 600; }
 .t-label { font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 500; }
 .t-caption { font-family: var(--font-sans); font-size: 13px; line-height: 16px; font-weight: 400; }
-.t-button { font-family: var(--font-sans); font-size: 17px; line-height: 22px; font-weight: 600; }
-.t-heading { font-family: var(--font-sans); font-size: 20px; line-height: 24px; font-weight: 600; }
+.t-button { font-family: var(--font-display); font-size: 17px; line-height: 22px; font-weight: 600; }
+.t-heading { font-family: var(--font-display); font-size: 20px; line-height: 24px; font-weight: 600; }
 .t-body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400; }
 .t-body-strong { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 600; }
 .t-input { font-family: var(--font-sans); font-size: 17px; line-height: 24px; font-weight: 500; }
 .t-chip { font-family: var(--font-sans); font-size: 13px; line-height: 16px; font-weight: 600; }
-.t-button-md { font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 600; }
-.t-timer { font-family: var(--font-sans); font-size: 96px; line-height: 96px; font-weight: 700; letter-spacing: -0.03em; }
-.t-timer-xl { font-family: var(--font-sans); font-size: 160px; line-height: 150px; font-weight: 700; letter-spacing: -0.03em; }
+.t-button-md { font-family: var(--font-display); font-size: 15px; line-height: 20px; font-weight: 600; }
+.t-timer { font-family: var(--font-display); font-size: 96px; line-height: 96px; font-weight: 700; letter-spacing: -0.03em; }
+.t-timer-xl { font-family: var(--font-display); font-size: 160px; line-height: 150px; font-weight: 700; letter-spacing: -0.03em; }
 .t-wordmark { font-family: var(--font-brand); font-size: 32px; line-height: 32px; font-weight: 400; letter-spacing: 0.02em; }
