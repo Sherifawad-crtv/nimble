@@ -1432,3 +1432,8 @@ body:has(.app-shell.desktop) .app-toast {
   align-items: center;
   gap: var(--space-2);
 }
+
+.app-signin-card .v-lockup {
+  align-self: flex-start;
+  margin-block: var(--space-4) var(--space-6);
+}

@@ -14,7 +14,7 @@ export function SignInScreen() {
   return (
     <main className="app-signin" data-theme="dark">
       <div className="app-signin-card">
-        <Lockup size={72} />
+        <Lockup size={72} bg={false} />
         {sessionService.kind === 'demo' ? <DemoSignIn session={sessionService} /> : <AccountSignIn session={sessionService} />}
       </div>
     </main>
@@ -239,7 +239,7 @@ export function NewPasswordScreen({ onDone }: { onDone: () => void }) {
   return (
     <main className="app-signin" data-theme="dark">
       <div className="app-signin-card">
-        <Lockup size={72} />
+        <Lockup size={72} bg={false} />
         <form className="app-signin-form" onSubmit={(e) => void submit(e)} noValidate>
           <h1 className="t-title app-title">{t('auth.newPassword.title')}</h1>
           <p className="t-label v-muted">{t('auth.newPassword.subtitle')}</p>
