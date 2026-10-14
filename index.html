@@ -24,10 +24,10 @@
           var app = document.getElementById('app') || document.body;
           app.innerHTML =
             '<div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px;background:#141414;color:#d9d9d9;font:16px/24px system-ui,sans-serif">' +
-            '<strong style="font-size:22px;color:#f0ff8a">Nimble could not start</strong>' +
+            '<strong style="font-size:22px;color:#c9f711">Nimble could not start</strong>' +
             '<span>Close the app and open it again. If this keeps happening, send a screenshot of this screen.</span>' +
             '<pre style="margin:0;padding:12px;border-radius:12px;background:#202022;color:#8b8b8b;white-space:pre-wrap;font:13px/18px ui-monospace,Menlo,monospace"></pre>' +
-            '<button style="min-height:52px;border:0;border-radius:999px;background:#f0ff8a;color:#000;font-weight:800" onclick="location.reload()">Reload</button></div>';
+            '<button style="min-height:52px;border:0;border-radius:999px;background:#c9f711;color:#000;font-weight:800" onclick="location.reload()">Reload</button></div>';
           app.querySelector('pre').textContent = (first || 'The app did not start within 8 seconds.') + '\n' + navigator.userAgent;
         }, 8000);
       })();

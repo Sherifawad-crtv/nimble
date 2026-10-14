@@ -5,8 +5,8 @@
   --surface-control: #2a2a2d;
   --surface-card: #202022;
   --surface-raised: #353538;
-  --brand: #e6fc03;
-  --brand-yellow: #e6fc03;
+  --brand: #c9f711;
+  --brand-yellow: #c9f711;
   --brand-indigo: #442bee;
   --brand-beige: #fbeecb;
   --on-brand: #000000;
@@ -20,7 +20,7 @@
   --ink: #ffffff;
   --muted: #8e8e93;
   --faint: #5a5a5e;
-  --text-brand: #e6fc03;
+  --text-brand: #c9f711;
   --text-pink: #ff7a45;
   --text-blue: #4a9dff;
   --text-green: #5be37d;
@@ -31,8 +31,8 @@
   --field-bg: #2e2e31;
   --field-edge: #46464b;
   --card-edge: #00000000;
-  --edge-accent: #e6fc03;
-  --focus: #e6fc03;
+  --edge-accent: #c9f711;
+  --focus: #c9f711;
   --scrim: #000000cc;
   --glass: #202022d9;
   --warning: #ffb340;
