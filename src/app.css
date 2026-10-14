@@ -1437,3 +1437,19 @@ body:has(.app-shell.desktop) .app-toast {
   align-self: flex-start;
   margin-block: var(--space-4) var(--space-6);
 }
+
+/* ---------- client home: week strip ---------- */
+
+/* The design calendar in week mode, without its month header (the strip is always this week). */
+.app-weekstrip .v-cal-h {
+  display: none;
+}
+
+.app-weekstrip .v-cal {
+  gap: var(--space-1);
+}
+
+.app-weekstrip .v-cal-d {
+  min-block-size: 64px;
+  border-radius: var(--radius-md);
+}
