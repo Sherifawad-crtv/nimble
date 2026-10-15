@@ -59,14 +59,16 @@ describe('video links', () => {
 describe('library rules', () => {
   it('seeds 20+ exercises including an unavailable link', async () => {
     const all = await svc.listExercises();
-    expect(all.length).toBeGreaterThanOrEqual(20);
+    expect(all.length).toBeGreaterThanOrEqual(150);
+    expect(new Set(all.map((e) => e.name.toLowerCase())).size).toBe(all.length);
     expect(all.some((e) => e.linkStatus === 'unavailable')).toBe(true);
   });
 
   it('searches by name and filters by tag and equipment', async () => {
     expect((await svc.listExercises({ search: 'squat' })).map((e) => e.name)).toContain('Back Squat');
     const kb = await svc.listExercises({ equipment: ['kettlebell'], tags: ['legs'] });
-    expect(kb.map((e) => e.name)).toEqual(['Goblet Squat']);
+    expect(kb.map((e) => e.name)).toContain('Goblet Squat');
+    expect(kb.every((e) => e.equipment.includes('kettlebell') && e.tags.includes('legs'))).toBe(true);
   });
 
   it('refuses a workout that uses an exercise outside the library', async () => {

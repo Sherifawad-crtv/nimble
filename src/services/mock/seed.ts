@@ -18,6 +18,7 @@ import type {
   WorkoutLog,
 } from '../../types';
 import { parseVideoUrl, thumbnailFor, videoUrlFor } from '../videoLink';
+import { STARTER_EXERCISES } from '../starterLibrary';
 
 export interface MockDB {
   version: 2;
@@ -83,8 +84,11 @@ const EXERCISES: ExerciseSeed[] = [
   ['handstand_hold', 'Handstand Hold', 'time', ['push', 'core'], ['bodyweight']],
 ];
 
+const STARTER: ExerciseSeed[] = STARTER_EXERCISES.map(([key, name, measuredAs, tags, equipment, youtubeId, cue]) => [key, name, measuredAs, tags, equipment, `https://www.youtube.com/watch?v=${youtubeId}`, cue]);
+
 function buildExercises(createdAt: string): Exercise[] {
-  return EXERCISES.map(([id, name, measuredAs, tags, equipment, video, cues]) => {
+  const taken = new Set(EXERCISES.map((e) => e[1].toLowerCase()));
+  return [...EXERCISES, ...STARTER.filter((e) => !taken.has(e[1].toLowerCase()))].map(([id, name, measuredAs, tags, equipment, video, cues]) => {
     const parsed = video ? parseVideoUrl(video) : undefined;
     if (parsed) VIDEO_TITLES[parsed.videoId] = name;
     return {
