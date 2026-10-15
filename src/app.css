@@ -315,6 +315,11 @@ body:has(.app-shell.desktop) .app-toast {
   gap: var(--space-3);
 }
 
+/* A profile avatar sits centred beside the greeting block, not pinned to its first line. */
+.app-head-row:has(.v-av) {
+  align-items: center;
+}
+
 .app-head-text {
   flex: 1;
   min-inline-size: 0;
@@ -358,6 +363,9 @@ body:has(.app-shell.desktop) .app-toast {
 
 .app-head-sentinel {
   block-size: 1px;
+  /* Takes no room of its own: cancels the header's flex gap and its own height, so the space
+     between a header and the content below is exactly the header's bottom padding. */
+  margin-block-start: calc(-1 * var(--space-4) - 1px);
 }
 
 .app-compact {
@@ -1438,7 +1446,16 @@ body:has(.app-shell.desktop) .app-toast {
   margin-block: var(--space-4) var(--space-6);
 }
 
-/* ---------- client home: week strip ---------- */
+/* ---------- client home ---------- */
+
+/* Major blocks (calendar, cards, list) are 24px apart on an 8px grid. */
+.app-stack.app-home {
+  gap: var(--space-6);
+}
+
+.app-stack.app-home > * + .app-section {
+  margin-block-start: 0;
+}
 
 /* The design calendar in week mode, without its month header (the strip is always this week). */
 .app-weekstrip .v-cal-h {
@@ -1446,10 +1463,24 @@ body:has(.app-shell.desktop) .app-toast {
 }
 
 .app-weekstrip .v-cal {
-  gap: var(--space-1);
+  gap: 0;
 }
 
+/* Weekday letters sit 8px above the dates; columns stay 4px apart. */
+.app-weekstrip .v-cal-g {
+  row-gap: var(--space-2);
+  column-gap: var(--space-1);
+}
+
+.app-weekstrip .v-cal-wd {
+  padding-block: 0;
+}
+
+/* Date, then dot, centred in a 56px cell (over the 44px minimum touch target). */
 .app-weekstrip .v-cal-d {
-  min-block-size: 64px;
+  min-block-size: 56px;
+  padding-block: 0;
+  gap: 6px;
+  justify-content: center;
   border-radius: var(--radius-md);
 }

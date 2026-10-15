@@ -46,7 +46,7 @@ export function TodayScreen() {
 
   return (
     <Page title={t('home.greeting', { name: first })} subtitle={t('home.welcome')} trailing={<Avatar name={me.name} size="md" />}>
-      <div className="app-stack">
+      <div className="app-stack app-home">
         <div className="app-weekstrip">
           <Calendar mode="week" weekStart={WEEK_START} today={today} selected={selected} data={data} onSelect={setSelected} />
         </div>
