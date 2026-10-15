@@ -175,6 +175,10 @@ export interface ProgressSummary {
   completionPct: number;
   setsLogged: number;
   personalRecords: number;
+  /** Total load moved across every completed workout, all time, in kg. */
+  weightLiftedKg: number;
+  /** Consecutive calendar weeks (Mon–Sun) with a completed workout, ending this week or last. */
+  streakWeeks: number;
 }
 
 // ---------- packages (tracking only) ----------

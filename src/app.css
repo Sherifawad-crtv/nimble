@@ -1622,3 +1622,8 @@ body:has(.app-shell.desktop) .app-toast {
   justify-content: center;
   border-radius: var(--radius-md);
 }
+
+.app-stat-grid .v-card > span > svg {
+  width: 36px;
+  height: 36px;
+}

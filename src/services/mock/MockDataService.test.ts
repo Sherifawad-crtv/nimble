@@ -174,6 +174,8 @@ describe('progress summary', () => {
     expect(s.completed).toBe(6);
     expect(s.completionPct).toBe(75);
     expect(s.setsLogged).toBeGreaterThan(0);
+    expect(s.weightLiftedKg).toBeGreaterThan(0);
+    expect(s.streakWeeks).toBeGreaterThanOrEqual(0);
     expect(s.personalRecords).toBeGreaterThan(0);
   });
 

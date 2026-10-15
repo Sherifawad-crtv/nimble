@@ -1,4 +1,4 @@
-import { addDays, daysBetween } from '../lib/date';
+import { addDays, daysBetween, startOfWeek } from '../lib/date';
 import type {
   Assignment,
   ExerciseProgress,
@@ -107,6 +107,29 @@ export function exerciseProgress(
 const SUMMARY_DAYS = 28;
 
 /** Consistency over the last four weeks. */
+/** Sum of reps × load over every completed weighted set, all time. */
+export function weightLifted(assignments: Assignment[], logs: WorkoutLog[], measuredOf: (exerciseId: string) => MeasuredAs): number {
+  let total = 0;
+  for (const e of entriesFor(assignments, logs, measuredOf)) {
+    if (e.measured !== 'weight_reps') continue;
+    for (const s of e.sets) total += loadOf(s) * (s.reps ?? 0);
+  }
+  return Math.round(total);
+}
+
+/** Consecutive weeks with a completed workout. A week still in progress without one does not break the run. */
+export function weekStreak(assignments: Assignment[], today: ISODate): number {
+  const weeks = new Set(assignments.filter((a) => a.status === 'completed').map((a) => startOfWeek(a.date, 1)));
+  let week = startOfWeek(today, 1);
+  if (!weeks.has(week)) week = addDays(week, -7);
+  let n = 0;
+  while (weeks.has(week)) {
+    n++;
+    week = addDays(week, -7);
+  }
+  return n;
+}
+
 export function progressSummary(
   assignments: Assignment[],
   logs: WorkoutLog[],
@@ -128,6 +151,8 @@ export function progressSummary(
     completionPct: inWindow.length ? Math.round((completed / inWindow.length) * 100) : 0,
     setsLogged,
     personalRecords: records,
+    weightLiftedKg: weightLifted(assignments, logs, measuredOf),
+    streakWeeks: weekStreak(assignments, today),
   };
 }
 

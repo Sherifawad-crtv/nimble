@@ -3,6 +3,7 @@ import { StatCard, Skeleton } from '../design';
 import { useData } from '../hooks/data';
 import { keys } from '../hooks/keys';
 import { t } from '../i18n';
+import { compact } from '../lib/chart';
 import type { ProgressSummary } from '../types';
 import { DataBoundary } from './DataBoundary';
 
@@ -39,10 +40,10 @@ export function ProgressHero({ quietWhenEmpty = false, showDots = false }: { qui
         <>
           {showDots && <CompletionDots summary={s} />}
           <div className="app-stat-grid">
-            <StatCard tone="pink" icon="calendar" value={String(s.assigned)} label={t('progress.stat.assigned')} />
-            <StatCard tone="blue" icon="run" value={String(s.completed)} label={t('progress.stat.workouts')} />
-            <StatCard tone="brand" icon="flame" value={String(s.setsLogged)} label={t('progress.stat.sets')} />
-            <StatCard tone="green" icon="trophy" value={String(s.personalRecords)} label={t('progress.stat.records')} />
+            <StatCard tone="pink" icon="weight-duo" value={s.weightLiftedKg < 100_000 ? s.weightLiftedKg.toLocaleString() : compact(s.weightLiftedKg)} label={t('progress.stat.weight')} />
+            <StatCard tone="blue" icon="check-circle-duo" value={String(s.completed)} label={t('progress.stat.workouts')} />
+            <StatCard tone="brand" icon="flame-duo" value={String(s.streakWeeks)} label={t('progress.stat.streak')} />
+            <StatCard tone="green" icon="trophy-duo" value={String(s.personalRecords)} label={t('progress.stat.records')} />
           </div>
         </>
       )}

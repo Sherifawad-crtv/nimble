@@ -64,6 +64,10 @@ const MAP = {
   share: 'share-bold',
   list: 'list-bold',
   circle: 'record-linear',
+  'check-circle-duo': 'check-circle-bold-duotone',
+  'flame-duo': 'fire-bold-duotone',
+  'weight-duo': 'dumbbell-large-bold-duotone',
+  'trophy-duo': 'cup-star-bold-duotone',
 };
 
 const resolve = (name) => {
