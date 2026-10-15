@@ -1725,3 +1725,9 @@ html:not([data-input='key']) *:focus-visible {
 html[data-keyboard] .app-tabbar {
   display: none;
 }
+
+/* Every call-to-action label is set in capitals. */
+.v-btn {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
