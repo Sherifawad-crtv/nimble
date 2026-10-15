@@ -1722,3 +1722,8 @@ html:not([data-input='key']) *:focus,
 html:not([data-input='key']) *:focus-visible {
   outline: none !important;
 }
+
+/* The keyboard covers the tab bar in a native app; it never pushes it up. */
+html[data-keyboard] .app-tabbar {
+  display: none;
+}

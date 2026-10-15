@@ -30,6 +30,19 @@ const root = document.documentElement;
 document.addEventListener('keydown', (e) => e.key !== 'Escape' && root.setAttribute('data-input', 'key'), true);
 for (const type of ['pointerdown', 'touchstart']) document.addEventListener(type, () => root.removeAttribute('data-input'), true);
 
+// With the on-screen keyboard open the tab bar hides, as in a native app, instead of riding up above it.
+const typing = (el: EventTarget | null) =>
+  el instanceof HTMLElement && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && !/^(checkbox|radio|button|submit|range|file|color)$/.test((el as HTMLInputElement).type)));
+let blurTimer = 0;
+document.addEventListener('focusin', (e) => {
+  window.clearTimeout(blurTimer);
+  if (typing(e.target)) root.setAttribute('data-keyboard', '');
+});
+document.addEventListener('focusout', () => {
+  // Moving from one field to the next must not flash the bar back in.
+  blurTimer = window.setTimeout(() => !typing(document.activeElement) && root.removeAttribute('data-keyboard'), 100);
+});
+
 // The app has one theme: dark.
 document.documentElement.setAttribute('data-theme', 'dark');
 
