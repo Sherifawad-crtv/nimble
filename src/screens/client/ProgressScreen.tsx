@@ -1,7 +1,8 @@
 import { useMe } from '../../app/auth';
 import { DataBoundary } from '../../components/DataBoundary';
 import { Page } from '../../components/Page';
-import { PersonalRecord, ProgressChart } from '../../design';
+import { ExerciseChart } from '../../components/ExerciseChart';
+import { PersonalRecord } from '../../design';
 import { useData } from '../../hooks/data';
 import { keys } from '../../hooks/keys';
 import { formatDay, t } from '../../i18n';
@@ -44,7 +45,7 @@ export function ProgressScreen() {
                   .filter((p) => p.points.length >= 2)
                   .slice(0, 6)
                   .map((p) => (
-                    <ProgressChart key={p.exerciseId} title={`${p.exerciseName} (${p.unit})`} unit={p.unit} points={p.points.map((q) => ({ x: formatDay(q.date), y: q.value }))} />
+                    <ExerciseChart key={p.exerciseId} progress={p} />
                   ))}
               </div>
             )}

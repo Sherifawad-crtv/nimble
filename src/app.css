@@ -579,7 +579,145 @@ body:has(.app-shell.desktop) .app-toast {
 
 .app-charts {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
+}
+
+/* Exercise charts */
+.app-chart {
+  background: var(--surface-card);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.app-chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.app-chart-title {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-chart .v-seg {
+  flex: none;
+  width: auto;
+}
+.app-chart .v-seg-o svg {
+  display: none;
+}
+.app-chart .v-seg-o {
+  min-height: 32px;
+  padding-inline: 10px;
+  font-size: 13px;
+}
+.app-chart-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.app-chart-num {
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.app-chart-unit,
+.app-chart-when {
+  color: var(--muted);
+}
+.app-chart-when {
+  margin: 4px 0 0;
+}
+.app-chart-plot {
+  width: 100%;
+  min-width: 0;
+}
+.app-chart-plot svg {
+  display: block;
+  overflow: visible;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.app-chart-plot svg:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+.app-chart-plot text,
+.app-chart-tick {
+  font: 500 12px var(--font-sans);
+  fill: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.app-chart-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.app-chart-line {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.app-chart-area {
+  fill: var(--brand);
+  fill-opacity: 0.1;
+  stroke: none;
+}
+.app-chart-dot {
+  fill: var(--brand);
+}
+.app-chart-ring {
+  fill: var(--surface-card);
+}
+.app-chart-cross {
+  stroke: var(--faint);
+  stroke-width: 1;
+}
+.app-chart-bar {
+  fill: var(--brand);
+  fill-opacity: 0.38;
+  transition: fill-opacity 0.15s;
+}
+.app-chart-bar.on {
+  fill-opacity: 1;
+}
+.app-chart-hit {
+  fill: transparent;
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+.app-chart-table-wrap {
+  max-height: 220px;
+  overflow: auto;
+}
+.app-chart-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.app-chart-table th,
+.app-chart-table td {
+  padding: 10px 0;
+  text-align: start;
+  border-bottom: 1px solid var(--line);
+  font: 500 14px var(--font-sans);
+  color: var(--ink);
+}
+.app-chart-table thead th {
+  color: var(--muted);
+  font-size: 12px;
+}
+.app-chart-table th:last-child,
+.app-chart-table td:last-child {
+  text-align: end;
 }
 
 @media (min-width: 1024px) {
