@@ -228,11 +228,9 @@ img {
   position: absolute;
   inset-inline: 0;
   inset-block-end: 0;
-  inset-block-start: calc(var(--fade-above) * -1);
+  inset-block-start: 0;
   z-index: -1;
   background: var(--bg);
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.0) calc(var(--fade) * 0.0000), rgba(0, 0, 0, 0.002) calc(var(--fade) * 0.0625), rgba(0, 0, 0, 0.016) calc(var(--fade) * 0.1250), rgba(0, 0, 0, 0.049) calc(var(--fade) * 0.1875), rgba(0, 0, 0, 0.104) calc(var(--fade) * 0.2500), rgba(0, 0, 0, 0.18) calc(var(--fade) * 0.3125), rgba(0, 0, 0, 0.275) calc(var(--fade) * 0.3750), rgba(0, 0, 0, 0.384) calc(var(--fade) * 0.4375), rgba(0, 0, 0, 0.5) calc(var(--fade) * 0.5000), rgba(0, 0, 0, 0.616) calc(var(--fade) * 0.5625), rgba(0, 0, 0, 0.725) calc(var(--fade) * 0.6250), rgba(0, 0, 0, 0.82) calc(var(--fade) * 0.6875), rgba(0, 0, 0, 0.896) calc(var(--fade) * 0.7500), rgba(0, 0, 0, 0.951) calc(var(--fade) * 0.8125), rgba(0, 0, 0, 0.984) calc(var(--fade) * 0.8750), rgba(0, 0, 0, 0.998) calc(var(--fade) * 0.9375), rgba(0, 0, 0, 1.0) calc(var(--fade) * 1.0000), rgba(0, 0, 0, 1) 100%);
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.0) calc(var(--fade) * 0.0000), rgba(0, 0, 0, 0.002) calc(var(--fade) * 0.0625), rgba(0, 0, 0, 0.016) calc(var(--fade) * 0.1250), rgba(0, 0, 0, 0.049) calc(var(--fade) * 0.1875), rgba(0, 0, 0, 0.104) calc(var(--fade) * 0.2500), rgba(0, 0, 0, 0.18) calc(var(--fade) * 0.3125), rgba(0, 0, 0, 0.275) calc(var(--fade) * 0.3750), rgba(0, 0, 0, 0.384) calc(var(--fade) * 0.4375), rgba(0, 0, 0, 0.5) calc(var(--fade) * 0.5000), rgba(0, 0, 0, 0.616) calc(var(--fade) * 0.5625), rgba(0, 0, 0, 0.725) calc(var(--fade) * 0.6250), rgba(0, 0, 0, 0.82) calc(var(--fade) * 0.6875), rgba(0, 0, 0, 0.896) calc(var(--fade) * 0.7500), rgba(0, 0, 0, 0.951) calc(var(--fade) * 0.8125), rgba(0, 0, 0, 0.984) calc(var(--fade) * 0.8750), rgba(0, 0, 0, 0.998) calc(var(--fade) * 0.9375), rgba(0, 0, 0, 1.0) calc(var(--fade) * 1.0000), rgba(0, 0, 0, 1) 100%);
   pointer-events: none;
 }
 
