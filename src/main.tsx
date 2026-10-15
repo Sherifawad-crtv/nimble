@@ -25,6 +25,11 @@ document.addEventListener('contextmenu', (e) => {
   if (!(e.target instanceof HTMLElement) || !e.target.closest('input, textarea')) e.preventDefault();
 });
 
+// Native apps show no focus rings for touch or mouse; only a keyboard user gets them.
+const root = document.documentElement;
+document.addEventListener('keydown', (e) => e.key !== 'Escape' && root.setAttribute('data-input', 'key'), true);
+for (const type of ['pointerdown', 'touchstart']) document.addEventListener(type, () => root.removeAttribute('data-input'), true);
+
 // The app has one theme: dark.
 document.documentElement.setAttribute('data-theme', 'dark');
 

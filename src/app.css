@@ -1627,3 +1627,9 @@ body:has(.app-shell.desktop) .app-toast {
   width: 36px;
   height: 36px;
 }
+
+/* Focus rings are for keyboard users only. Touch and mouse never show them, as in a native app. */
+html:not([data-input='key']) *:focus,
+html:not([data-input='key']) *:focus-visible {
+  outline: none !important;
+}
