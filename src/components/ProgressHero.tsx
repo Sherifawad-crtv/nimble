@@ -40,9 +40,9 @@ export function ProgressHero({ quietWhenEmpty = false, showDots = false }: { qui
         <>
           {showDots && <CompletionDots summary={s} />}
           <div className="app-stat-grid">
-            <StatCard tone="pink" icon="weight-duo" value={s.weightLiftedKg < 100_000 ? s.weightLiftedKg.toLocaleString() : compact(s.weightLiftedKg)} label={t('progress.stat.weight')} />
+            <StatCard tone="brand" icon="weight-duo" value={s.weightLiftedKg < 100_000 ? s.weightLiftedKg.toLocaleString() : compact(s.weightLiftedKg)} label={t('progress.stat.weight')} />
             <StatCard tone="blue" icon="check-circle-duo" value={String(s.completed)} label={t('progress.stat.workouts')} />
-            <StatCard tone="brand" icon="flame-duo" value={String(s.streakWeeks)} label={t('progress.stat.streak')} />
+            <StatCard tone="pink" icon="flame-duo" value={String(s.streakWeeks)} label={t('progress.stat.streak')} />
             <StatCard tone="green" icon="trophy-duo" value={String(s.personalRecords)} label={t('progress.stat.records')} />
           </div>
         </>
