@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { Splash } from '../design';
 import { keys } from '../hooks/keys';
@@ -45,8 +45,25 @@ export function useSessionActions() {
 
 export function AuthGate() {
   const client = useQueryClient();
+  const navigate = useNavigate();
   const [recovering, setRecovering] = useState(false);
   const me = useQuery({ queryKey: keys.me, queryFn: () => dataService.getMe(), retry: false, staleTime: Infinity });
+
+  // After signing out and back in, start on the home screen rather than wherever the last session ended.
+  const signedIn = useRef(false);
+  const signedOut = useRef(false);
+  useEffect(() => {
+    if (me.data) {
+      if (signedOut.current) {
+        signedOut.current = false;
+        navigate('/', { replace: true });
+      }
+      signedIn.current = true;
+    } else if (me.isError && signedIn.current) {
+      signedIn.current = false;
+      signedOut.current = true;
+    }
+  }, [me.data, me.isError, navigate]);
 
   // Real accounts can change outside the app: email links, expiry, another tab signing out.
   useEffect(() => {
