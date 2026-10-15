@@ -155,13 +155,15 @@ export function SetLogger({ name, measuredAs, target, saved, disabled, onChange,
       ))}
       {!disabled && (
         <div className="app-set-actions">
-          <Button size="md" variant="secondary" icon="plus" onClick={() => setRows([...rows, { values: [], done: false }])}>
+          <Button fullWidth size="md" variant="secondary" icon="plus" onClick={() => setRows([...rows, { values: [], done: false }])}>
             {t('log.addSet')}
           </Button>
           {rows.length > 1 && (
-            <Button size="md" variant="tertiary" onClick={() => commit(rows.slice(0, -1))}>
-              {t('log.removeLast')}
-            </Button>
+            <div className="app-set-delete">
+              <Button fullWidth size="md" variant="tertiary" onClick={() => commit(rows.slice(0, -1))}>
+                {t('log.removeLast')}
+              </Button>
+            </div>
           )}
         </div>
       )}

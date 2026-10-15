@@ -452,7 +452,7 @@ export const en = {
   'log.unit.reps': 'x',
   'log.unit.meters': 'm',
   'log.unit.rounds': 'rounds',
-  'log.removeLast': 'Remove last set',
+  'log.removeLast': 'Delete set',
   'log.setField': '{name}, set {set}, {field}',
   'result.amrap.one': '{n} round',
   'result.amrap.other': '{n} rounds',
