@@ -1004,9 +1004,92 @@ body:has(.app-shell.desktop) .app-toast {
   border-block-start: 1px solid var(--line);
 }
 
-.app-log .v-set-n {
+.app-log {
+  gap: var(--space-3);
+}
+.app-log .v-set,
+.app-log .v-set.done {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  gap: var(--space-2);
+}
+.app-set-n {
+  flex: none;
   inline-size: 24px;
+  display: grid;
+  place-items: center;
+  font: 600 16px var(--font-sans);
+  color: var(--muted);
+}
+.app-set-n.now::before {
+  content: '';
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--pink);
+}
+.app-set-pill {
+  position: relative;
+  flex: 1;
+  min-inline-size: 0;
+  block-size: 52px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-control);
+  display: flex;
+  align-items: center;
+}
+.app-set-in {
+  inline-size: 100%;
+  block-size: 100%;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: var(--ink);
   text-align: center;
+  font: 600 17px var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  padding-inline: 40px 8px;
+  border-radius: inherit;
+}
+.app-set-in::placeholder {
+  color: var(--faint);
+  font-weight: 500;
+}
+.app-set-unit {
+  position: absolute;
+  inset-inline-end: 16px;
+  font: 500 14px var(--font-sans);
+  color: var(--muted);
+  pointer-events: none;
+}
+.app-set-check {
+  flex: none;
+  inline-size: 52px;
+  block-size: 52px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-control);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.app-set-check.on {
+  background: var(--green);
+  color: var(--on-brand);
+}
+.app-set-check:disabled,
+.app-set-in:disabled {
+  opacity: 1;
+}
+.app-set-actions {
+  display: flex;
+  gap: var(--space-2);
+  padding-inline-start: 32px;
+}
+.app-set-actions > :first-child {
+  flex: 1;
 }
 
 .app-timer-launch {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Icon, IconButton } from '../design';
+import { Button, Icon } from '../design';
 import { t } from '../i18n';
 import { formatClock } from '../timer/engine';
 import type { ItemTarget, MeasuredAs, SetResult } from '../types';
@@ -15,6 +15,15 @@ const COLUMNS: Record<MeasuredAs, string[]> = {
   time: [t('log.col.time')],
   distance: [t('log.col.meters')],
   rounds: [t('log.col.rounds')],
+};
+
+/** Unit shown inside each field, so the row reads "80 kg · 6x" without column captions. */
+const UNITS: Record<MeasuredAs, string[]> = {
+  reps: [t('log.unit.reps')],
+  weight_reps: [t('log.unit.kg'), t('log.unit.reps')],
+  time: [''],
+  distance: [t('log.unit.meters')],
+  rounds: [t('log.unit.rounds')],
 };
 
 const parseSeconds = (s: string): number => {
@@ -91,6 +100,8 @@ export function SetLogger({ name, measuredAs, target, saved, disabled, onChange,
   );
   const hints = targetValues(measuredAs, target);
   const cols = COLUMNS[measuredAs];
+  const units = UNITS[measuredAs];
+  const current = rows.findIndex((r) => !r.done);
 
   const commit = (next: Row[]) => {
     setRows(next);
@@ -113,14 +124,13 @@ export function SetLogger({ name, measuredAs, target, saved, disabled, onChange,
     <div className="v-log app-log">
       {rows.map((row, i) => (
         <div key={i} className={row.done ? 'v-set done' : 'v-set'}>
-          <span className="t-chip v-muted v-set-n" aria-hidden="true">
-            {i + 1}
+          <span className={i === current && !disabled ? 'app-set-n now' : 'app-set-n'} aria-hidden="true">
+            {i === current && !disabled ? '' : i + 1}
           </span>
           {cols.map((c, k) => (
-            <label key={c} className="v-set-f">
-              <span className="t-caption v-muted">{c}</span>
+            <label key={c} className="app-set-pill">
               <input
-                className="v-set-in t-metric"
+                className="app-set-in"
                 inputMode={measuredAs === 'time' ? 'text' : 'decimal'}
                 value={row.values[k] ?? ''}
                 placeholder={hints[k] || '0'}
@@ -128,11 +138,12 @@ export function SetLogger({ name, measuredAs, target, saved, disabled, onChange,
                 onChange={(e) => edit(i, k, e.target.value)}
                 aria-label={t('log.setField', { name, set: i + 1, field: c })}
               />
+              {units[k] && <span className="app-set-unit">{units[k]}</span>}
             </label>
           ))}
           <button
             type="button"
-            className={row.done ? 'v-set-done on' : 'v-set-done'}
+            className={row.done ? 'app-set-check on' : 'app-set-check'}
             aria-pressed={row.done}
             aria-label={t('log.setDone', { name, set: i + 1 })}
             disabled={disabled}
@@ -140,15 +151,19 @@ export function SetLogger({ name, measuredAs, target, saved, disabled, onChange,
           >
             <Icon name="check" size={26} />
           </button>
-          {rows.length > 1 && !disabled && (
-            <IconButton icon="close" label={t('log.removeSet', { set: i + 1 })} size={18} onClick={() => commit(rows.filter((_, j) => j !== i))} />
-          )}
         </div>
       ))}
       {!disabled && (
-        <Button size="md" variant="secondary" icon="plus" onClick={() => setRows([...rows, { values: [], done: false }])}>
-          {t('log.addSet')}
-        </Button>
+        <div className="app-set-actions">
+          <Button size="md" variant="secondary" icon="plus" onClick={() => setRows([...rows, { values: [], done: false }])}>
+            {t('log.addSet')}
+          </Button>
+          {rows.length > 1 && (
+            <Button size="md" variant="tertiary" onClick={() => commit(rows.slice(0, -1))}>
+              {t('log.removeLast')}
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );
