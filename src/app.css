@@ -1747,11 +1747,11 @@ html[data-keyboard] .app-tabbar {
     radial-gradient(90% 30% at 50% 108%, rgb(201 247 17 / 0.1), transparent 70%),
     var(--bg);
   padding-block-start: env(safe-area-inset-top);
-  animation: assist-in 0.38s cubic-bezier(0.32, 0.72, 0, 1) both;
+  animation: assist-in 0.42s var(--ease-emphasized) both;
   overscroll-behavior: contain;
 }
 .assist.closing {
-  animation: assist-out 0.28s cubic-bezier(0.4, 0, 0.9, 0.4) both;
+  animation: assist-out 0.26s var(--ease-accel) both;
 }
 @keyframes assist-in {
   from {
@@ -2018,6 +2018,14 @@ html[data-keyboard] .assist-composer {
   padding-block-end: var(--space-2);
 }
 
+/* Motion curves: decelerate for things entering, accelerate for leaving, a soft overshoot for taps. */
+.assist {
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decel: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+
 /* ---------- assistant life: entrances, shimmer, caret, markdown ---------- */
 @keyframes assist-rise {
   from {
@@ -2053,25 +2061,22 @@ html[data-keyboard] .assist-composer {
   }
 }
 @keyframes assist-pop {
-  0% {
-    transform: scale(0.82);
+  from {
+    transform: scale(0.8);
   }
-  60% {
-    transform: scale(1.08);
-  }
-  100% {
+  to {
     transform: scale(1);
   }
 }
 .assist-msg {
-  animation: assist-rise 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: assist-rise 0.42s var(--ease-decel) both;
 }
 .assist-proposal {
-  animation: assist-rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: assist-rise 0.45s var(--ease-decel) both;
 }
 .assist-hello,
 .assist-headline {
-  animation: assist-fade-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: assist-fade-up 0.6s var(--ease-decel) both;
 }
 .assist-hello {
   animation-delay: 0.12s;
@@ -2080,10 +2085,10 @@ html[data-keyboard] .assist-composer {
   animation-delay: 0.22s;
 }
 .assist-chip {
-  animation: assist-fade-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: assist-fade-up 0.5s var(--ease-decel) both;
   animation-delay: calc(0.36s + var(--i, 0) * 0.07s);
   transition:
-    transform 0.15s ease,
+    transform 0.18s var(--ease-emphasized),
     background 0.15s ease;
 }
 .assist-chip:active {
@@ -2093,10 +2098,10 @@ html[data-keyboard] .assist-composer {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  animation: assist-rise 0.35s ease both;
+  animation: assist-rise 0.4s var(--ease-decel) both;
 }
 .assist-thinking canvas {
-  margin-inline-start: -8px;
+  margin-inline-start: -4px;
 }
 .assist-shimmer {
   background: linear-gradient(100deg, var(--muted) 30%, var(--ink) 50%, var(--muted) 70%);
@@ -2106,7 +2111,7 @@ html[data-keyboard] .assist-composer {
   color: transparent;
   animation:
     assist-shimmer 1.6s linear infinite,
-    assist-fade-up 0.3s ease both;
+    assist-fade-up 0.32s var(--ease-decel) both;
   font-size: 15px;
 }
 .assist-caret {
@@ -2178,12 +2183,12 @@ html[data-keyboard] .assist-composer {
 }
 .assist-send {
   transition:
-    transform 0.15s ease,
+    transform 0.18s var(--ease-emphasized),
     background 0.2s ease,
     color 0.2s ease;
 }
 .assist-send:not(:disabled) {
-  animation: assist-pop 0.3s ease both;
+  animation: assist-pop 0.36s var(--ease-spring) both;
 }
 .assist-send:not(:disabled):active {
   transform: scale(0.9);

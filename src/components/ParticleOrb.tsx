@@ -41,17 +41,22 @@ export function ParticleOrb({ size, energy = 0, particles = 260, className }: Pr
     let raf = 0;
     let last = performance.now();
     let angle = 0;
+    let beat = 0;
     let level = target.current;
     const still = reduced();
+    let presence = still ? 1 : 0; // eases the orb in from a small, faint start
 
     const draw = (now: number) => {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
-      level += (target.current - level) * Math.min(dt * 3, 1);
-      angle += dt * (0.22 + level * 1.7);
-      const t = now / 1000;
-      const R = size * 0.34;
+      // Frame-rate independent exponential smoothing: same feel at 60 and 120 Hz.
+      level += (target.current - level) * (1 - Math.exp(-2.4 * dt));
+      presence += (1 - presence) * (1 - Math.exp(-4 * dt));
+      angle += dt * (0.2 + level * 1.5);
+      beat += dt * (1 + level * 1.8); // accumulated, so a change in energy never jumps the swell phase
+      const R = size * 0.34 * (0.86 + presence * 0.14);
       const c = size / 2;
+      ctx.globalAlpha = presence;
       ctx.clearRect(0, 0, size, size);
 
       // Soft glow behind the sphere.
@@ -70,7 +75,7 @@ export function ParticleOrb({ size, energy = 0, particles = 260, className }: Pr
       ctx.globalCompositeOperation = 'lighter';
       for (const p of pts) {
         // Each particle breathes on its own beat; busier means a bigger, faster swell.
-        const swell = 1 + Math.sin(t * (1.1 + level * 2.2) + p.ph) * (0.035 + level * 0.11);
+        const swell = 1 + Math.sin(beat + p.ph) * (0.035 + level * 0.09);
         const x0 = p.x * swell;
         const y0 = p.y * swell;
         const z0 = p.z * swell;
@@ -90,6 +95,7 @@ export function ParticleOrb({ size, energy = 0, particles = 260, className }: Pr
         ctx.fill();
       }
       ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
       if (!still) raf = requestAnimationFrame(draw);
     };
 

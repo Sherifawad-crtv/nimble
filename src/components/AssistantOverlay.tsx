@@ -77,7 +77,7 @@ function Thinking() {
   }, []);
   return (
     <li className="assist-thinking" role="status" aria-label={t('assistant.working')}>
-      <ParticleOrb size={64} energy={1} particles={120} />
+      <ParticleOrb size={44} energy={1} particles={80} />
       <span key={i} className="assist-shimmer t-label">
         {STATUS[i]}
       </span>
