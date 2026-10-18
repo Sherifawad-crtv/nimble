@@ -191,6 +191,10 @@ export class MockDataService implements DataService, DemoSession {
     this.storage.removeItem(SESSION_KEY);
   }
 
+  async askAssistant(): Promise<never> {
+    throw new ServiceError('forbidden', 'The assistant needs a real account. It is not part of the demo.');
+  }
+
   // Push needs a real backend; the demo backend has nothing to send.
   async savePushDevice(): Promise<void> {}
   async removePushDevice(): Promise<void> {}

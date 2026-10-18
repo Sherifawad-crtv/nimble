@@ -2,6 +2,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Banner, Icon, Sidebar, Skeleton } from '../design';
 import { useIsDesktop } from '../hooks/media';
+import { sessionService } from '../services';
 import { t } from '../i18n';
 import { useMe } from './auth';
 
@@ -90,6 +91,7 @@ export function CoachShell() {
     { id: 'clients', icon: 'users', label: t('nav.clients') },
     { id: 'library', icon: 'book', label: t('nav.library') },
     { id: 'workouts', icon: 'dumbbell', label: t('nav.workouts') },
+    ...(sessionService.kind === 'account' ? [{ id: 'assistant', icon: 'sparkle', label: t('nav.assistant') }] : []),
     { id: 'settings', icon: 'gear', label: t('nav.settings') },
   ];
   const seg = segment(pathname, 2);

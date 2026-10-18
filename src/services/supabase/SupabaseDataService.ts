@@ -1,6 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { addDays, todayISO } from '../../lib/date';
 import type {
+  AssistantMessage,
+  AssistantReply,
   Assignment,
   AssignmentStatus,
   Block,
@@ -218,6 +220,11 @@ export class SupabaseDataService implements DataService {
   }
 
   // ---------- session ----------
+
+  async askAssistant(messages: AssistantMessage[]): Promise<AssistantReply> {
+    await this.coach();
+    return callFunction<AssistantReply>(this.sb, 'coach-assistant', { messages });
+  }
 
   async savePushDevice(d: { endpoint: string; p256dh: string; auth: string }): Promise<void> {
     must(await this.sb.rpc('register_push', { p_endpoint: d.endpoint, p_p256dh: d.p256dh, p_auth: d.auth, p_user_agent: navigator.userAgent.slice(0, 200) }));

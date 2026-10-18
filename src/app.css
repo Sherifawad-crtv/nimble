@@ -1734,3 +1734,123 @@ html[data-keyboard] .app-tabbar {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+/* ---------- coach assistant ---------- */
+.app-assist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-block-size: calc(100dvh - 240px);
+}
+.app-assist-start .app-filters {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+.app-assist-start {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.app-assist-thread {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.app-bubble {
+  align-self: flex-start;
+  max-inline-size: 92%;
+  background: var(--surface-card);
+  border-radius: 20px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.app-bubble p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+.app-bubble.me {
+  align-self: flex-end;
+  background: var(--surface-raised);
+}
+.app-bubble.working {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+}
+.app-proposal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-control);
+}
+.app-proposal[data-resolved] {
+  opacity: 0.6;
+}
+.app-proposal-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-block-start: var(--space-2);
+  border-block-start: 1px solid var(--line);
+}
+.app-proposal-block ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.app-proposal-actions {
+  display: flex;
+  gap: var(--space-2);
+  padding-block-start: var(--space-2);
+}
+.app-assist-composer {
+  position: sticky;
+  inset-block-end: calc(var(--tab-height) + env(safe-area-inset-bottom) + var(--space-2));
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-start: auto;
+}
+html[data-keyboard] .app-assist-composer {
+  inset-block-end: var(--space-2);
+}
+.app-assist-input {
+  flex: 1;
+  min-inline-size: 0;
+  block-size: 52px;
+  border: 0;
+  outline: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-control);
+  color: var(--ink);
+  padding-inline: 20px;
+  font: 500 16px var(--font-sans);
+}
+.app-assist-input::placeholder {
+  color: var(--muted);
+}
+.app-assist-send {
+  flex: none;
+  inline-size: 52px;
+  block-size: 52px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--on-brand);
+  display: grid;
+  place-items: center;
+}
+.app-assist-send:disabled {
+  background: var(--surface-control);
+  color: var(--muted);
+}

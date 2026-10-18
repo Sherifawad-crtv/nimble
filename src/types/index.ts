@@ -199,3 +199,20 @@ export interface Package {
 }
 
 export type PackageInput = Omit<Package, 'id' | 'sessionsRemaining' | 'state'> & { id?: Id };
+
+// ---------- coach assistant ----------
+export interface AssistantMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+/** One change the assistant wants to make. Nothing happens until the coach confirms it. */
+export type AssistantProposal =
+  | { kind: 'workout'; replaceId?: Id; workout: WorkoutInput }
+  | { kind: 'assign_workout'; workoutId: Id; workoutTitle: string; clientId: Id; clientName: string; date: ISODate }
+  | { kind: 'assign_program'; programId: Id; programTitle: string; clientId: Id; clientName: string; startDate: ISODate };
+
+export interface AssistantReply {
+  text: string;
+  proposal?: AssistantProposal;
+}

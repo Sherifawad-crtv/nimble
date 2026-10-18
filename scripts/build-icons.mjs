@@ -64,6 +64,7 @@ const MAP = {
   share: 'share-bold',
   list: 'list-bold',
   circle: 'record-linear',
+  sparkle: 'stars-bold',
   'check-circle-duo': 'check-circle-bold-duotone',
   'flame-duo': 'fire-bold-duotone',
   'weight-duo': 'dumbbell-large-bold-duotone',

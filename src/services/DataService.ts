@@ -1,4 +1,6 @@
 import type {
+  AssistantMessage,
+  AssistantReply,
   Assignment,
   AssignmentStatus,
   Comment,
@@ -46,6 +48,9 @@ export interface DataService {
   /** Push notifications: remember or forget this device for the signed-in user. */
   savePushDevice(device: { endpoint: string; p256dh: string; auth: string }): Promise<void>;
   removePushDevice(endpoint: string): Promise<void>;
+
+  /** Rule-bounded assistant for coaches: answers, or proposes one change to confirm. */
+  askAssistant(messages: AssistantMessage[]): Promise<AssistantReply>;
 
   // library
   listExercises(q?: ExerciseQuery): Promise<Exercise[]>;
