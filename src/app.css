@@ -2006,3 +2006,8 @@ html[data-keyboard] .app-tabbar {
   background: rgb(255 255 255 / 0.08);
   color: var(--muted);
 }
+
+/* With the keyboard open there is no home indicator below the composer, so it sits right on the keyboard. */
+html[data-keyboard] .assist-composer {
+  padding-block-end: var(--space-2);
+}
