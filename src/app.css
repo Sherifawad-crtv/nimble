@@ -1925,11 +1925,7 @@ html[data-keyboard] .app-tabbar {
 }
 .assist-bubble.me {
   max-inline-size: 85%;
-  background: var(--brand);
-  color: var(--on-brand);
   border-end-end-radius: 6px;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
 }
 .assist-bubble.working {
   color: var(--muted);
@@ -2208,4 +2204,17 @@ html[data-keyboard] .assist-composer {
   .assist-send:not(:disabled) {
     animation: none;
   }
+}
+
+/* Assistant replies are open text on the page (no box); only the user's messages sit in a bubble. */
+.assist-col {
+  inline-size: 100%;
+  max-inline-size: 100%;
+}
+.assist-bubble.md {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }

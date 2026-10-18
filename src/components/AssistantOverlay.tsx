@@ -85,7 +85,6 @@ function Thinking() {
   );
 }
 
-const Orb = ({ size = 'lg' }: { size?: 'sm' | 'lg' }) => <span className={size === 'lg' ? 'assist-orb' : 'assist-orb sm'} aria-hidden="true" />;
 
 /**
  * The coach assistant: a full-screen layer that slides up over the app, with no navigation bar.
@@ -241,7 +240,6 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
               </li>
             ) : (
               <li key={i} className="assist-msg">
-                <Orb size="sm" />
                 <div className="assist-col">
                   <Reply
                     text={turn.content}
