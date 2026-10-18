@@ -1,5 +1,6 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { AssistantOverlay } from '../components/AssistantOverlay';
 import { Banner, Icon, Sidebar, Skeleton } from '../design';
 import { useIsDesktop } from '../hooks/media';
 import { sessionService } from '../services';
@@ -96,7 +97,8 @@ export function CoachShell() {
   ];
   const seg = segment(pathname, 2);
   const active = seg === 'review' ? 'clients' : seg === 'programs' ? 'workouts' : seg;
-  const go = (id: string) => navigate(`/coach/${id}`);
+  const [assistant, setAssistant] = useState(false);
+  const go = (id: string) => (id === 'assistant' ? setAssistant(true) : navigate(`/coach/${id}`));
 
   return (
     <div className={desktop ? 'app-shell desktop' : 'app-shell'}>
@@ -107,6 +109,7 @@ export function CoachShell() {
         )}
         <Main />
       {!desktop && <TabNav items={items} active={active} onChange={go} />}
+      {assistant && <AssistantOverlay onClose={() => setAssistant(false)} />}
     </div>
   );
 }

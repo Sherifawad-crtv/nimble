@@ -27,8 +27,6 @@ const ClientSettings = screen(() => import('./screens/client/ClientSettings'), '
 const WorkoutScreen = screen(() => import('./screens/client/WorkoutScreen'), 'WorkoutScreen');
 const TimerScreen = screen(() => import('./screens/client/TimerScreen'), 'TimerScreen');
 
-const AssistantScreen = screen(() => import('./screens/coach/AssistantScreen'), 'AssistantScreen');
-
 const home = (role: Role) => (role === 'coach' ? '/coach/clients' : '/app/today');
 
 function RoleHome() {
@@ -71,7 +69,6 @@ export function App() {
             <Route path="workouts/:workoutId" element={<WorkoutBuilder />} />
             <Route path="programs/:programId" element={<ProgramEditor />} />
             <Route path="review/:assignmentId" element={<ReviewScreen />} />
-            <Route path="assistant" element={<AssistantScreen />} />
             <Route path="settings" element={<CoachSettings />} />
           </Route>
           <Route

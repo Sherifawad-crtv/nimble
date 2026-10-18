@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '../../app/Toast';
-import { Page } from '../../components/Page';
-import { Button, Chip, Icon } from '../../design';
-import { errorMessage, useAction, useData } from '../../hooks/data';
-import { keys } from '../../hooks/keys';
-import { formatDay, t } from '../../i18n';
-import { dataService } from '../../services';
-import { blockTypeLabel, isTimerBlock, settingsSummary, targetText } from '../../lib/workout';
-import type { AssistantMessage, AssistantProposal, MeasuredAs } from '../../types';
+import { useMe } from '../app/auth';
+import { useToast } from '../app/Toast';
+import { Button, Icon } from '../design';
+import { errorMessage, useAction, useData } from '../hooks/data';
+import { keys } from '../hooks/keys';
+import { formatDay, t } from '../i18n';
+import { blockTypeLabel, isTimerBlock, settingsSummary, targetText } from '../lib/workout';
+import { dataService } from '../services';
+import type { AssistantMessage, AssistantProposal, MeasuredAs } from '../types';
 
 interface Turn extends AssistantMessage {
   proposal?: AssistantProposal;
@@ -21,13 +21,20 @@ const STARTERS = [
   { label: t('assistant.starter.find'), prompt: t('assistant.starter.find.prompt') },
 ];
 
-/** A guided assistant: it looks things up and proposes one change at a time. Nothing is saved until the coach confirms. */
-export function AssistantScreen() {
+const Orb = ({ size = 'lg' }: { size?: 'sm' | 'lg' }) => <span className={size === 'lg' ? 'assist-orb' : 'assist-orb sm'} aria-hidden="true" />;
+
+/**
+ * The coach assistant: a full-screen layer that slides up over the app, with no navigation bar.
+ * It looks things up and proposes one change at a time. Nothing is saved until the coach confirms.
+ */
+export function AssistantOverlay({ onClose }: { onClose: () => void }) {
+  const me = useMe();
   const toast = useToast();
   const navigate = useNavigate();
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
+  const [closing, setClosing] = useState(false);
   const end = useRef<HTMLDivElement>(null);
   const exercises = useData(keys.exercises(), (s) => s.listExercises());
   const measured = new Map<string, MeasuredAs>((exercises.data ?? []).map((e) => [e.id, e.measuredAs]));
@@ -39,6 +46,8 @@ export function AssistantScreen() {
   useEffect(() => {
     end.current?.scrollIntoView({ block: 'end', behavior: 'smooth' });
   }, [turns, busy]);
+
+  const close = () => setClosing(true);
 
   const send = async (text: string) => {
     const content = text.trim();
@@ -67,17 +76,15 @@ export function AssistantScreen() {
     try {
       if (p.kind === 'workout') {
         const saved = await saveWorkout.run({ workout: p });
-        settle(index, t('assistant.done.workout', { title: saved.title }));
         toast.show(t('assistant.done.workout', { title: saved.title }));
+        setClosing(true);
         navigate(`/coach/workouts/${saved.id}`);
       } else if (p.kind === 'assign_workout') {
         await assignWorkout.run({ clientId: p.clientId, workoutId: p.workoutId, date: p.date });
         settle(index, t('assistant.done.assign', { client: p.clientName }));
-        toast.show(t('assistant.done.assign', { client: p.clientName }));
       } else {
         await assignProgram.run({ clientId: p.clientId, programId: p.programId, startDate: p.startDate });
         settle(index, t('assistant.done.assign', { client: p.clientName }));
-        toast.show(t('assistant.done.assign', { client: p.clientName }));
       }
     } catch (e) {
       toast.show(errorMessage(e), 'error');
@@ -91,53 +98,80 @@ export function AssistantScreen() {
     void send(draft);
   };
 
-  return (
-    <Page title={t('assistant.title')} subtitle={t('assistant.subtitle')}>
-      <div className="app-assist">
-        {turns.length === 0 && (
-          <div className="app-assist-start">
-            <p className="t-label v-muted">{t('assistant.intro')}</p>
-            <div className="app-filters" role="group" aria-label={t('assistant.starters')}>
-              {STARTERS.map((s) => (
-                <Chip key={s.label} label={s.label} onClick={() => void send(s.prompt)} />
-              ))}
-            </div>
-          </div>
-        )}
+  const empty = turns.length === 0;
 
-        <ol className="app-assist-thread" aria-live="polite">
-          {turns.map((turn, i) => (
-            <li key={i} className={turn.role === 'user' ? 'app-bubble me' : 'app-bubble'}>
-              <p className="t-body">{turn.content}</p>
-              {turn.proposal && <ProposalCard proposal={turn.proposal} measured={measured} resolved={!!turn.resolved} busy={busy} onConfirm={() => void confirm(i, turn.proposal as AssistantProposal)} onCancel={() => settle(i, t('assistant.cancelled'))} />}
-            </li>
-          ))}
+  return (
+    <div className={closing ? 'assist closing' : 'assist'} role="dialog" aria-modal="true" aria-label={t('assistant.title')} onAnimationEnd={(e) => e.currentTarget === e.target && closing && onClose()}>
+      <header className="assist-bar">
+        <button type="button" className="assist-round" aria-label={t('assistant.close')} onClick={close}>
+          <Icon name="chev-d" size={22} />
+        </button>
+        {!empty && <h2 className="t-heading assist-bar-title">{t('assistant.title')}</h2>}
+        {!empty ? (
+          <button type="button" className="assist-round" aria-label={t('assistant.new')} disabled={busy} onClick={() => setTurns([])}>
+            <Icon name="refresh" size={20} />
+          </button>
+        ) : (
+          <span className="assist-round ghost" aria-hidden="true" />
+        )}
+      </header>
+
+      {empty ? (
+        <div className="assist-hero">
+          <Orb />
+          <p className="t-label assist-hello">{t('assistant.hello', { name: me.name.split(' ')[0] ?? me.name })}</p>
+          <h1 className="t-title assist-headline">{t('assistant.headline')}</h1>
+          <div className="assist-chips" role="group" aria-label={t('assistant.starters')}>
+            {STARTERS.map((s) => (
+              <button key={s.label} type="button" className="assist-chip" onClick={() => void send(s.prompt)}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <ol className="assist-thread" aria-live="polite">
+          {turns.map((turn, i) =>
+            turn.role === 'user' ? (
+              <li key={i} className="assist-msg me">
+                <p className="assist-bubble me">{turn.content}</p>
+              </li>
+            ) : (
+              <li key={i} className="assist-msg">
+                <Orb size="sm" />
+                <div className="assist-col">
+                  <p className="assist-bubble">{turn.content}</p>
+                  {turn.proposal && <ProposalCard proposal={turn.proposal} measured={measured} resolved={!!turn.resolved} busy={busy} onConfirm={() => void confirm(i, turn.proposal as AssistantProposal)} onCancel={() => settle(i, t('assistant.cancelled'))} />}
+                </div>
+              </li>
+            ),
+          )}
           {busy && (
-            <li className="app-bubble working" aria-label={t('assistant.working')}>
-              <span className="v-spin" aria-hidden="true" />
-              <span className="t-label v-muted">{t('assistant.working')}</span>
+            <li className="assist-msg" aria-label={t('assistant.working')}>
+              <Orb size="sm" />
+              <p className="assist-bubble working t-label">{t('assistant.working')}</p>
             </li>
           )}
+          <div ref={end} />
         </ol>
-        <div ref={end} />
+      )}
 
-        <form className="app-assist-composer" onSubmit={onSubmit}>
-          <input
-            className="app-assist-input"
-            value={draft}
-            maxLength={1000}
-            placeholder={t('assistant.placeholder')}
-            aria-label={t('assistant.placeholder')}
-            enterKeyHint="send"
-            autoComplete="off"
-            onChange={(e) => setDraft(e.target.value)}
-          />
-          <button type="submit" className="app-assist-send" aria-label={t('assistant.send')} disabled={busy || !draft.trim()}>
-            <Icon name="arrow-up" size={22} />
-          </button>
-        </form>
-      </div>
-    </Page>
+      <form className="assist-composer" onSubmit={onSubmit}>
+        <input
+          className="assist-input"
+          value={draft}
+          maxLength={1000}
+          placeholder={t('assistant.placeholder')}
+          aria-label={t('assistant.placeholder')}
+          enterKeyHint="send"
+          autoComplete="off"
+          onChange={(e) => setDraft(e.target.value)}
+        />
+        <button type="submit" className="assist-send" aria-label={t('assistant.send')} disabled={busy || !draft.trim()}>
+          <Icon name="arrow-up" size={22} />
+        </button>
+      </form>
+    </div>
   );
 }
 
@@ -145,15 +179,15 @@ function ProposalCard({ proposal, measured, resolved, busy, onConfirm, onCancel 
   const heading =
     proposal.kind === 'workout' ? (proposal.replaceId ? t('assistant.proposal.update') : t('assistant.proposal.create')) : proposal.kind === 'assign_workout' ? t('assistant.proposal.assignWorkout') : t('assistant.proposal.assignProgram');
   return (
-    <div className="app-proposal" data-resolved={resolved || undefined}>
+    <div className="assist-proposal" data-resolved={resolved || undefined}>
       <div className="t-eyebrow v-muted">{heading}</div>
       {proposal.kind === 'workout' && (
         <>
           <div className="t-heading">{proposal.workout.title}</div>
           {proposal.workout.blocks.map((b) => (
-            <div key={b.id} className="app-proposal-block">
+            <div key={b.id} className="assist-proposal-block">
               <div className="t-body-strong">
-                {b.title} <span className="v-muted t-label">· {isTimerBlock(b) ? `${blockTypeLabel(b.settings.type)} ${settingsSummary(b.settings)}` : blockTypeLabel(b.settings.type)}</span>
+                {b.title} <span className="v-muted t-label">· {isTimerBlock(b) ? settingsSummary(b.settings) : blockTypeLabel(b.settings.type)}</span>
               </div>
               <ul>
                 {b.items.map((it) => (
@@ -170,7 +204,7 @@ function ProposalCard({ proposal, measured, resolved, busy, onConfirm, onCancel 
       {proposal.kind === 'assign_workout' && <p className="t-body">{t('assistant.proposal.assignWorkout.body', { title: proposal.workoutTitle, client: proposal.clientName, date: formatDay(proposal.date) })}</p>}
       {proposal.kind === 'assign_program' && <p className="t-body">{t('assistant.proposal.assignProgram.body', { title: proposal.programTitle, client: proposal.clientName, date: formatDay(proposal.startDate) })}</p>}
       {!resolved && (
-        <div className="app-proposal-actions">
+        <div className="assist-proposal-actions">
           <Button fullWidth size="md" loading={busy} disabled={busy} onClick={onConfirm}>
             {t('assistant.confirm')}
           </Button>
