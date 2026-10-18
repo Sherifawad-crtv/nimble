@@ -219,6 +219,14 @@ export class SupabaseDataService implements DataService {
 
   // ---------- session ----------
 
+  async savePushDevice(d: { endpoint: string; p256dh: string; auth: string }): Promise<void> {
+    must(await this.sb.rpc('register_push', { p_endpoint: d.endpoint, p_p256dh: d.p256dh, p_auth: d.auth, p_user_agent: navigator.userAgent.slice(0, 200) }));
+  }
+
+  async removePushDevice(endpoint: string): Promise<void> {
+    must(await this.sb.rpc('unregister_push', { p_endpoint: endpoint }));
+  }
+
   async getMe(): Promise<Profile> {
     this.meCache = null;
     return this.profile();

@@ -11,6 +11,7 @@ import { App } from './App';
 import { AppErrorBoundary } from './app/AppErrorBoundary';
 import { ToastProvider } from './app/Toast';
 import { DIR, LOCALE } from './i18n';
+import { isPushWorker } from './lib/push';
 import { ServiceError } from './services';
 
 document.documentElement.lang = LOCALE;
@@ -71,9 +72,10 @@ createRoot(document.getElementById('root') as HTMLElement).render(
 );
 
 // The app-shell service worker is retired until it can be verified on iOS; drop any copy a device
-// still has (public/sw.js also removes itself when the browser checks it for updates).
+// still has (public/sw.js also removes itself when the browser checks it for updates). The push
+// worker is kept.
 if ('serviceWorker' in navigator) {
-  void navigator.serviceWorker.getRegistrations().then((list) => list.forEach((r) => void r.unregister()));
+  void navigator.serviceWorker.getRegistrations().then((list) => list.filter((r) => !isPushWorker(r)).forEach((r) => void r.unregister()));
 }
 
 // Tells the boot check in index.html that the app started.

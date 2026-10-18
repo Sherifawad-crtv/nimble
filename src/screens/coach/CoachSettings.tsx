@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMe, useSessionActions } from '../../app/auth';
+import { NotificationsSetting } from '../../components/NotificationsSetting';
 import { Page } from '../../components/Page';
 import { Avatar, Button } from '../../design';
 import { t } from '../../i18n';
@@ -20,6 +21,7 @@ export function CoachSettings() {
             <div className="t-caption v-muted">{t('role.coach')}</div>
           </div>
         </section>
+        <NotificationsSetting />
         <Button variant="secondary" size="md" icon="users" onClick={() => setInviting(true)}>
           {t('clients.invite')}
         </Button>

@@ -191,6 +191,10 @@ export class MockDataService implements DataService, DemoSession {
     this.storage.removeItem(SESSION_KEY);
   }
 
+  // Push needs a real backend; the demo backend has nothing to send.
+  async savePushDevice(): Promise<void> {}
+  async removePushDevice(): Promise<void> {}
+
   async getMe(): Promise<Profile> {
     await this.wait();
     return structuredClone(this.profile());

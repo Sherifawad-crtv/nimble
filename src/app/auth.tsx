@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { Splash } from '../design';
 import { keys } from '../hooks/keys';
+import { forgetDevice } from '../lib/push';
 import { dataService, sessionService } from '../services';
 import type { Profile } from '../types';
 import { NewPasswordScreen, SignInScreen } from '../screens/SignIn';
@@ -34,6 +35,7 @@ export function useSessionActions() {
     },
     async signOut() {
       try {
+        if (sessionService.kind === 'account') await forgetDevice((endpoint) => dataService.removePushDevice(endpoint));
         await sessionService.signOut();
       } finally {
         await reset();

@@ -37,3 +37,19 @@ sender before launch (the built-in one is rate-limited).
 
 Removed for now. Migration `20261012000500_remove_wearables.sql` drops the tables; the previous
 implementation is in git history (commit d75d942) if it comes back.
+
+
+## Push notifications
+
+`20261018000100_push_notifications.sql` and `20261018000200_push_settings.sql` add device subscriptions and
+database triggers (new or moved workout, finished workout, comments, package running out or expiring) that call
+the `send-push` edge function through `pg_net`. A daily `pg_cron` job reminds clients of packages ending within a
+week. After applying the migrations, store the function URL, a shared secret and a VAPID key pair once:
+
+```sql
+insert into private.push_config (id, url, secret, vapid_public, vapid_private, vapid_subject)
+values (1, 'https://<ref>.supabase.co/functions/v1/send-push', '<random secret>', '<VAPID public>', '<VAPID private>', 'mailto:you@example.com');
+```
+
+Deploy `functions/send-push` with JWT verification off (it authenticates with the shared secret). The public key is
+also in `src/lib/push.ts` (override with `VITE_VAPID_PUBLIC_KEY`). On iPhone, notifications need Nimble added to the Home Screen.

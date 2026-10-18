@@ -1,4 +1,5 @@
 import { useMe, useSessionActions } from '../../app/auth';
+import { NotificationsSetting } from '../../components/NotificationsSetting';
 import { Page } from '../../components/Page';
 import { Avatar, Button } from '../../design';
 import { t } from '../../i18n';
@@ -18,6 +19,7 @@ export function ClientSettings() {
           </div>
         </section>
 
+        <NotificationsSetting />
         <Button variant="secondary" size="md" icon="logout" onClick={() => void signOut()}>
           {t('settings.signOut')}
         </Button>

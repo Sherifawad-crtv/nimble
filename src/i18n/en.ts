@@ -105,6 +105,14 @@ export const en = {
   'settings.title': 'Settings',
   'settings.subtitle': 'Your account.',
   'settings.signOut': 'Sign out',
+  'notif.label': 'Notifications',
+  'notif.desc.client': 'New workouts, coach comments and package reminders.',
+  'notif.desc.coach': 'Finished workouts and client comments.',
+  'notif.on': 'On for this device.',
+  'notif.install': 'Add Nimble to your Home Screen to turn on notifications.',
+  'notif.denied': 'Blocked. Allow notifications for Nimble in your phone settings.',
+  'notif.unsupported': 'This browser cannot show notifications.',
+  'notif.error': 'Could not change notifications. Try again.',
 
   // clients (coach)
   'clients.title': 'Clients',

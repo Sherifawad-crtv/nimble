@@ -43,6 +43,9 @@ export interface ExerciseQuery {
 export interface DataService {
   // session
   getMe(): Promise<Profile>;
+  /** Push notifications: remember or forget this device for the signed-in user. */
+  savePushDevice(device: { endpoint: string; p256dh: string; auth: string }): Promise<void>;
+  removePushDevice(endpoint: string): Promise<void>;
 
   // library
   listExercises(q?: ExerciseQuery): Promise<Exercise[]>;
