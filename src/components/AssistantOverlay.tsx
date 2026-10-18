@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMe } from '../app/auth';
 import { useToast } from '../app/Toast';
@@ -188,6 +188,14 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const field = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    const el = field.current;
+    if (!el) return;
+    el.style.blockSize = 'auto';
+    el.style.blockSize = `${el.scrollHeight + 2}px`; // + the 1px border on each side
+  }, [draft]);
+
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     void send(draft);
@@ -253,14 +261,23 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
       )}
 
       <form className="assist-composer" onSubmit={onSubmit}>
-        <input
+        <textarea
+          ref={field}
+          rows={1}
           className="assist-input"
           value={draft}
           maxLength={1000}
           placeholder={t('assistant.placeholder')}
           aria-label={t('assistant.placeholder')}
-          enterKeyHint="send"
+          enterKeyHint="enter"
           autoComplete="off"
+          onKeyDown={(e) => {
+            // Desktop: Enter sends, Shift+Enter breaks the line. Touch keyboards keep Enter as a new line.
+            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+              e.preventDefault();
+              void send(draft);
+            }
+          }}
           onChange={(e) => {
             setDraft(e.target.value);
             setTyping(true);

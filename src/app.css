@@ -1970,7 +1970,7 @@ html[data-keyboard] .app-tabbar {
 }
 .assist-composer {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4) calc(var(--space-2) + env(safe-area-inset-bottom));
 }
@@ -1978,15 +1978,25 @@ html[data-keyboard] .app-tabbar {
   flex: 1;
   min-inline-size: 0;
   block-size: 52px;
+  min-block-size: 52px;
+  max-block-size: 152px;
+  resize: none;
+  overflow-y: auto;
+  line-height: 22px;
+  padding-block: 14px;
   border: 1px solid rgb(255 255 255 / 0.12);
   outline: 0;
-  border-radius: var(--radius-pill);
+  border-radius: 26px;
   background: rgb(255 255 255 / 0.08);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   color: var(--ink);
   padding-inline: 20px;
-  font: 500 16px var(--font-sans);
+  font: 500 16px/22px var(--font-sans);
+  scrollbar-width: none;
+}
+.assist-input::-webkit-scrollbar {
+  display: none;
 }
 .assist-input::placeholder {
   color: var(--muted);
