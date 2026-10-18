@@ -191,7 +191,7 @@ img {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  padding-block-end: calc(var(--tab-height) + var(--space-2) + max(env(safe-area-inset-bottom), var(--space-2)) + var(--space-4));
+  padding-block-end: calc(var(--tab-height) + env(safe-area-inset-bottom) + var(--space-4));
 }
 
 .app-shell.desktop .app-main {
@@ -209,7 +209,7 @@ img {
   inset-inline: 0;
   inset-block-end: 0;
   z-index: 20;
-  padding: var(--space-2) var(--space-4) max(env(safe-area-inset-bottom), var(--space-2));
+  padding: 0 var(--space-4) env(safe-area-inset-bottom);
   pointer-events: none;
 }
 
@@ -253,7 +253,7 @@ img {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
   border: 0;
   background: transparent;
   color: var(--muted);
@@ -261,7 +261,7 @@ img {
 }
 
 .app-tab-label {
-  font: 500 11px/14px var(--font-sans);
+  font: 500 10px/12px var(--font-sans);
 }
 
 .app-tabbar .v-tab[aria-current='page'] {
@@ -281,7 +281,7 @@ img {
 .app-toast {
   position: absolute;
   inset-inline: var(--space-4);
-  inset-block-end: calc(max(env(safe-area-inset-bottom), var(--space-2)) + var(--tab-height) + var(--space-2) + var(--space-4));
+  inset-block-end: calc(env(safe-area-inset-bottom) + var(--tab-height) + var(--space-4));
   z-index: 80;
   display: flex;
   justify-content: center;
