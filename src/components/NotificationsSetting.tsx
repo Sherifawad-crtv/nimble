@@ -14,8 +14,8 @@ export function NotificationsSetting() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (sessionService.kind === 'account') void getPushState().then(setState);
-  }, []);
+    if (sessionService.kind === 'account') void getPushState(me.id).then(setState);
+  }, [me.id]);
 
   if (sessionService.kind !== 'account' || state === null) return null;
 
@@ -33,9 +33,9 @@ export function NotificationsSetting() {
   const change = async (on: boolean) => {
     setBusy(true);
     try {
-      if (on) setState(await enablePush((d) => dataService.savePushDevice(d)));
+      if (on) setState(await enablePush(me.id, (d) => dataService.savePushDevice(d)));
       else {
-        await disablePush((endpoint) => dataService.removePushDevice(endpoint));
+        await disablePush(me.id, (endpoint) => dataService.removePushDevice(endpoint));
         setState('off');
       }
     } catch {
