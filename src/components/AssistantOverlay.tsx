@@ -6,9 +6,9 @@ import { Button, Icon } from '../design';
 import { errorMessage, useAction, useData } from '../hooks/data';
 import { keys } from '../hooks/keys';
 import { formatDay, t } from '../i18n';
-import { blockTypeLabel, isTimerBlock, settingsSummary, targetText } from '../lib/workout';
+import { blockTypeLabel, isTimerBlock, measuredLabel, settingsSummary, targetText } from '../lib/workout';
 import { dataService } from '../services';
-import type { AssistantMessage, AssistantProposal, MeasuredAs } from '../types';
+import type { AssistantMessage, AssistantProposal, ExerciseInput, Id, MeasuredAs } from '../types';
 
 interface Turn extends AssistantMessage {
   proposal?: AssistantProposal;
@@ -42,6 +42,10 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
   const saveWorkout = useAction((s, a: { workout: Extract<AssistantProposal, { kind: 'workout' }> }) => s.saveWorkout({ ...a.workout.workout, ...(a.workout.replaceId ? { id: a.workout.replaceId } : {}) }), { invalidate: [keys.templates] });
   const assignWorkout = useAction((s, a: { clientId: string; workoutId: string; date: string }) => s.assignWorkout({ clientIds: [a.clientId], workoutId: a.workoutId, dates: [a.date] }), { invalidate: [keys.assignmentsAll] });
   const assignProgram = useAction((s, a: { clientId: string; programId: string; startDate: string }) => s.assignProgram(a), { invalidate: [keys.assignmentsAll] });
+
+  const addExercise = useAction((s, a: ExerciseInput) => s.createExercise(a), { invalidate: [keys.exercisesAll] });
+  const attachVideo = useAction((s, a: { id: Id; videoUrl: string }) => s.updateExercise(a.id, { videoUrl: a.videoUrl }), { invalidate: [keys.exercisesAll] });
+  const saveProgram = useAction((s, a: { title: string; days: { dayOffset: number; workoutId: Id }[] }) => s.saveProgram(a), { invalidate: [keys.programs, keys.templates] });
 
   useEffect(() => {
     end.current?.scrollIntoView({ block: 'end', behavior: 'smooth' });
@@ -82,9 +86,30 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
       } else if (p.kind === 'assign_workout') {
         await assignWorkout.run({ clientId: p.clientId, workoutId: p.workoutId, date: p.date });
         settle(index, t('assistant.done.assign', { client: p.clientName }));
-      } else {
+      } else if (p.kind === 'assign_program') {
         await assignProgram.run({ clientId: p.clientId, programId: p.programId, startDate: p.startDate });
         settle(index, t('assistant.done.assign', { client: p.clientName }));
+      } else if (p.kind === 'exercises') {
+        let done = 0;
+        const failed: string[] = [];
+        for (const it of p.items) {
+          try {
+            if (it.existingId) await attachVideo.run({ id: it.existingId, videoUrl: it.videoUrl ?? '' });
+            else await addExercise.run({ name: it.name, equipment: it.equipment, tags: it.tags, measuredAs: it.measuredAs, ...(it.cues ? { cues: it.cues } : {}), ...(it.videoUrl ? { videoUrl: it.videoUrl } : {}) });
+            done++;
+          } catch {
+            failed.push(it.name);
+          }
+        }
+        settle(index, failed.length ? t('assistant.done.exercisesSome', { n: done, failed: failed.join(', ') }) : t('assistant.done.exercises', { n: done }));
+      } else {
+        const ids = new Map<string, Id>();
+        for (const n of p.newWorkouts) ids.set(n.key, (await saveWorkout.run({ workout: { kind: 'workout', workout: n.workout } })).id);
+        const days = p.sessions.map((x) => ({ dayOffset: x.dayOffset, workoutId: (x.workoutId ?? ids.get(x.workoutKey ?? '')) as Id }));
+        const saved = await saveProgram.run({ title: p.title, days });
+        toast.show(t('assistant.done.program', { title: saved.title }));
+        setClosing(true);
+        navigate(`/coach/programs/${saved.id}`);
       }
     } catch (e) {
       toast.show(errorMessage(e), 'error');
@@ -175,9 +200,21 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
   );
 }
 
+const weekday = (offset: number): string => new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(new Date(2026, 9, 12 + (offset % 7), 12));
+
 function ProposalCard({ proposal, measured, resolved, busy, onConfirm, onCancel }: { proposal: AssistantProposal; measured: Map<string, MeasuredAs>; resolved: boolean; busy: boolean; onConfirm: () => void; onCancel: () => void }) {
   const heading =
-    proposal.kind === 'workout' ? (proposal.replaceId ? t('assistant.proposal.update') : t('assistant.proposal.create')) : proposal.kind === 'assign_workout' ? t('assistant.proposal.assignWorkout') : t('assistant.proposal.assignProgram');
+    proposal.kind === 'workout'
+      ? proposal.replaceId
+        ? t('assistant.proposal.update')
+        : t('assistant.proposal.create')
+      : proposal.kind === 'assign_workout'
+        ? t('assistant.proposal.assignWorkout')
+        : proposal.kind === 'assign_program'
+          ? t('assistant.proposal.assignProgram')
+          : proposal.kind === 'exercises'
+            ? t('assistant.proposal.exercises')
+            : t('assistant.proposal.program');
   return (
     <div className="assist-proposal" data-resolved={resolved || undefined}>
       <div className="t-eyebrow v-muted">{heading}</div>
@@ -203,6 +240,48 @@ function ProposalCard({ proposal, measured, resolved, busy, onConfirm, onCancel 
       )}
       {proposal.kind === 'assign_workout' && <p className="t-body">{t('assistant.proposal.assignWorkout.body', { title: proposal.workoutTitle, client: proposal.clientName, date: formatDay(proposal.date) })}</p>}
       {proposal.kind === 'assign_program' && <p className="t-body">{t('assistant.proposal.assignProgram.body', { title: proposal.programTitle, client: proposal.clientName, date: formatDay(proposal.startDate) })}</p>}
+      {proposal.kind === 'exercises' && (
+        <>
+          {proposal.items.map((it) => (
+            <div key={it.name} className="assist-proposal-block">
+              <div className="t-body-strong">
+                {it.name} <span className="v-muted t-label">· {measuredLabel(it.measuredAs)}{it.tags.length ? ` · ${it.tags.join(', ')}` : ''}</span>
+              </div>
+              <div className="t-label v-muted">{it.videoUrl ? t('assistant.exercise.video', { title: it.videoTitle || it.videoUrl }) : (it.note ?? t('assistant.exercise.noVideo'))}</div>
+            </div>
+          ))}
+          {proposal.skipped && <p className="t-label v-muted">{t('assistant.exercise.skipped', { names: proposal.skipped.join(', ') })}</p>}
+        </>
+      )}
+      {proposal.kind === 'program' && (
+        <>
+          <div className="t-heading">{proposal.title}</div>
+          <p className="t-label v-muted">{t('assistant.program.summary', { weeks: Math.floor(Math.max(...proposal.sessions.map((x) => x.dayOffset)) / 7) + 1, sessions: proposal.sessions.length })}</p>
+          {proposal.newWorkouts.length > 0 && (
+            <div className="assist-proposal-block">
+              <div className="t-body-strong">{t('assistant.program.newWorkouts', { n: proposal.newWorkouts.length })}</div>
+              <ul>
+                {proposal.newWorkouts.map((n) => (
+                  <li key={n.key} className="t-body">
+                    {n.workout.title}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="assist-proposal-block">
+            <div className="t-body-strong">{t('assistant.program.week1')}</div>
+            <ul>
+              {proposal.sessions.filter((x) => x.dayOffset < 7).map((x) => (
+                <li key={x.dayOffset} className="t-label">
+                  <span className="v-muted">{weekday(x.dayOffset)} · </span>
+                  <span className="t-body">{x.title}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )}
       {!resolved && (
         <div className="assist-proposal-actions">
           <Button fullWidth size="md" loading={busy} disabled={busy} onClick={onConfirm}>

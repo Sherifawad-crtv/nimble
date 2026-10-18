@@ -210,7 +210,22 @@ export interface AssistantMessage {
 export type AssistantProposal =
   | { kind: 'workout'; replaceId?: Id; workout: WorkoutInput }
   | { kind: 'assign_workout'; workoutId: Id; workoutTitle: string; clientId: Id; clientName: string; date: ISODate }
-  | { kind: 'assign_program'; programId: Id; programTitle: string; clientId: Id; clientName: string; startDate: ISODate };
+  | { kind: 'assign_program'; programId: Id; programTitle: string; clientId: Id; clientName: string; startDate: ISODate }
+  | { kind: 'exercises'; items: AssistantExercise[]; skipped?: string[] }
+  | { kind: 'program'; title: string; newWorkouts: { key: string; workout: WorkoutInput }[]; sessions: { dayOffset: number; workoutId?: Id; workoutKey?: string; title: string }[] };
+
+/** An exercise the assistant wants to add (or, with existingId, to attach a video to). */
+export interface AssistantExercise {
+  name: string;
+  measuredAs: MeasuredAs;
+  tags: string[];
+  equipment: string[];
+  cues?: string;
+  videoUrl?: string;
+  videoTitle?: string;
+  note?: string;
+  existingId?: Id;
+}
 
 export interface AssistantReply {
   text: string;
