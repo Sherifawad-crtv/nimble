@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useMe } from '../app/auth';
 import { useToast } from '../app/Toast';
 import { Button, Icon } from '../design';
+import { Md } from './Md';
+import { ParticleOrb } from './ParticleOrb';
 import { errorMessage, useAction, useData } from '../hooks/data';
 import { keys } from '../hooks/keys';
 import { formatDay, t } from '../i18n';
@@ -13,6 +15,8 @@ import type { AssistantMessage, AssistantProposal, ExerciseInput, Id, MeasuredAs
 interface Turn extends AssistantMessage {
   proposal?: AssistantProposal;
   resolved?: boolean;
+  /** A reply that just arrived: its text is still being revealed. */
+  fresh?: boolean;
 }
 
 const STARTERS = [
@@ -20,6 +24,66 @@ const STARTERS = [
   { label: t('assistant.starter.assign'), prompt: t('assistant.starter.assign.prompt') },
   { label: t('assistant.starter.find'), prompt: t('assistant.starter.find.prompt') },
 ];
+
+const STATUS = [t('assistant.status.1'), t('assistant.status.2'), t('assistant.status.3')];
+
+/** Reveals text word by word, quickly, the way a reply streams in. Skipped for older messages. */
+function useReveal(text: string, fresh: boolean, onDone: () => void, onGrow: () => void): string {
+  const [n, setN] = useState(fresh ? 0 : text.length);
+  useEffect(() => {
+    if (!fresh) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setN(text.length);
+      onDone();
+      return;
+    }
+    const parts = text.split(/(\s+)/);
+    const per = Math.max(1, Math.ceil(parts.length / (1800 / 24))); // never longer than ~1.8 s
+    let i = 0;
+    const id = window.setInterval(() => {
+      i = Math.min(parts.length, i + per);
+      setN(parts.slice(0, i).join('').length);
+      if (i >= parts.length) {
+        window.clearInterval(id);
+        onDone();
+      }
+    }, 24);
+    return () => window.clearInterval(id);
+  }, [text, fresh]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(onGrow, [n]); // eslint-disable-line react-hooks/exhaustive-deps
+  return text.slice(0, n);
+}
+
+function Reply({ text, fresh, onDone, onGrow, children }: { text: string; fresh: boolean; onDone: () => void; onGrow: () => void; children?: React.ReactNode }) {
+  const shown = useReveal(text, fresh, onDone, onGrow);
+  const finished = shown.length >= text.length;
+  return (
+    <>
+      <div className="assist-bubble md">
+        <Md text={shown} />
+        {!finished && <span className="assist-caret" aria-hidden="true" />}
+      </div>
+      {finished && children}
+    </>
+  );
+}
+
+/** While the assistant works: the particle sphere speeds up and a line of status text shimmers. */
+function Thinking() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setI((n) => (n + 1) % STATUS.length), 2300);
+    return () => window.clearInterval(id);
+  }, []);
+  return (
+    <li className="assist-thinking" role="status" aria-label={t('assistant.working')}>
+      <ParticleOrb size={64} energy={1} particles={120} />
+      <span key={i} className="assist-shimmer t-label">
+        {STATUS[i]}
+      </span>
+    </li>
+  );
+}
 
 const Orb = ({ size = 'lg' }: { size?: 'sm' | 'lg' }) => <span className={size === 'lg' ? 'assist-orb' : 'assist-orb sm'} aria-hidden="true" />;
 
@@ -34,6 +98,9 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
+  const [thinking, setThinking] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const typer = useRef<number>();
   const [closing, setClosing] = useState(false);
   const end = useRef<HTMLDivElement>(null);
   const exercises = useData(keys.exercises(), (s) => s.listExercises());
@@ -56,24 +123,27 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
   const send = async (text: string) => {
     const content = text.trim();
     if (!content || busy) return;
-    const next: Turn[] = [...turns, { role: 'user', content }];
+    const next: Turn[] = [...turns.map((x) => ({ ...x, fresh: false })), { role: 'user', content }];
     setTurns(next);
     setDraft('');
     setBusy(true);
+    setThinking(true);
     try {
       const reply = await dataService.askAssistant(next.map(({ role, content: c }) => ({ role, content: c })));
-      setTurns([...next, { role: 'assistant', content: reply.text, ...(reply.proposal ? { proposal: reply.proposal } : {}) }]);
+      setThinking(false);
+      setTurns([...next, { role: 'assistant', content: reply.text, fresh: true, ...(reply.proposal ? { proposal: reply.proposal } : {}) }]);
     } catch (e) {
       toast.show(errorMessage(e), 'error');
       setTurns(next.slice(0, -1));
       setDraft(content);
     } finally {
+      setThinking(false);
       setBusy(false);
     }
   };
 
   const settle = (index: number, message: string) =>
-    setTurns((list) => [...list.map((x, i) => (i === index ? { ...x, resolved: true } : x)), { role: 'assistant' as const, content: message }]);
+    setTurns((list) => [...list.map((x, i) => (i === index ? { ...x, resolved: true } : x)), { role: 'assistant' as const, content: message, fresh: true }]);
 
   const confirm = async (index: number, p: AssistantProposal) => {
     setBusy(true);
@@ -143,12 +213,12 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
 
       {empty ? (
         <div className="assist-hero">
-          <Orb />
+          <ParticleOrb size={210} energy={typing ? 0.55 : 0.08} />
           <p className="t-label assist-hello">{t('assistant.hello', { name: me.name.split(' ')[0] ?? me.name })}</p>
           <h1 className="t-title assist-headline">{t('assistant.headline')}</h1>
           <div className="assist-chips" role="group" aria-label={t('assistant.starters')}>
-            {STARTERS.map((s) => (
-              <button key={s.label} type="button" className="assist-chip" onClick={() => void send(s.prompt)}>
+            {STARTERS.map((s, k) => (
+              <button key={s.label} type="button" className="assist-chip" style={{ '--i': k } as React.CSSProperties} onClick={() => void send(s.prompt)}>
                 {s.label}
               </button>
             ))}
@@ -165,18 +235,19 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
               <li key={i} className="assist-msg">
                 <Orb size="sm" />
                 <div className="assist-col">
-                  <p className="assist-bubble">{turn.content}</p>
-                  {turn.proposal && <ProposalCard proposal={turn.proposal} measured={measured} resolved={!!turn.resolved} busy={busy} onConfirm={() => void confirm(i, turn.proposal as AssistantProposal)} onCancel={() => settle(i, t('assistant.cancelled'))} />}
+                  <Reply
+                    text={turn.content}
+                    fresh={!!turn.fresh}
+                    onDone={() => setTurns((list) => list.map((x, k) => (k === i ? { ...x, fresh: false } : x)))}
+                    onGrow={() => end.current?.scrollIntoView({ block: 'end' })}
+                  >
+                    {turn.proposal && <ProposalCard proposal={turn.proposal} measured={measured} resolved={!!turn.resolved} busy={busy} onConfirm={() => void confirm(i, turn.proposal as AssistantProposal)} onCancel={() => settle(i, t('assistant.cancelled'))} />}
+                  </Reply>
                 </div>
               </li>
             ),
           )}
-          {busy && (
-            <li className="assist-msg" aria-label={t('assistant.working')}>
-              <Orb size="sm" />
-              <p className="assist-bubble working t-label">{t('assistant.working')}</p>
-            </li>
-          )}
+          {thinking && <Thinking />}
           <div ref={end} />
         </ol>
       )}
@@ -190,7 +261,12 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
           aria-label={t('assistant.placeholder')}
           enterKeyHint="send"
           autoComplete="off"
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            setTyping(true);
+            window.clearTimeout(typer.current);
+            typer.current = window.setTimeout(() => setTyping(false), 700);
+          }}
         />
         <button type="submit" className="assist-send" aria-label={t('assistant.send')} disabled={busy || !draft.trim()}>
           <Icon name="arrow-up" size={22} />
