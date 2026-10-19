@@ -17,7 +17,8 @@ export const keys = {
   progress: (clientId: string) => ['progress', clientId] as const,
   recordsAll: ['records'] as const,
   progressAll: ['progress'] as const,
-  overview: ['coach', 'overview'] as const,
+  /** Under 'assignments' so anything that changes assignments refreshes the coach home too. */
+  overview: ['assignments', 'overview'] as const,
   summary: (clientId: string) => ['progress', 'summary', clientId] as const,
   comments: (assignmentId: string) => ['comments', assignmentId] as const,
   packages: (clientId: string) => ['packages', clientId] as const,

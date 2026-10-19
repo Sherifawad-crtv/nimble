@@ -35,7 +35,7 @@ function PackageForm({ onClose, clientId, workspaceId, pkg }: Omit<Props, 'open'
   const [error, setError] = useState<string>();
   const save = useAction(
     (s, p: Parameters<typeof s.savePackage>[0]) => s.savePackage(p),
-    { invalidate: [keys.packages(clientId)] },
+    { invalidate: [keys.packages(clientId), keys.overview] },
   );
 
   const submit = async () => {

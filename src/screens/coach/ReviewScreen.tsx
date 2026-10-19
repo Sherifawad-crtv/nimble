@@ -27,7 +27,7 @@ function ReviewView({ assignment: a }: { assignment: Assignment }) {
   const log = useData(keys.log(a.id), (s) => s.getLog(a.id), { enabled: a.status !== 'not_started' });
   const exercises = useData(keys.exercises(), (s) => s.listExercises());
   const packages = useData(keys.packages(a.clientId), (s) => s.listPackages(a.clientId), { enabled: a.status === 'completed' });
-  const markUsed = useAction((s, p: NonNullable<typeof packages.data>[number]) => s.savePackage({ ...p, sessionsUsed: p.sessionsUsed + 1 }), { invalidate: [keys.packages(a.clientId)] });
+  const markUsed = useAction((s, p: NonNullable<typeof packages.data>[number]) => s.savePackage({ ...p, sessionsUsed: p.sessionsUsed + 1 }), { invalidate: [keys.packages(a.clientId), keys.overview] });
 
   const client = clients.data?.find((c) => c.id === a.clientId);
   const current = packages.data?.find((p) => p.state !== 'expired');

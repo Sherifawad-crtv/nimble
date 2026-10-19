@@ -279,7 +279,7 @@ function PackageSection({ client }: { client: Profile }) {
   const toast = useToast();
   const packages = useData(keys.packages(client.id), (s) => s.listPackages(client.id));
   const [editing, setEditing] = useState<Package | 'new' | null>(null);
-  const markUsed = useAction((s, p: Package) => s.savePackage({ ...p, sessionsUsed: p.sessionsUsed + 1 }), { invalidate: [keys.packages(client.id)] });
+  const markUsed = useAction((s, p: Package) => s.savePackage({ ...p, sessionsUsed: p.sessionsUsed + 1 }), { invalidate: [keys.packages(client.id), keys.overview] });
 
   return (
     <section className="app-section" aria-label={t('client.package')}>
