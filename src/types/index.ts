@@ -255,6 +255,10 @@ export interface ClientOverview {
   program: ProgramProgress | null;
   /** The date of the client's latest completed workout. */
   lastActiveOn: ISODate | null;
+  /** The client's latest package, if they have one. */
+  package: { name: string; sessionsRemaining: number; sessionsIncluded: number; state: PackageState; expiresOn: ISODate } | null;
+  /** True when the package is expiring, expired or nearly used up. */
+  needsRenewal: boolean;
 }
 
 /** The numbers on the coach's home screen. */

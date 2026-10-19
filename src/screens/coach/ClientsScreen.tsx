@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { DataBoundary } from '../../components/DataBoundary';
 import { CoachStats, ProgramBar } from '../../components/CoachOverview';
 import { Page } from '../../components/Page';
-import { Avatar, DataTable, IconButton, Skeleton, StatusChip } from '../../design';
+import { Avatar, Button, IconButton, Skeleton, StatusChip } from '../../design';
 import { useData } from '../../hooks/data';
 import { useIsDesktop } from '../../hooks/media';
 import { keys } from '../../hooks/keys';
 import { t } from '../../i18n';
 import { todayISO } from '../../lib/date';
 import type { Assignment, Profile } from '../../types';
+import { ClientsDesktop } from './ClientsDesktop';
 import { InviteSheet } from './InviteSheet';
 
 export function ClientsScreen() {
@@ -29,7 +30,7 @@ export function ClientsScreen() {
     <Page
       title={t('clients.title')}
       subtitle={t('clients.subtitle')}
-      trailing={<IconButton icon="plus" label={t('clients.invite')} onClick={() => setInviting(true)} />}
+      trailing={desktop ? <Button size="md" icon="plus" onClick={() => setInviting(true)}>{t('clients.invite')}</Button> : <IconButton icon="plus" label={t('clients.invite')} onClick={() => setInviting(true)} />}
     >
       {overview.isPending ? <Skeleton variant="card" /> : overview.data && overview.data.clients > 0 && <CoachStats overview={overview.data} />}
       <DataBoundary
@@ -38,44 +39,7 @@ export function ClientsScreen() {
       >
         {(list) =>
           desktop ? (
-            <DataTable
-              loading={todays.isPending}
-              columns={[
-                {
-                  key: 'name',
-                  label: t('clients.col.name'),
-                  render: (r: Profile) => (
-                    <span className="app-cell-person">
-                      <Avatar name={r.name} size="sm" />
-                      <span className="t-body-strong">{r.name}</span>
-                    </span>
-                  ),
-                },
-                {
-                  key: 'program',
-                  label: t('clients.col.program'),
-                  render: (r: Profile) => <ProgramBar progress={progress.get(r.id) ?? null} />,
-                },
-                {
-                  key: 'today',
-                  label: t('clients.col.today'),
-                  render: (r: Profile) => {
-                    const a = byClient.get(r.id);
-                    return a ? (
-                      <span className="app-cell-person">
-                        <StatusChip kind="assignment" value={a.status} />
-                        <span>{a.workout.title}</span>
-                      </span>
-                    ) : (
-                      <span className="v-muted">{t('clients.today.none')}</span>
-                    );
-                  },
-                },
-              ]}
-              rows={list}
-              onRowClick={(id: string) => navigate(`/coach/clients/${id}`)}
-              emptyText={t('clients.empty.title')}
-            />
+            <ClientsDesktop clients={list} overview={new Map((overview.data?.perClient ?? []).map((c) => [c.clientId, c]))} today={byClient} />
           ) : (
             <ul className="app-list">
               {list.map((c) => {

@@ -210,21 +210,28 @@ export function programProgress(assignments: Assignment[], programs: Program[], 
 /** The coach's home numbers. `packages` are newest first, so the first one per client is the latest. */
 export function coachOverview(clients: Profile[], assignments: Assignment[], programs: Program[], packages: Package[], today: ISODate): CoachOverview {
   const weekAgo = addDays(today, -6);
+  const latest = new Map<string, Package>();
+  for (const p of packages) if (!latest.has(p.clientId)) latest.set(p.clientId, p);
   const perClient: ClientOverview[] = clients.map((c) => {
     const own = assignments.filter((a) => a.clientId === c.id);
-    const done = own.filter((a) => a.status === 'completed').map((a) => a.date).sort();
-    return { clientId: c.id, program: programProgress(own, programs, today), lastActiveOn: done[done.length - 1] ?? null };
+    const done = own.filter((a) => a.status === 'completed' && a.date <= today).map((a) => a.date).sort();
+    const pkg = latest.get(c.id);
+    return {
+      clientId: c.id,
+      program: programProgress(own, programs, today),
+      lastActiveOn: done[done.length - 1] ?? null,
+      package: pkg ? { name: pkg.name, sessionsRemaining: pkg.sessionsRemaining, sessionsIncluded: pkg.sessionsIncluded, state: pkg.state, expiresOn: pkg.expiresOn } : null,
+      needsRenewal: !!pkg && (pkg.state !== 'active' || pkg.sessionsRemaining <= LOW_SESSIONS),
+    };
   });
   const ids = new Set(clients.map((c) => c.id));
   const todays = assignments.filter((a) => a.date === today && ids.has(a.clientId));
-  const latest = new Map<string, Package>();
-  for (const p of packages) if (ids.has(p.clientId) && !latest.has(p.clientId)) latest.set(p.clientId, p);
   return {
     clients: clients.length,
     activeThisWeek: perClient.filter((c) => c.lastActiveOn !== null && c.lastActiveOn >= weekAgo && c.lastActiveOn <= today).length,
     todayPlanned: todays.length,
     todayDone: todays.filter((a) => a.status === 'completed').length,
-    packagesToRenew: [...latest.values()].filter((p) => p.state !== 'active' || p.sessionsRemaining <= LOW_SESSIONS).length,
+    packagesToRenew: perClient.filter((c) => c.needsRenewal).length,
     perClient,
   };
 }
