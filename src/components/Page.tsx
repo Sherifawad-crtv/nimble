@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IconButton } from '../design';
+import { Icon, IconButton } from '../design';
+import { useIsDesktop } from '../hooks/media';
 import { t } from '../i18n';
+
+const CRUMBS: Record<string, 'nav.clients' | 'nav.library' | 'nav.workouts'> = {
+  '/coach/clients': 'nav.clients',
+  '/coach/library': 'nav.library',
+  '/coach/workouts': 'nav.workouts',
+};
 
 interface PageProps {
   title: string;
@@ -37,7 +44,18 @@ export function Page({ title, accent, subtitle, back, onBack, trailing, children
     return () => io.disconnect();
   }, []);
 
-  const backButton = back ? <IconButton icon="chev-l" label={t('common.back')} onClick={goBack} /> : null;
+  const desktop = useIsDesktop();
+  useEffect(() => {
+    document.title = `${title} · ${t('notifyPrompt.app')}`;
+  }, [title]);
+  const crumb = typeof back === 'string' ? CRUMBS[back] : undefined;
+
+  const backButton = back && desktop && crumb ? (
+    <button type="button" className="app-crumb" onClick={goBack}>
+      <Icon name="chev-l" size={18} />
+      {t(crumb)}
+    </button>
+  ) : back ? <IconButton icon="chev-l" label={t('common.back')} onClick={goBack} /> : null;
 
   return (
     <div className="app-page">

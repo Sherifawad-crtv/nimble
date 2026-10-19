@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AssistantOverlay } from '../components/AssistantOverlay';
+import { CommandPalette } from '../components/CommandPalette';
 import { NotifyPrompt } from '../components/NotifyPrompt';
 import { Banner, Icon, Sidebar, Skeleton } from '../design';
 import { useIsDesktop } from '../hooks/media';
@@ -99,18 +100,35 @@ export function CoachShell() {
   const seg = segment(pathname, 2);
   const active = seg === 'review' ? 'clients' : seg === 'programs' ? 'workouts' : seg;
   const [assistant, setAssistant] = useState(false);
+  const [palette, setPalette] = useState(false);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPalette((p) => !p);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
   const go = (id: string) => (id === 'assistant' ? setAssistant(true) : navigate(`/coach/${id}`));
 
   return (
     <div className={desktop ? 'app-shell desktop' : 'app-shell'}>
         {desktop && (
           <div className="app-side">
+            <button type="button" className="app-cmd-btn" onClick={() => setPalette(true)}>
+              <Icon name="search" size={18} />
+              <span>{t('cmd.open')}</span>
+              <kbd>{/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl K'}</kbd>
+            </button>
             <Sidebar workspace={t('workspace.name', { name: me.name.split(' ')[0] ?? me.name })} items={items} active={active} onChange={go} user={{ name: me.name, role: t('role.coach') }} />
           </div>
         )}
         <Main />
       {!desktop && <TabNav items={items} active={active} onChange={go} />}
       {assistant && <AssistantOverlay onClose={() => setAssistant(false)} />}
+      {palette && <CommandPalette onClose={() => setPalette(false)} onAssistant={() => setAssistant(true)} />}
       <NotifyPrompt />
     </div>
   );
