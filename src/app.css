@@ -2968,3 +2968,44 @@ html[data-keyboard] .assist-composer {
     animation: notify-fade 0.15s 0.5s ease both;
   }
 }
+
+/* ---------- client calendar and progress on desktop ---------- */
+@media (min-width: 1024px) {
+  .app-shell.client.desktop .app-main > * {
+    max-inline-size: 1240px;
+  }
+  .app-cal-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
+    gap: var(--space-8);
+    align-items: start;
+  }
+  .app-day-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    position: sticky;
+    inset-block-start: var(--space-4);
+    padding: var(--space-5, 20px);
+    border-radius: var(--radius-card);
+    background: var(--surface-card);
+  }
+  .app-day-panel .app-list {
+    border-radius: var(--radius-md);
+    background: rgb(255 255 255 / 0.04);
+  }
+  .app-prog-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: var(--space-8);
+    align-items: start;
+  }
+  .app-prog-split .app-records {
+    order: 2;
+    position: sticky;
+    inset-block-start: var(--space-4);
+  }
+  .app-prog-split .app-charts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
