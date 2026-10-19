@@ -4,11 +4,20 @@ import { AuthGate, useMe } from './app/auth';
 import { ClientShell, CoachShell } from './app/Shells';
 import { EmptyState, Skeleton } from './design';
 import { t } from './i18n';
+import { isChunkError, reloadForNewVersion } from './lib/chunkReload';
 import type { Role } from './types';
 
 /** Lazy-load a named export so each role's screens ship as separate chunks. */
 function screen<M extends Record<string, ComponentType>>(load: () => Promise<M>, name: keyof M) {
-  return lazy(async () => ({ default: (await load())[name] as ComponentType }));
+  return lazy(async () => {
+    try {
+      return { default: (await load())[name] as ComponentType };
+    } catch (e) {
+      // A new version was deployed while this tab was open: reload once to pick it up.
+      if (isChunkError(e) && reloadForNewVersion()) return new Promise<never>(() => undefined);
+      throw e;
+    }
+  });
 }
 
 const ClientsScreen = screen(() => import('./screens/coach/ClientsScreen'), 'ClientsScreen');

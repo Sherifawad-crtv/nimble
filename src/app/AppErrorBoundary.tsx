@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { t } from '../i18n';
+import { isChunkError, reloadForNewVersion } from '../lib/chunkReload';
 
 interface State {
   error: Error | null;
@@ -28,6 +29,7 @@ export class AppErrorBoundary extends Component<{ children: ReactNode }, State> 
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
     console.error(error, info.componentStack);
+    if (isChunkError(error)) reloadForNewVersion();
   }
 
   render() {

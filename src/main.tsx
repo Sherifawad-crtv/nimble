@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { reloadForNewVersion } from './lib/chunkReload';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@fontsource-variable/urbanist/wght.css';
@@ -55,6 +56,12 @@ const queryClient = new QueryClient({
       retry: (count, error) => !(error instanceof ServiceError) && count < 2,
     },
   },
+});
+
+// Vite fires this when a preloaded chunk 404s after a new deploy.
+window.addEventListener('vite:preloadError', (e) => {
+  e.preventDefault();
+  reloadForNewVersion();
 });
 
 createRoot(document.getElementById('root') as HTMLElement).render(
