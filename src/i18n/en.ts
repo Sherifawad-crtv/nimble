@@ -55,6 +55,7 @@ export const en = {
   'nav.calendar': 'Calendar',
   'nav.progress': 'Progress',
   'role.coach': 'Coach',
+  'role.client': 'Client',
   'workspace.name': "{name}'s workspace",
 
   // sign in (demo accounts)
@@ -409,6 +410,7 @@ export const en = {
   'programs.empty.title': 'No programs yet',
   'programs.empty.body': 'A program places templates on days across several weeks.',
   'builder.new': 'New workout',
+  'builder.preview': 'Preview',
   'builder.edit': 'Edit workout',
   'builder.save': 'Save',
   'builder.saved': '{title} saved',

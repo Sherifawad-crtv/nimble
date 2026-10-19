@@ -49,7 +49,7 @@ export function LibraryScreen() {
         {broken > 0 && <Banner kind="video" title={tp('library.broken.title', broken)} message={t('library.broken.body')} />}
         <SearchField placeholder={t('library.search')} value={search} onChange={setSearch} />
         {tagOptions.length > 0 && (
-          <div className="app-filters" role="group" aria-label={t('library.filter.tags')}>
+          <div className="app-filters scroll" role="group" aria-label={t('library.filter.tags')}>
             {tagOptions.map((tag) => (
               <Chip key={tag} label={tag} selected={tags.includes(tag)} onClick={() => setTags(toggle(tags, tag))} />
             ))}

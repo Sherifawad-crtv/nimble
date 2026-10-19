@@ -145,10 +145,17 @@ export function ClientShell() {
   ];
   const seg = segment(pathname, 2);
   const active = seg === 'workout' ? 'today' : seg;
+  const desktop = useIsDesktop();
+  const me = useMe();
   return (
-    <div className="app-shell client">
-        <Main />
-      <TabNav items={items} active={active} onChange={(id) => navigate(`/app/${id}`)} />
+    <div className={desktop ? 'app-shell client desktop' : 'app-shell client'}>
+      {desktop && (
+        <div className="app-side">
+          <Sidebar workspace={t('notifyPrompt.app')} items={items} active={active} onChange={(id: string) => navigate(`/app/${id}`)} user={{ name: me.name, role: t('role.client') }} />
+        </div>
+      )}
+      <Main />
+      {!desktop && <TabNav items={items} active={active} onChange={(id) => navigate(`/app/${id}`)} />}
       <NotifyPrompt />
     </div>
   );

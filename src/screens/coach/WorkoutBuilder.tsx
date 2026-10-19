@@ -130,6 +130,7 @@ function BuilderForm({ initial }: { initial?: Workout }) {
         </Button>
       }
     >
+      <div className="app-builder-grid">
       <div className="app-stack builder">
         <TextField
           label={t('builder.title.label')}
@@ -208,6 +209,31 @@ function BuilderForm({ initial }: { initial?: Workout }) {
             {t('builder.assign')}
           </Button>
         )}
+      </div>
+      <aside className="app-builder-preview" aria-label={t('builder.preview')}>
+        <h2 className="t-eyebrow">{t('builder.preview')}</h2>
+        <h3 className="t-heading">{title.trim() || t('builder.new')}</h3>
+        {blocks.length === 0 && <p className="v-muted">{t('builder.empty.title')}</p>}
+        {blocks.map((b) => (
+          <section key={b.id} className="app-panel-sec">
+            <h4 className="t-eyebrow">
+              {b.title} · {blockTypeLabel(b.settings.type)}
+            </h4>
+            {b.items.length === 0 ? (
+              <span className="v-muted">{t('workouts.panel.noItems')}</span>
+            ) : (
+              <ul className="app-result-items">
+                {b.items.map((it) => (
+                  <li key={it.id}>
+                    <span className="t-body-strong">{it.exerciseName}</span>
+                    <span className="v-muted">{targetText(it.target, measuredOf(it.exerciseId), b.settings.type !== 'standard')}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ))}
+      </aside>
       </div>
 
       <Sheet open={addingBlock} title={t('builder.addBlock')} onClose={() => setAddingBlock(false)}>
