@@ -30,7 +30,10 @@ export function CommandPalette({ onClose, onAssistant }: { onClose: () => void; 
   const programs = useData(keys.programs, (s) => s.listPrograms());
   const exercises = useData(keys.exercises(), (s) => s.listExercises());
 
-  useEffect(() => input.current?.focus(), []);
+  // Effect bodies stay in braces: an effect must return nothing or a cleanup function, never a value.
+  useEffect(() => {
+    input.current?.focus();
+  }, []);
 
   const go = (path: string) => () => {
     onClose();
@@ -57,8 +60,12 @@ export function CommandPalette({ onClose, onAssistant }: { onClose: () => void; 
     ];
   }, [query, clients.data, templates.data, programs.data, exercises.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => setActive(0), [query]);
-  useEffect(() => document.getElementById(`cmd-${active}`)?.scrollIntoView({ block: 'nearest' }), [active]);
+  useEffect(() => {
+    setActive(0);
+  }, [query]);
+  useEffect(() => {
+    document.getElementById(`cmd-${active}`)?.scrollIntoView({ block: 'nearest' });
+  }, [active]);
 
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
