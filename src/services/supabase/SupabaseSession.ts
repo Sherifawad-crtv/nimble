@@ -9,6 +9,8 @@ function authError(e: AuthError): Error {
   if (m.includes('email not confirmed')) return new ServiceError('unauthenticated', 'Confirm your email first. Open the link we sent you.');
   if (m.includes('already registered')) return new ServiceError('invalid', 'An account with this email already exists. Sign in instead.');
   if (m.includes('password should be')) return new ServiceError('invalid', 'Use a password of at least 8 characters.');
+  // The project sends only a few emails an hour on the built-in mail service, for everyone together.
+  if (e.code === 'over_email_send_rate_limit' || m.includes('email rate limit')) return new ServiceError('invalid', 'We cannot send confirmation emails right now. Try again in a little while.');
   if (m.includes('rate limit') || e.status === 429) return new ServiceError('invalid', 'Too many attempts. Wait a minute and try again.');
   if (m.includes('database error saving new user')) return new ServiceError('invalid', 'That invite code is not valid. Ask your coach for a new one.');
   if (m.includes('unable to validate email') || m.includes('invalid email')) return new ServiceError('invalid', 'Enter a valid email address.');
