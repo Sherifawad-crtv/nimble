@@ -1,11 +1,16 @@
 import { addDays, daysBetween, startOfWeek } from '../lib/date';
 import type {
   Assignment,
+  ClientOverview,
+  CoachOverview,
   ExerciseProgress,
   ISODate,
   MeasuredAs,
   Package,
   PersonalRecord,
+  Profile,
+  Program,
+  ProgramProgress,
   ProgressSummary,
   SetResult,
   WorkoutLog,
@@ -165,5 +170,61 @@ export function withPackageState(p: Omit<Package, 'sessionsRemaining' | 'state'>
     ...p,
     sessionsRemaining: Math.max(0, p.sessionsIncluded - p.sessionsUsed),
     state: left < 0 ? 'expired' : left <= EXPIRING_WITHIN_DAYS ? 'expiring' : 'active',
+  };
+}
+
+const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+const LOW_SESSIONS = 2;
+
+/** Where one client is in their current program: the program with assignments nearest to today. */
+export function programProgress(assignments: Assignment[], programs: Program[], today: ISODate): ProgramProgress | null {
+  const byProgram = new Map<string, Assignment[]>();
+  for (const a of assignments) if (a.programId) byProgram.set(a.programId, [...(byProgram.get(a.programId) ?? []), a]);
+  let best: { id: string; list: Assignment[]; start: ISODate; end: ISODate } | null = null;
+  for (const [id, list] of byProgram) {
+    const dates = list.map((a) => a.date).sort();
+    const start = dates[0] as ISODate;
+    const end = dates[dates.length - 1] as ISODate;
+    // Prefer the program running today, else the one starting next, else the one that ended most recently.
+    const rank = (s: ISODate, e: ISODate) => (s <= today && e >= today ? 0 : s > today ? 1 + daysBetween(today, s) : 100_000 + daysBetween(e, today));
+    if (!best || rank(start, end) < rank(best.start, best.end)) best = { id, list, start, end };
+  }
+  if (!best) return null;
+  const span = daysBetween(best.start, best.end) + 1;
+  const elapsed = daysBetween(best.start, today) + 1;
+  const weeks = Math.max(1, Math.ceil(span / 7));
+  return {
+    programId: best.id,
+    title: programs.find((p) => p.id === best.id)?.title ?? '',
+    startsOn: best.start,
+    endsOn: best.end,
+    state: today < best.start ? 'upcoming' : today > best.end ? 'finished' : 'active',
+    week: clamp(Math.floor((elapsed - 1) / 7) + 1, 1, weeks),
+    weeks,
+    percent: clamp(Math.round((elapsed / span) * 100), 0, 100),
+    sessionsDone: best.list.filter((a) => a.status === 'completed').length,
+    sessionsTotal: best.list.length,
+  };
+}
+
+/** The coach's home numbers. `packages` are newest first, so the first one per client is the latest. */
+export function coachOverview(clients: Profile[], assignments: Assignment[], programs: Program[], packages: Package[], today: ISODate): CoachOverview {
+  const weekAgo = addDays(today, -6);
+  const perClient: ClientOverview[] = clients.map((c) => {
+    const own = assignments.filter((a) => a.clientId === c.id);
+    const done = own.filter((a) => a.status === 'completed').map((a) => a.date).sort();
+    return { clientId: c.id, program: programProgress(own, programs, today), lastActiveOn: done[done.length - 1] ?? null };
+  });
+  const ids = new Set(clients.map((c) => c.id));
+  const todays = assignments.filter((a) => a.date === today && ids.has(a.clientId));
+  const latest = new Map<string, Package>();
+  for (const p of packages) if (ids.has(p.clientId) && !latest.has(p.clientId)) latest.set(p.clientId, p);
+  return {
+    clients: clients.length,
+    activeThisWeek: perClient.filter((c) => c.lastActiveOn !== null && c.lastActiveOn >= weekAgo && c.lastActiveOn <= today).length,
+    todayPlanned: todays.length,
+    todayDone: todays.filter((a) => a.status === 'completed').length,
+    packagesToRenew: [...latest.values()].filter((p) => p.state !== 'active' || p.sessionsRemaining <= LOW_SESSIONS).length,
+    perClient,
   };
 }

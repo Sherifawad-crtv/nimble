@@ -2,6 +2,7 @@ import { addDays, todayISO } from '../../lib/date';
 import type {
   Assignment,
   AssignmentStatus,
+  CoachOverview,
   Comment,
   Exercise,
   ExerciseInput,
@@ -24,7 +25,7 @@ import type {
 } from '../../types';
 import { ServiceError, type DataService, type DemoSession, type ExerciseQuery } from '../DataService';
 import { cloneWorkout, createSeed, VIDEO_TITLES, type MockDB } from './seed';
-import { exerciseProgress, personalRecords, progressSummary, withPackageState } from '../stats';
+import { coachOverview, exerciseProgress, personalRecords, progressSummary, withPackageState } from '../stats';
 import { mockOembed, parseVideoUrl, thumbnailFor, videoUrlFor } from '../videoLink';
 
 export interface KeyValueStore {
@@ -349,6 +350,15 @@ export class MockDataService implements DataService, DemoSession {
     await this.wait();
     const me = this.coach();
     return structuredClone(this.db.profiles.filter((p) => p.role === 'client' && p.workspaceId === me.workspaceId));
+  }
+
+  async getCoachOverview(): Promise<CoachOverview> {
+    await this.wait();
+    const me = this.coach();
+    const clients = this.db.profiles.filter((p) => p.role === 'client' && p.workspaceId === me.workspaceId);
+    const assignments = this.db.assignments.filter((a) => a.workspaceId === me.workspaceId);
+    const packages = this.db.packages.filter((p) => p.workspaceId === me.workspaceId).map((p) => this.withDerived(p)).reverse();
+    return structuredClone(coachOverview(clients, assignments, this.db.programs, packages, this.today()));
   }
 
   async listInvites(): Promise<Invite[]> {

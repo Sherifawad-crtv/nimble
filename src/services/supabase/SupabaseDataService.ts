@@ -6,6 +6,7 @@ import type {
   Assignment,
   AssignmentStatus,
   Block,
+  CoachOverview,
   Comment,
   Exercise,
   ExerciseInput,
@@ -27,7 +28,7 @@ import type {
   WorkoutLog,
 } from '../../types';
 import { ServiceError, type DataService, type ExerciseQuery } from '../DataService';
-import { exerciseProgress, personalRecords, progressSummary, withPackageState } from '../stats';
+import { coachOverview, exerciseProgress, personalRecords, progressSummary, withPackageState } from '../stats';
 import { parseVideoUrl, thumbnailFor, videoUrlFor } from '../videoLink';
 import { callFunction, must } from './client';
 
@@ -375,6 +376,15 @@ export class SupabaseDataService implements DataService {
     return must(await this.sb.from('profiles').select('id, workspace_id, role, name, email').eq('role', 'client').order('name').returns<ProfileRow[]>()).map(
       toProfile,
     );
+  }
+
+  async getCoachOverview(): Promise<CoachOverview> {
+    const [clients, programs] = await Promise.all([this.listClients(), this.listPrograms()]);
+    const [assignments, packages] = await Promise.all([
+      this.sb.from('assignments').select('*').returns<AssignmentRow[]>(),
+      this.sb.from('packages').select('*').order('created_at', { ascending: false }).returns<PackageRow[]>(),
+    ]);
+    return coachOverview(clients, must(assignments).map(toAssignment), programs, must(packages).map(this.toPackage), this.today());
   }
 
   async listInvites(): Promise<Invite[]> {

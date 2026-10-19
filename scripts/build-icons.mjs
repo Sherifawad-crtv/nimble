@@ -69,6 +69,10 @@ const MAP = {
   'flame-duo': 'fire-bold-duotone',
   'weight-duo': 'dumbbell-large-bold-duotone',
   'trophy-duo': 'cup-star-bold-duotone',
+  'users-duo': 'users-group-rounded-bold-duotone',
+  'active-duo': 'user-check-rounded-bold-duotone',
+  'today-duo': 'calendar-mark-bold-duotone',
+  'renew-duo': 'ticket-bold-duotone',
 };
 
 const resolve = (name) => {

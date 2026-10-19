@@ -231,3 +231,40 @@ export interface AssistantReply {
   text: string;
   proposal?: AssistantProposal;
 }
+
+// ---------- coach home ----------
+
+/** Where a client is in the program they were assigned, worked out by the service. */
+export interface ProgramProgress {
+  programId: Id;
+  title: string;
+  startsOn: ISODate;
+  endsOn: ISODate;
+  state: 'upcoming' | 'active' | 'finished';
+  /** Current week, 1-based, and the total number of weeks. */
+  week: number;
+  weeks: number;
+  /** How far through the program's dates the client is, 0-100. */
+  percent: number;
+  sessionsDone: number;
+  sessionsTotal: number;
+}
+
+export interface ClientOverview {
+  clientId: Id;
+  program: ProgramProgress | null;
+  /** The date of the client's latest completed workout. */
+  lastActiveOn: ISODate | null;
+}
+
+/** The numbers on the coach's home screen. */
+export interface CoachOverview {
+  clients: number;
+  /** Clients who completed a workout in the last 7 days. */
+  activeThisWeek: number;
+  todayPlanned: number;
+  todayDone: number;
+  /** Clients whose latest package is expiring, expired or nearly used up. */
+  packagesToRenew: number;
+  perClient: ClientOverview[];
+}

@@ -332,6 +332,10 @@ export function createSeed(today: ISODate): MockDB {
   assign(CLIENT_IDS.youssef, -2, 2, 'completed', 1);
   assign(CLIENT_IDS.youssef, 1, 0, 'not_started');
 
+  // Sara and Karim follow the foundation program; Mona and Youssef have single workouts.
+  const foundation = programs[0]?.id;
+  for (const a of assignments) if (a.clientId === CLIENT_IDS.sara || a.clientId === CLIENT_IDS.karim) a.programId = foundation;
+
   const stamp = (a: Assignment, hh: string) => `${a.date}T${hh}:00.000Z`;
   comments.push(
     { id: nid('cm'), assignmentId: saraSquat.id, authorId: COACH_ID, authorName: 'Omar Nasser', authorRole: 'coach', body: 'Great depth on the last set. Add 2.5 kg next week.', createdAt: stamp(saraSquat, '12:10') },

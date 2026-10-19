@@ -2369,3 +2369,90 @@ html[data-keyboard] .assist-composer {
     animation-delay: 0s;
   }
 }
+
+/* ---------- coach home: client rows and program progress ---------- */
+.app-client {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  inline-size: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: start;
+  box-shadow: 0 1px 0 var(--line);
+  transition: background 0.15s ease;
+}
+.app-client:active {
+  background: var(--surface-control);
+}
+.app-client-body {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.app-client-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.app-client-name {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-prog {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-block-start: 6px;
+  min-inline-size: 0;
+}
+.app-prog.none {
+  margin: 0;
+  font: 500 13px/1.3 var(--font-sans);
+  color: var(--muted);
+}
+.app-prog-text {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font: 500 13px/1.3 var(--font-sans);
+}
+.app-prog-title {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.app-prog-cap {
+  flex: none;
+  color: var(--muted);
+}
+.app-prog-track {
+  display: block;
+  block-size: 6px;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.1);
+  overflow: hidden;
+}
+.app-prog-fill {
+  display: block;
+  block-size: 100%;
+  border-radius: 3px;
+  background: var(--brand);
+  transition: inline-size 0.6s cubic-bezier(0.2, 0, 0, 1);
+}
+.app-prog.finished .app-prog-fill,
+.app-prog.upcoming .app-prog-fill {
+  background: rgb(255 255 255 / 0.35);
+}
+.app-clients-gap {
+  margin-block-end: var(--space-4);
+}

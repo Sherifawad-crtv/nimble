@@ -3,6 +3,7 @@ import type {
   AssistantReply,
   Assignment,
   AssignmentStatus,
+  CoachOverview,
   Comment,
   Exercise,
   ExerciseInput,
@@ -67,6 +68,8 @@ export interface DataService {
 
   // clients and assigning
   listClients(): Promise<Profile[]>;
+  /** Coach home: headline numbers and each client's place in their program. */
+  getCoachOverview(): Promise<CoachOverview>;
   listInvites(): Promise<Invite[]>;
   createInvite(): Promise<Invite>;
   revokeInvite(code: string): Promise<void>;
