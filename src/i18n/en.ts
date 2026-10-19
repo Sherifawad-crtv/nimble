@@ -153,6 +153,17 @@ export const en = {
   'notif.install': 'Add Nimble to your Home Screen to turn on notifications.',
   'notif.denied': 'Blocked. Allow notifications for Nimble in your phone settings.',
   'notif.unsupported': 'This browser cannot show notifications.',
+  'notifyPrompt.title': 'Never miss an update',
+  'notifyPrompt.body.coach': 'Enable notifications to know the moment a client finishes a workout or leaves a comment.',
+  'notifyPrompt.body.client': 'Enable notifications to get new workouts, coach comments and package reminders.',
+  'notifyPrompt.blocked': 'Notifications are blocked for Nimble. Turn them on in your phone settings to get updates.',
+  'notifyPrompt.enable': 'Enable notifications',
+  'notifyPrompt.skip': 'Skip for now',
+  'notifyPrompt.gotIt': 'Got it',
+  'notifyPrompt.sample.coach': 'Robin finished Upper Body A',
+  'notifyPrompt.sample.client': 'New workout from your coach',
+  'notifyPrompt.app': 'Nimble',
+  'notifyPrompt.now': 'now',
   'notif.error': 'Could not change notifications. Try again.',
 
   // clients (coach)

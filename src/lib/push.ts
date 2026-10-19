@@ -46,6 +46,9 @@ async function current(): Promise<PushSubscription | null> {
 /** Whether this person turned notifications on, remembered per account on this device. */
 const wanted = (userId: string) => readPref(`nimble.push.${userId}`) === '1';
 
+/** True when this person switched notifications off themselves, so they are not asked again. */
+export const optedOut = (userId: string) => readPref(`nimble.push.${userId}`) === '0';
+
 export async function getPushState(userId: string): Promise<PushState> {
   // iPhone and iPad only deliver push to an app added to the Home Screen.
   if (isIOS() && !standalone()) return 'needs-install';

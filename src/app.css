@@ -2223,3 +2223,149 @@ html[data-keyboard] .assist-composer {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
+
+/* ---------- notification prompt ---------- */
+.notify-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--scrim);
+  animation: notify-fade 0.3s ease both;
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
+}
+.notify-overlay.leaving {
+  animation: notify-fade-out 0.24s ease both;
+}
+.notify-sheet {
+  inline-size: 100%;
+  max-inline-size: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));
+  background: var(--surface-card);
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  box-shadow: var(--shadow-pop);
+  text-align: center;
+  animation: assist-in 0.42s var(--ease-emphasized) both;
+}
+.notify-overlay.leaving .notify-sheet {
+  animation: assist-out 0.26s var(--ease-accel) both;
+}
+.notify-sheet .v-btn {
+  margin-block-start: var(--space-2);
+}
+.notify-handle {
+  inline-size: 36px;
+  block-size: 5px;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.25);
+}
+.notify-art {
+  position: relative;
+  inline-size: 100%;
+  max-inline-size: 360px;
+  margin-block-start: var(--space-2);
+}
+.notify-phone {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  -webkit-mask-image: linear-gradient(#000 55%, transparent 98%);
+  mask-image: linear-gradient(#000 55%, transparent 98%);
+}
+.notify-card {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 46%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 24px;
+  background: #fff;
+  color: #111;
+  text-align: start;
+  box-shadow:
+    0 10px 30px rgb(0 0 0 / 0.28),
+    0 14px 0 -6px rgb(255 255 255 / 0.55),
+    0 26px 0 -12px rgb(255 255 255 / 0.3);
+  animation: notify-drop 0.7s 0.35s var(--ease-decel, cubic-bezier(0.05, 0.7, 0.1, 1)) both;
+}
+.notify-card img {
+  inline-size: 52px;
+  block-size: 52px;
+  border-radius: 12px;
+  flex: none;
+}
+.notify-card-text {
+  flex: 1;
+  min-inline-size: 0;
+}
+.notify-card-head {
+  display: flex;
+  justify-content: space-between;
+  font: 600 16px/1.3 var(--font-sans);
+}
+.notify-card-head span {
+  font-weight: 500;
+  font-size: 14px;
+  color: #8a8a8e;
+}
+.notify-card p {
+  margin: 0;
+  font: 500 15px/1.35 var(--font-sans);
+  color: #3c3c43;
+}
+.notify-title {
+  margin: var(--space-3) 0 0;
+  font: 700 24px/1.2 var(--font-display, var(--font-sans));
+  color: var(--ink);
+}
+.notify-body {
+  margin: 0;
+  max-inline-size: 34ch;
+  font: 500 16px/1.45 var(--font-sans);
+  color: var(--muted);
+}
+.notify-skip {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: 600 16px var(--font-sans);
+  min-block-size: 44px;
+  padding-inline: var(--space-4);
+  transition: opacity 0.15s ease;
+}
+.notify-skip:active {
+  opacity: 0.6;
+}
+@keyframes notify-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes notify-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes notify-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.96);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .notify-overlay,
+  .notify-sheet,
+  .notify-card {
+    animation-duration: 0.01ms;
+    animation-delay: 0s;
+  }
+}

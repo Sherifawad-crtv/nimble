@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AssistantOverlay } from '../components/AssistantOverlay';
+import { NotifyPrompt } from '../components/NotifyPrompt';
 import { Banner, Icon, Sidebar, Skeleton } from '../design';
 import { useIsDesktop } from '../hooks/media';
 import { sessionService } from '../services';
@@ -110,6 +111,7 @@ export function CoachShell() {
         <Main />
       {!desktop && <TabNav items={items} active={active} onChange={go} />}
       {assistant && <AssistantOverlay onClose={() => setAssistant(false)} />}
+      <NotifyPrompt />
     </div>
   );
 }
@@ -129,6 +131,7 @@ export function ClientShell() {
     <div className="app-shell client">
         <Main />
       <TabNav items={items} active={active} onChange={(id) => navigate(`/app/${id}`)} />
+      <NotifyPrompt />
     </div>
   );
 }
