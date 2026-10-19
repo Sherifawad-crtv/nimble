@@ -3,14 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../app/Toast';
 import { DataBoundary } from '../../components/DataBoundary';
 import { Page } from '../../components/Page';
-import { Button, DataTable, IconButton, ListRow, Segmented } from '../../design';
+import { Button, IconButton, ListRow, Segmented } from '../../design';
 import { errorMessage, useAction, useData } from '../../hooks/data';
 import { useIsDesktop } from '../../hooks/media';
 import { keys } from '../../hooks/keys';
 import { t, tp } from '../../i18n';
 import { blockTypeLabel, newId } from '../../lib/workout';
-import type { Program, Workout } from '../../types';
+import type { MeasuredAs, Program, Workout } from '../../types';
 import { AssignSheet } from './AssignSheet';
+import { ProgramsDesktop, TemplatesDesktop } from './WorkoutsDesktop';
 
 type Tab = 'templates' | 'programs';
 
@@ -24,6 +25,8 @@ export function WorkoutsScreen() {
   const [assigning, setAssigning] = useState<{ workoutId?: string; programId?: string } | null>(null);
   const templates = useData(keys.templates, (s) => s.listTemplates());
   const programs = useData(keys.programs, (s) => s.listPrograms());
+  const exercises = useData(keys.exercises(), (s) => s.listExercises());
+  const measured = new Map<string, MeasuredAs>((exercises.data ?? []).map((e) => [e.id, e.measuredAs]));
   const create = () => navigate(tab === 'templates' ? '/coach/workouts/new' : '/coach/programs/new');
 
   const duplicate = useAction(
@@ -66,15 +69,7 @@ export function WorkoutsScreen() {
           <DataBoundary query={templates} empty={{ icon: 'dumbbell', title: t('workouts.empty.title'), body: t('workouts.empty.body'), action: t('workouts.new'), onAction: create }}>
             {(list) =>
               desktop ? (
-                <DataTable
-                  columns={[
-                    { key: 'title', label: t('workouts.col.title'), render: (r: Workout) => <span className="t-body-strong">{r.title}</span> },
-                    { key: 'blocks', label: t('workouts.col.blocks'), render: (r: Workout) => summary(r) },
-                    { key: 'actions', label: '', align: 'end', render: (r: Workout) => rowTools(r) },
-                  ]}
-                  rows={list}
-                  onRowClick={(id: string) => navigate(`/coach/workouts/${id}`)}
-                />
+                <TemplatesDesktop list={list} measured={measured} summary={summary} onOpen={(id) => navigate(`/coach/workouts/${id}`)} onAssign={(id) => setAssigning({ workoutId: id })} onDuplicate={onDuplicate} />
               ) : (
                 <ul className="app-list">
                   {list.map((w) => (
@@ -88,24 +83,28 @@ export function WorkoutsScreen() {
           </DataBoundary>
         ) : (
           <DataBoundary query={programs} empty={{ icon: 'list', title: t('programs.empty.title'), body: t('programs.empty.body'), action: t('programs.new'), onAction: create }}>
-            {(list) => (
-              <ul className="app-list">
-                {list.map((p: Program) => (
-                  <li key={p.id}>
-                    <ListRow
-                      title={p.title}
-                      subtitle={tp('programs.days', p.days.length)}
-                      trailing={
-                        <span className="app-row-actions" onClick={(e) => e.stopPropagation()}>
-                          <IconButton icon="calendar" label={t('workouts.assign', { title: p.title })} size={20} onClick={() => setAssigning({ programId: p.id })} />
-                        </span>
-                      }
-                      onClick={() => navigate(`/coach/programs/${p.id}`)}
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
+            {(list) =>
+              desktop ? (
+                <ProgramsDesktop list={list} templates={templates.data ?? []} onOpen={(id) => navigate(`/coach/programs/${id}`)} onAssign={(id) => setAssigning({ programId: id })} />
+              ) : (
+                <ul className="app-list">
+                  {list.map((p: Program) => (
+                    <li key={p.id}>
+                      <ListRow
+                        title={p.title}
+                        subtitle={tp('programs.days', p.days.length)}
+                        trailing={
+                          <span className="app-row-actions" onClick={(e) => e.stopPropagation()}>
+                            <IconButton icon="calendar" label={t('workouts.assign', { title: p.title })} size={20} onClick={() => setAssigning({ programId: p.id })} />
+                          </span>
+                        }
+                        onClick={() => navigate(`/coach/programs/${p.id}`)}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )
+            }
           </DataBoundary>
         )}
       </div>

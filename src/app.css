@@ -2722,3 +2722,29 @@ html[data-keyboard] .assist-composer {
     inset-block-start: var(--space-4);
   }
 }
+
+@media (min-width: 1024px) {
+  .app-filters.wrap {
+    flex-wrap: wrap;
+  }
+  .app-panel-text {
+    margin: 0;
+    white-space: pre-wrap;
+    color: var(--ink);
+  }
+  .app-panel-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .app-panel .app-result-items {
+    margin: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-panel {
+    max-block-size: calc(100dvh - var(--space-8));
+    overflow-y: auto;
+  }
+}

@@ -3,7 +3,7 @@ import { DataBoundary } from '../../components/DataBoundary';
 import { Page } from '../../components/Page';
 import { Sheet } from '../../components/Sheet';
 import { Thumb } from '../../components/VideoEmbed';
-import { Banner, Button, Chip, DataTable, IconButton, ListRow, SearchField, StatusChip } from '../../design';
+import { Banner, Button, Chip, IconButton, ListRow, SearchField, StatusChip } from '../../design';
 import { useData } from '../../hooks/data';
 import { useIsDesktop } from '../../hooks/media';
 import { keys } from '../../hooks/keys';
@@ -11,6 +11,7 @@ import { t, tp } from '../../i18n';
 import { measuredLabel } from '../../lib/workout';
 import type { Exercise } from '../../types';
 import { ExerciseForm } from './ExerciseForm';
+import { LibraryDesktop } from './LibraryDesktop';
 
 function useDebounced<T>(value: T, ms: number): T {
   const [v, setV] = useState(value);
@@ -67,26 +68,7 @@ export function LibraryScreen() {
         >
           {(list) =>
             desktop ? (
-              <DataTable
-                columns={[
-                  {
-                    key: 'name',
-                    label: t('library.col.name'),
-                    render: (r: Exercise) => (
-                      <span className="app-cell-person">
-                        <Thumb url={r.thumbnailUrl} status={r.linkStatus} />
-                        <span className="t-body-strong">{r.name}</span>
-                      </span>
-                    ),
-                  },
-                  { key: 'tags', label: t('library.col.tags'), render: (r: Exercise) => r.tags.join(' · ') },
-                  { key: 'equipment', label: t('library.col.equipment'), render: (r: Exercise) => r.equipment.join(' · ') },
-                  { key: 'measuredAs', label: t('library.col.measured'), render: (r: Exercise) => measuredLabel(r.measuredAs) },
-                  { key: 'linkStatus', label: t('library.col.link'), render: (r: Exercise) => (r.videoUrl ? <StatusChip kind="link" value={r.linkStatus} /> : <span className="v-muted">{t('library.noVideo')}</span>) },
-                ]}
-                rows={list}
-                onRowClick={(id: string) => setEditing(list.find((e) => e.id === id) ?? null)}
-              />
+              <LibraryDesktop list={list} onEdit={setEditing} />
             ) : (
               <ul className="app-list">
                 {list.map((e) => (
