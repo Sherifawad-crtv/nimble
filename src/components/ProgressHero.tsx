@@ -21,6 +21,18 @@ export function CompletionDots({ summary }: { summary: ProgressSummary }) {
   );
 }
 
+/** The four headline numbers for a client, all worked out by the service. */
+export function SummaryStats({ summary: s }: { summary: ProgressSummary }) {
+  return (
+    <div className="app-stat-grid">
+      <StatCard tone="brand" icon="weight-duo" value={s.weightLiftedKg < 100_000 ? s.weightLiftedKg.toLocaleString() : compact(s.weightLiftedKg)} label={t('progress.stat.weight')} />
+      <StatCard tone="blue" icon="check-circle-duo" value={String(s.completed)} label={t('progress.stat.workouts')} />
+      <StatCard tone="pink" icon="flame-duo" value={String(s.streakWeeks)} label={t('progress.stat.streak')} />
+      <StatCard tone="green" icon="trophy-duo" value={String(s.personalRecords)} label={t('progress.stat.records')} />
+    </div>
+  );
+}
+
 /**
  * The top of the client's progress: completion dots and the four headline numbers over the last
  * four weeks. All values come from the service. `quietWhenEmpty` shows nothing, instead of an empty
@@ -39,12 +51,7 @@ export function ProgressHero({ quietWhenEmpty = false, showDots = false }: { qui
       {(s) => (
         <>
           {showDots && <CompletionDots summary={s} />}
-          <div className="app-stat-grid">
-            <StatCard tone="brand" icon="weight-duo" value={s.weightLiftedKg < 100_000 ? s.weightLiftedKg.toLocaleString() : compact(s.weightLiftedKg)} label={t('progress.stat.weight')} />
-            <StatCard tone="blue" icon="check-circle-duo" value={String(s.completed)} label={t('progress.stat.workouts')} />
-            <StatCard tone="pink" icon="flame-duo" value={String(s.streakWeeks)} label={t('progress.stat.streak')} />
-            <StatCard tone="green" icon="trophy-duo" value={String(s.personalRecords)} label={t('progress.stat.records')} />
-          </div>
+          <SummaryStats summary={s} />
         </>
       )}
     </DataBoundary>

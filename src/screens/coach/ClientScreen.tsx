@@ -3,17 +3,26 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useMe } from '../../app/auth';
 import { useToast } from '../../app/Toast';
 import { CalendarView, monthRange } from '../../components/CalendarView';
+import { ProgramBar } from '../../components/CoachOverview';
 import { DataBoundary } from '../../components/DataBoundary';
+import { SummaryStats } from '../../components/ProgressHero';
 import { ConfirmDialog, Sheet } from '../../components/Sheet';
 import { Page } from '../../components/Page';
-import { Button, DateField, EmptyState, ListRow, PackageCard, PersonalRecord, StatusChip } from '../../design';
+import { Button, DateField, EmptyState, ListRow, PackageCard, PersonalRecord, Skeleton, StatusChip } from '../../design';
+import { useIsDesktop } from '../../hooks/media';
 import { errorMessage, useAction, useData } from '../../hooks/data';
 import { keys } from '../../hooks/keys';
 import { formatDateLong, formatDateShort, formatDay, t } from '../../i18n';
-import { addDays, startOfMonth, todayISO } from '../../lib/date';
+import { addDays, daysBetween, startOfMonth, todayISO } from '../../lib/date';
 import type { Assignment, ISODate, Package, Profile } from '../../types';
 import { AssignSheet } from './AssignSheet';
 import { PackageSheet } from './PackageSheet';
+
+const lastActive = (iso: string | null): string => {
+  if (!iso) return t('clients.last.never');
+  const n = daysBetween(iso, todayISO());
+  return n <= 0 ? t('clients.last.today') : n === 1 ? t('clients.last.yesterday') : t('clients.last.days', { n });
+};
 
 export function ClientScreen() {
   const { clientId = '' } = useParams();
@@ -37,6 +46,7 @@ export function ClientScreen() {
 
 function ClientView({ client }: { client: Profile }) {
   const [assignOpen, setAssignOpen] = useState(false);
+  const desktop = useIsDesktop();
   return (
     <Page
       title={client.name}
@@ -44,18 +54,48 @@ function ClientView({ client }: { client: Profile }) {
       back="/coach/clients"
       trailing={<Button size="sm" icon="plus" onClick={() => setAssignOpen(true)}>{t('client.assign')}</Button>}
     >
+      <ClientSummary client={client} />
       <div className="app-cols">
         <div className="app-col main">
           <CalendarSection client={client} />
-          <RecentLogs client={client} />
+          {desktop && <RecentLogs client={client} />}
         </div>
         <div className="app-col side">
+          <ProgramSection client={client} />
           <PackageSection client={client} />
+          {!desktop && <RecentLogs client={client} />}
           <RecordsSection client={client} />
         </div>
       </div>
       <AssignSheet open={assignOpen} onClose={() => setAssignOpen(false)} clientId={client.id} />
     </Page>
+  );
+}
+
+function ClientSummary({ client }: { client: Profile }) {
+  const summary = useData(keys.summary(client.id), (s) => s.getProgressSummary(client.id));
+  if (summary.isPending) return <Skeleton variant="card" />;
+  if (!summary.data || summary.data.assigned === 0) return null;
+  return (
+    <div className="app-clients-gap">
+      <SummaryStats summary={summary.data} />
+    </div>
+  );
+}
+
+function ProgramSection({ client }: { client: Profile }) {
+  const overview = useData(keys.overview, (s) => s.getCoachOverview());
+  const mine = overview.data?.perClient.find((c) => c.clientId === client.id);
+  if (!mine) return null;
+  return (
+    <section className="app-section" aria-label={t('clients.panel.program')}>
+      <h2 className="t-eyebrow app-h2">{t('clients.panel.program')}</h2>
+      <div className="app-card app-prog-card">
+        <ProgramBar progress={mine.program} />
+        {mine.program && <span className="t-caption v-muted">{t('clients.panel.sessions', { done: mine.program.sessionsDone, total: mine.program.sessionsTotal })}</span>}
+        <span className="t-caption v-muted">{t('clients.col.last')}: {lastActive(mine.lastActiveOn)}</span>
+      </div>
+    </section>
   );
 }
 

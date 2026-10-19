@@ -2696,3 +2696,29 @@ html[data-keyboard] .assist-composer {
     transform: translateX(100%);
   }
 }
+
+/* ---------- client detail ---------- */
+.app-prog-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+.app-prog-card .app-prog {
+  margin: 0;
+}
+.app-prog-who {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+@media (min-width: 1024px) {
+  .app-shell.desktop .app-cols {
+    grid-template-columns: minmax(0, 1.6fr) minmax(340px, 1fr);
+    gap: var(--space-8);
+  }
+  .app-shell.desktop .app-col.side {
+    position: sticky;
+    inset-block-start: var(--space-4);
+  }
+}
