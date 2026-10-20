@@ -19,6 +19,10 @@ function authError(e: AuthError): Error {
 
 const MIN_PASSWORD = 8;
 
+/** The link in a recovery/confirmation email identifies itself with one of these. */
+const EMAIL_OTP_TYPES = ['signup', 'invite', 'magiclink', 'recovery', 'email_change', 'email'] as const;
+type EmailOtpType = (typeof EMAIL_OTP_TYPES)[number];
+
 /** Email and password accounts on Supabase Auth. Sign-up creates the profile through a database trigger. */
 export class SupabaseSession implements AccountSession {
   readonly kind = 'account' as const;
@@ -46,6 +50,22 @@ export class SupabaseSession implements AccountSession {
       // Never call back into Supabase from inside its own callback.
       setTimeout(() => this.listeners.forEach((l) => l(mapped)), 0);
     });
+
+    // Mail providers and link-safety scanners fetch every link in a message the moment it arrives,
+    // which spends Supabase's one-time verification token before the person ever opens it — the
+    // email templates must point recovery/confirm links at this app's own URL with a raw token_hash,
+    // not at Supabase's /auth/v1/verify redirect, so a bot's plain fetch has nothing to consume.
+    // Only this explicit call, made by the page the person actually opens, spends the token.
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get('token_hash');
+    const type = params.get('type');
+    if (tokenHash && (EMAIL_OTP_TYPES as readonly string[]).includes(type ?? '')) {
+      const clean = new URL(window.location.href);
+      clean.searchParams.delete('token_hash');
+      clean.searchParams.delete('type');
+      window.history.replaceState(window.history.state, '', clean.toString());
+      void sb.auth.verifyOtp({ token_hash: tokenHash, type: type as EmailOtpType });
+    }
   }
 
   onChange(listener: (event: AuthEvent) => void): () => void {
