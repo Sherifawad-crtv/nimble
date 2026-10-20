@@ -38,7 +38,12 @@ const typing = (el: EventTarget | null) =>
 let blurTimer = 0;
 document.addEventListener('focusin', (e) => {
   window.clearTimeout(blurTimer);
+  // A focus landing on a non-field element (a button, the body after a screen swap) means the
+  // keyboard is gone now, not just "about to be re-checked": settling for the timer below let a
+  // stray focus (e.g. a submit button taking focus before the screen it's on gets swapped out)
+  // cancel the pending clear without ever redoing it, leaving the tab bar hidden for good.
   if (typing(e.target)) root.setAttribute('data-keyboard', '');
+  else root.removeAttribute('data-keyboard');
 });
 document.addEventListener('focusout', () => {
   // Moving from one field to the next must not flash the bar back in.
