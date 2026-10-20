@@ -6,7 +6,10 @@ export const authStorageKey = (url: string) => `sb-${new URL(url).hostname.split
 
 export function createSupabase(url: string, key: string): SupabaseClient {
   return createClient(url, key, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' },
+    // Implicit flow: the only auth here is email/password, and the recovery/confirm links need to work
+    // when opened on a different device or browser than the one that requested them — PKCE's code
+    // verifier lives in that originating browser's storage and silently fails to exchange otherwise.
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' },
   });
 }
 
