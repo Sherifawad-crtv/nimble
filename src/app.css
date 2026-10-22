@@ -1222,14 +1222,21 @@ body:has(.app-shell.desktop) .app-toast {
   background: #000;
 }
 
-.app-pose-video,
+/* Hidden decode source for the canvas below — never shown, kept laid out (not display:none) so
+ * mobile browsers keep decoding frames from it reliably. */
+.app-pose-video-source {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .app-pose-canvas {
   position: absolute;
   inset: 0;
   inline-size: 100%;
   block-size: 100%;
-  object-fit: cover;
-  transform: scaleX(-1);
 }
 
 .app-pose-status {

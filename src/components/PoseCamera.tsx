@@ -38,6 +38,7 @@ const MIN_SCORE = 0.3;
  * an on-device pose model — nothing is uploaded. Experimental: covers squats and push-ups only.
  */
 export function PoseCamera({ movement, exerciseName, target, onClose, onApply }: Props) {
+  const stageRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [status, setStatus] = useState<Status>('loading');
@@ -58,16 +59,26 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
     const tracker = createTracker(movement);
 
     const loop = async () => {
-      if (stopped || !detector || !videoRef.current) return;
+      if (stopped || !detector || !videoRef.current || !canvasRef.current || !stageRef.current) return;
       const video = videoRef.current;
-      if (video.readyState >= 2) {
+      const canvas = canvasRef.current;
+      if (video.readyState >= 2 && video.videoWidth && video.videoHeight) {
+        // Match the canvas's own pixel buffer to how it's actually laid out on screen, so there is
+        // exactly one source of truth for scale and crop — nothing left for a second element's own
+        // CSS sizing to drift out of sync with.
+        const box = stageRef.current.getBoundingClientRect();
+        const w = Math.round(box.width);
+        const h = Math.round(box.height);
+        if (w > 0 && h > 0 && (canvas.width !== w || canvas.height !== h)) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+
         const points = await detector.estimate(video);
         if (stopped) return;
         const usable = points ? isPoseUsable(movement, points) : false;
         setPersonVisible(usable);
-        // Drawing a skeleton built from joints the movement can't actually use is more confusing
-        // than no overlay at all — a close-up face still "detects" shoulders, just nothing below them.
-        drawSkeleton(canvasRef.current, video, usable ? points : null);
+        drawFrame(canvas, video, usable ? points : null);
         if (points && usable) {
           const update = tracker.update(points);
           if (update.repCompleted) {
@@ -81,7 +92,13 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
 
     void (async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+        // Ask for a portrait-shaped stream to match how a phone is actually held — without a
+        // hint some browsers default to a landscape camera mode regardless of device orientation,
+        // which left the frame cropped sideways relative to what was on screen.
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 } },
+          audio: false,
+        });
         if (stopped) {
           stream.getTracks().forEach((tr) => tr.stop());
           return;
@@ -119,8 +136,8 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
         <IconButton icon="close" label={t('pose.close')} variant="ghost" onClick={onClose} />
       </header>
 
-      <div className="app-pose-stage">
-        <video ref={videoRef} className="app-pose-video" playsInline muted />
+      <div className="app-pose-stage" ref={stageRef}>
+        <video ref={videoRef} className="app-pose-video-source" playsInline muted aria-hidden="true" />
         <canvas ref={canvasRef} className="app-pose-canvas" />
         {status === 'loading' && <p className="t-body app-pose-status">{t('pose.loading')}</p>}
         {status === 'ready' && !personVisible && <p className="t-body app-pose-status">{t('pose.noPerson')}</p>}
@@ -145,36 +162,55 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
   );
 }
 
-function drawSkeleton(canvas: HTMLCanvasElement | null, video: HTMLVideoElement, points: Keypoint[] | null) {
-  if (!canvas) return;
-  const w = video.videoWidth;
-  const h = video.videoHeight;
-  if (!w || !h) return;
-  if (canvas.width !== w || canvas.height !== h) {
-    canvas.width = w;
-    canvas.height = h;
-  }
+/** How much of the source video to sample (and from where) to fill the canvas edge-to-edge
+ * without distorting it, the same math `object-fit: cover` does — computed once per frame so a
+ * resize or a stream's native resolution changing is picked up automatically. */
+function coverSource(srcW: number, srcH: number, dstW: number, dstH: number) {
+  const scale = Math.max(dstW / srcW, dstH / srcH);
+  const sWidth = dstW / scale;
+  const sHeight = dstH / scale;
+  return { sx: (srcW - sWidth) / 2, sy: (srcH - sHeight) / 2, sWidth, sHeight, scale };
+}
+
+/** Draws the current camera frame and, when given, the skeleton on top of it — both through the
+ * same transform in the same pass, so the overlay can never end up reading as if it belongs to a
+ * different crop or orientation than what's actually on screen. */
+function drawFrame(canvas: HTMLCanvasElement, video: HTMLVideoElement, points: Keypoint[] | null) {
   const ctx = canvas.getContext('2d');
-  if (!ctx) return;
-  ctx.clearRect(0, 0, w, h);
-  if (!points) return;
-  const byName = new Map(points.map((p) => [p.name, p]));
-  ctx.strokeStyle = '#c8f751';
-  ctx.lineWidth = 3;
-  for (const [a, b] of SKELETON_EDGES) {
-    const pa = byName.get(a);
-    const pb = byName.get(b);
-    if (!pa || !pb || (pa.score ?? 0) < MIN_SCORE || (pb.score ?? 0) < MIN_SCORE) continue;
-    ctx.beginPath();
-    ctx.moveTo(pa.x, pa.y);
-    ctx.lineTo(pb.x, pb.y);
-    ctx.stroke();
+  if (!ctx || !canvas.width || !canvas.height) return;
+  const { sx, sy, sWidth, sHeight, scale } = coverSource(video.videoWidth, video.videoHeight, canvas.width, canvas.height);
+
+  ctx.save();
+  // Mirror for a natural selfie view. Everything drawn below — the frame and the skeleton — goes
+  // through this same flip, so they can't end up mirrored relative to each other.
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+
+  if (points) {
+    const toCanvas = (p: Keypoint) => ({ x: (p.x - sx) * scale, y: (p.y - sy) * scale });
+    const byName = new Map(points.map((p) => [p.name, p]));
+    ctx.strokeStyle = '#c8f751';
+    ctx.lineWidth = 3;
+    for (const [a, b] of SKELETON_EDGES) {
+      const pa = byName.get(a);
+      const pb = byName.get(b);
+      if (!pa || !pb || (pa.score ?? 0) < MIN_SCORE || (pb.score ?? 0) < MIN_SCORE) continue;
+      const ca = toCanvas(pa);
+      const cb = toCanvas(pb);
+      ctx.beginPath();
+      ctx.moveTo(ca.x, ca.y);
+      ctx.lineTo(cb.x, cb.y);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#c8f751';
+    for (const p of points) {
+      if ((p.score ?? 0) < MIN_SCORE) continue;
+      const c = toCanvas(p);
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
-  ctx.fillStyle = '#c8f751';
-  for (const p of points) {
-    if ((p.score ?? 0) < MIN_SCORE) continue;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  ctx.restore();
 }
