@@ -20,8 +20,8 @@ export async function loadPoseDetector() {
   });
 
   return {
-    async estimate(video: HTMLVideoElement): Promise<Keypoint[] | null> {
-      const poses = await detector.estimatePoses(video, { flipHorizontal: false });
+    async estimate(source: HTMLVideoElement | HTMLCanvasElement): Promise<Keypoint[] | null> {
+      const poses = await detector.estimatePoses(source, { flipHorizontal: false });
       return poses[0]?.keypoints ?? null;
     },
     dispose() {

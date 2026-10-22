@@ -41,6 +41,7 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
   const stageRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const uprightRef = useRef<HTMLCanvasElement | null>(null);
   const [status, setStatus] = useState<Status>('loading');
   const [reps, setReps] = useState(0);
   const [feedback, setFeedback] = useState<FormFeedback | null>(null);
@@ -74,11 +75,23 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
           canvas.height = h;
         }
 
-        const points = await detector.estimate(video);
+        // Some phones hand over a landscape-shaped stream (width > height) no matter how the
+        // phone is held. Checked every frame — rechecking live is what makes this follow an
+        // actual device rotation instead of only getting it right once at the start.
+        const deviceIsPortrait = window.innerHeight >= window.innerWidth;
+        const rotate = deviceIsPortrait && video.videoWidth > video.videoHeight;
+        const upright = uprightFrame(uprightRef, video, rotate);
+
+        // Both the overlay and the model read from the same corrected frame, so if the model
+        // is seeing a sideways person, the fix lives here rather than only in how it's drawn.
+        const points = await detector.estimate(upright);
         if (stopped) return;
         const usable = points ? isPoseUsable(movement, points) : false;
-        setPersonVisible(usable);
-        drawFrame(canvas, video, usable ? points : null);
+        const anyoneInFrame = points ? points.some((p) => (p.score ?? 0) >= MIN_SCORE) : false;
+        setPersonVisible(anyoneInFrame);
+        // Show whatever the model can see, even just a head — only counting reps needs the full
+        // set of joints the movement actually reads, not the skeleton itself being drawn.
+        drawFrame(canvas, upright, points);
         if (points && usable) {
           const update = tracker.update(points);
           if (update.repCompleted) {
@@ -159,9 +172,41 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
   );
 }
 
-/** How much of the source video to sample (and from where) to fill the canvas edge-to-edge
- * without distorting it, the same math `object-fit: cover` does — computed once per frame so a
- * resize or a stream's native resolution changing is picked up automatically. */
+/**
+ * Redraws the video into a reusable offscreen canvas, rotated 90° when the stream is landscape-
+ * shaped but the phone is held portrait. Kept as one persistent canvas (via the passed ref)
+ * rather than allocating a new one every frame.
+ *
+ * The rotation direction (clockwise) is a best guess made without a device to test against — if
+ * it comes out upside down or mirrored the wrong way, flipping the sign on the rotate() call
+ * below is the whole fix.
+ */
+function uprightFrame(ref: { current: HTMLCanvasElement | null }, video: HTMLVideoElement, rotate: boolean): HTMLCanvasElement {
+  const srcW = video.videoWidth;
+  const srcH = video.videoHeight;
+  const w = rotate ? srcH : srcW;
+  const h = rotate ? srcW : srcH;
+  if (!ref.current) ref.current = document.createElement('canvas');
+  const canvas = ref.current;
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w;
+    canvas.height = h;
+  }
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return canvas;
+  ctx.save();
+  if (rotate) {
+    ctx.translate(w, 0);
+    ctx.rotate(Math.PI / 2);
+  }
+  ctx.drawImage(video, 0, 0, srcW, srcH);
+  ctx.restore();
+  return canvas;
+}
+
+/** How much of the source frame to sample (and from where) to fill the canvas edge-to-edge
+ * without distorting it, the same math `object-fit: cover` does — computed every frame so a
+ * resize or the stream's resolution changing is picked up automatically. */
 function coverSource(srcW: number, srcH: number, dstW: number, dstH: number) {
   const scale = Math.max(dstW / srcW, dstH / srcH);
   const sWidth = dstW / scale;
@@ -169,20 +214,20 @@ function coverSource(srcW: number, srcH: number, dstW: number, dstH: number) {
   return { sx: (srcW - sWidth) / 2, sy: (srcH - sHeight) / 2, sWidth, sHeight, scale };
 }
 
-/** Draws the current camera frame and, when given, the skeleton on top of it — both through the
- * same transform in the same pass, so the overlay can never end up reading as if it belongs to a
- * different crop or orientation than what's actually on screen. */
-function drawFrame(canvas: HTMLCanvasElement, video: HTMLVideoElement, points: Keypoint[] | null) {
+/** Draws the current (already upright) frame and, when given, the skeleton on top of it — both
+ * through the same transform in the same pass, so the overlay can never end up reading as if it
+ * belongs to a different crop or orientation than what's actually on screen. */
+function drawFrame(canvas: HTMLCanvasElement, source: HTMLCanvasElement, points: Keypoint[] | null) {
   const ctx = canvas.getContext('2d');
   if (!ctx || !canvas.width || !canvas.height) return;
-  const { sx, sy, sWidth, sHeight, scale } = coverSource(video.videoWidth, video.videoHeight, canvas.width, canvas.height);
+  const { sx, sy, sWidth, sHeight, scale } = coverSource(source.width, source.height, canvas.width, canvas.height);
 
   ctx.save();
   // Mirror for a natural selfie view. Everything drawn below — the frame and the skeleton — goes
   // through this same flip, so they can't end up mirrored relative to each other.
   ctx.translate(canvas.width, 0);
   ctx.scale(-1, 1);
-  ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(source, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
 
   if (points) {
     const toCanvas = (p: Keypoint) => ({ x: (p.x - sx) * scale, y: (p.y - sy) * scale });
