@@ -45,7 +45,7 @@ function WorkoutView({ assignment: a }: { assignment: Assignment }) {
           {(exList) => (
             <DataBoundary query={log} skeleton="detail">
               {(l) => {
-                if (a.status === 'completed') return <Completed assignment={a} log={l} />;
+                if (a.status === 'completed') return <Completed assignment={a} log={l} exercises={exList} />;
                 if (a.status === 'skipped') return <Banner message={t('workout.skipped')} />;
                 if (!l || a.status === 'not_started') {
                   return (
@@ -68,11 +68,11 @@ function WorkoutView({ assignment: a }: { assignment: Assignment }) {
   );
 }
 
-function Completed({ assignment, log }: { assignment: Assignment; log: WorkoutLog | null }) {
+function Completed({ assignment, log, exercises }: { assignment: Assignment; log: WorkoutLog | null; exercises: Exercise[] }) {
   return (
     <>
       <Banner message={t('workout.completed.body')} title={t('workout.completed.title')} />
-      <WorkoutResults assignment={assignment} log={log} />
+      <WorkoutResults assignment={assignment} log={log} exercises={exercises} />
     </>
   );
 }

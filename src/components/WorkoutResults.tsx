@@ -1,10 +1,12 @@
 import { blockTypeLabel, isTimerBlock, settingsSummary } from '../lib/workout';
 import { formatSet, formatTimerResult } from '../lib/results';
 import { t } from '../i18n';
-import type { Assignment, WorkoutLog } from '../types';
+import { VideoEmbed } from './VideoEmbed';
+import type { Assignment, Exercise, WorkoutLog } from '../types';
 
-/** Read-only account of what the client did, block by block. Used by both roles. */
-export function WorkoutResults({ assignment, log }: { assignment: Assignment; log: WorkoutLog | null | undefined }) {
+/** Read-only account of what the client did, block by block, with each exercise's video still watchable. Used by both roles. */
+export function WorkoutResults({ assignment, log, exercises }: { assignment: Assignment; log: WorkoutLog | null | undefined; exercises: Exercise[] }) {
+  const exById = new Map(exercises.map((e) => [e.id, e]));
   return (
     <div className="app-results">
       {assignment.workout.blocks.map((b) => {
@@ -24,12 +26,14 @@ export function WorkoutResults({ assignment, log }: { assignment: Assignment; lo
               <ul className="app-result-items">
                 {b.items.map((it) => {
                   const sets = log?.itemResults.find((r) => r.itemId === it.id)?.sets ?? [];
+                  const ex = exById.get(it.exerciseId);
                   return (
                     <li key={it.id}>
                       <span className="t-body-strong">{it.exerciseName}</span>
                       {!timer && (
                         <span className="t-body v-muted app-sets">{sets.length ? sets.map((s, i) => <span key={i}>{formatSet(s)}</span>) : t('results.noSets')}</span>
                       )}
+                      {ex && <VideoEmbed exercise={ex} />}
                     </li>
                   );
                 })}

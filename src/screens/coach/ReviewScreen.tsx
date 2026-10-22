@@ -50,11 +50,11 @@ function ReviewView({ assignment: a }: { assignment: Assignment }) {
           {a.status === 'skipped' && <Banner message={t("review.skipped")} />}
           {a.status === 'in_progress' && <Banner title={t("review.inProgress.title")} message={t('review.inProgress.body')} />}
           {(a.status === 'completed' || a.status === 'in_progress') && (
-            <DataBoundary query={log} skeleton="card">
-              {(l) => (
-                <>
-                  <WorkoutResults assignment={a} log={l} />
-                </>
+            <DataBoundary query={exercises} skeleton="card">
+              {(exList) => (
+                <DataBoundary query={log} skeleton="card">
+                  {(l) => <WorkoutResults assignment={a} log={l} exercises={exList} />}
+                </DataBoundary>
               )}
             </DataBoundary>
           )}
