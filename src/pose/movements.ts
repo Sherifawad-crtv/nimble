@@ -1,6 +1,10 @@
-import { distance, sideAngle, sideMidpoint } from './angles';
+import { distance, sideAngle, sideMidpoint, sidesAngle, torsoTiltFromVertical } from './angles';
 import { t } from '../i18n';
 import type { FormFeedback, Keypoint, MovementTracker, RepUpdate } from './pose-types';
+
+/** Above this, the torso reads as lying down rather than standing — the line between "upright"
+ * movements (squat, pull-up) and "horizontal" ones (push-up) for the isPoseUsable gate below. */
+const UPRIGHT_MAX_TILT = 55;
 
 export type PoseMovement = 'squat' | 'pushup' | 'pullup';
 
@@ -25,57 +29,78 @@ export function detectMovement(exerciseName: string): PoseMovement | null {
  * Whether the joints this movement actually reads are visible — not just some count of the 17
  * keypoints. A close-up face-and-shoulders selfie can confidently show six points and still have
  * nothing useful for a squat, which needs the hips and knees that aren't anywhere in that frame.
+ *
+ * Also checks that the body is actually oriented the way this movement expects: a squat's knee
+ * angle alone doesn't know the difference between standing and lying flat doing a push-up, but a
+ * torso that's lying flat obviously isn't squatting. Whichever a reading can't judge — tilt is
+ * only readable when both hip and shoulder are visible — it lets through rather than blocking.
  */
 export function isPoseUsable(movement: PoseMovement, points: Keypoint[]): boolean {
-  if (movement === 'squat') return sideAngle(points, 'hip', 'knee', 'ankle') !== null;
-  if (movement === 'pullup') return sideAngle(points, 'shoulder', 'elbow', 'wrist') !== null && sideMidpoint(points, 'hip') !== null && sideMidpoint(points, 'shoulder') !== null;
-  return sideAngle(points, 'shoulder', 'elbow', 'wrist') !== null && sideAngle(points, 'shoulder', 'hip', 'ankle') !== null;
+  const tilt = torsoTiltFromVertical(points);
+  if (movement === 'squat') {
+    if (sideAngle(points, 'hip', 'knee', 'ankle') === null) return false;
+    return tilt === null || tilt <= UPRIGHT_MAX_TILT;
+  }
+  if (movement === 'pullup') {
+    if (sideAngle(points, 'shoulder', 'elbow', 'wrist') === null || sideMidpoint(points, 'hip') === null || sideMidpoint(points, 'shoulder') === null) return false;
+    return tilt === null || tilt <= UPRIGHT_MAX_TILT;
+  }
+  if (sideAngle(points, 'shoulder', 'elbow', 'wrist') === null || sideAngle(points, 'shoulder', 'hip', 'ankle') === null) return false;
+  return tilt === null || tilt >= UPRIGHT_MAX_TILT;
 }
 
 type Phase = 'up' | 'down';
 
-/** A rep tracker for a joint that opens past `upThreshold` at the top and closes past
- * `downThreshold` at the bottom, counting one rep per full down-then-up cycle. */
-function hysteresisTracker(opts: {
-  angle: (points: Keypoint[]) => number | null;
-  upThreshold: number;
-  downThreshold: number;
-  onRepComplete: (minAngle: number) => FormFeedback;
-}): MovementTracker {
+/**
+ * A regular squat bends both legs together; a lunge or a Bulgarian split squat bends one leg
+ * deeply while the other stays nearly straight. Averaged, a split squat's near-straight back leg
+ * and deeply-bent front leg can land right in a shallow regular squat's range, which is exactly
+ * how a different single-leg movement would otherwise get counted as one. Checked only when both
+ * knees are confidently visible — a side-on view that only shows one leg clearly can't judge
+ * symmetry at all, and is let through rather than blocked.
+ */
+const MAX_KNEE_ASYMMETRY = 35;
+
+function createSquatTracker(): MovementTracker {
+  const UP = 160;
+  const DOWN = 120;
+  const DEPTH_GOOD = 100;
   let phase: Phase = 'up';
   let minAngle = 180;
+  let asymmetric = false;
+  const reset = () => {
+    phase = 'up';
+    minAngle = 180;
+    asymmetric = false;
+  };
   return {
-    reset() {
-      phase = 'up';
-      minAngle = 180;
-    },
+    reset,
     update(points): RepUpdate {
-      const angle = opts.angle(points);
+      const { left, right } = sidesAngle(points, 'hip', 'knee', 'ankle');
+      const angle = left !== null && right !== null ? (left + right) / 2 : (left ?? right);
       if (angle === null) return { repCompleted: false, feedback: null };
+      if (left !== null && right !== null && Math.abs(left - right) > MAX_KNEE_ASYMMETRY) asymmetric = true;
+
       if (phase === 'up') {
-        if (angle < opts.downThreshold) {
+        if (angle < DOWN) {
           phase = 'down';
           minAngle = angle;
         }
         return { repCompleted: false, feedback: null };
       }
       minAngle = Math.min(minAngle, angle);
-      if (angle <= opts.upThreshold) return { repCompleted: false, feedback: null };
-      phase = 'up';
-      const feedback = opts.onRepComplete(minAngle);
-      minAngle = 180;
+      if (angle <= UP) return { repCompleted: false, feedback: null };
+      // A split squat or lunge doesn't get counted as a squat rep at all, the same as if the
+      // camera simply couldn't get a reading — not flagged as bad form, just not this movement.
+      if (asymmetric) {
+        reset();
+        return { repCompleted: false, feedback: null };
+      }
+      const feedback: FormFeedback = minAngle <= DEPTH_GOOD ? { status: 'good', message: t('pose.squat.good') } : { status: 'warn', message: t('pose.squat.shallow') };
+      reset();
       return { repCompleted: true, feedback };
     },
   };
-}
-
-function createSquatTracker(): MovementTracker {
-  return hysteresisTracker({
-    angle: (points) => sideAngle(points, 'hip', 'knee', 'ankle'),
-    upThreshold: 160,
-    downThreshold: 120,
-    onRepComplete: (minAngle) => (minAngle <= 100 ? { status: 'good', message: t('pose.squat.good') } : { status: 'warn', message: t('pose.squat.shallow') }),
-  });
 }
 
 /** Push-ups need a second signal beyond the hinge angle: a sagging or piked hip is a form fault

@@ -24,13 +24,22 @@ export function angleAt(a: Point2D, vertex: Point2D, c: Point2D): number {
   return (Math.acos(cos) * 180) / Math.PI;
 }
 
+/** Both sides of a left/right joint pair read separately, so a caller can tell a symmetric
+ * movement (both sides bending together) from an asymmetric one (one side doing the work) —
+ * something a single averaged angle can't distinguish. */
+export function sidesAngle(points: Keypoint[], a: string, vertex: string, c: string): { left: number | null; right: number | null } {
+  return {
+    left: angleIfVisible(points, `left_${a}`, `left_${vertex}`, `left_${c}`),
+    right: angleIfVisible(points, `right_${a}`, `right_${vertex}`, `right_${c}`),
+  };
+}
+
 /**
  * The angle at a joint that comes in a left/right pair (knee, elbow, hip), averaging both sides
  * when both are confidently visible so a slight turn toward the camera doesn't lose the reading.
  */
 export function sideAngle(points: Keypoint[], a: string, vertex: string, c: string): number | null {
-  const left = angleIfVisible(points, `left_${a}`, `left_${vertex}`, `left_${c}`);
-  const right = angleIfVisible(points, `right_${a}`, `right_${vertex}`, `right_${c}`);
+  const { left, right } = sidesAngle(points, a, vertex, c);
   if (left !== null && right !== null) return (left + right) / 2;
   return left ?? right;
 }
@@ -53,4 +62,20 @@ export function sideMidpoint(points: Keypoint[], name: string): Point2D | null {
 
 export function distance(a: Point2D, b: Point2D): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+/** How far the torso leans from straight-up-and-down, in degrees — 0 is a standing-tall body
+ * (shoulders stacked over hips), 90 is lying flat (shoulders level with hips, as in a plank).
+ * The coarse signal that tells a squat apart from a push-up: not what a single limb angle is
+ * doing, but which way the body as a whole is actually oriented. */
+export function torsoTiltFromVertical(points: Keypoint[]): number | null {
+  const hip = sideMidpoint(points, 'hip');
+  const shoulder = sideMidpoint(points, 'shoulder');
+  if (!hip || !shoulder) return null;
+  const dx = shoulder.x - hip.x;
+  const dy = shoulder.y - hip.y;
+  const mag = Math.hypot(dx, dy);
+  if (mag === 0) return null;
+  const cos = Math.min(1, Math.max(-1, -dy / mag));
+  return (Math.acos(cos) * 180) / Math.PI;
 }
