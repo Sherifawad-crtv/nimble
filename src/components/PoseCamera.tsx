@@ -4,7 +4,7 @@ import { overlayRoot } from '../lib/viewport';
 import { Banner, Button, IconButton } from '../design';
 import { t } from '../i18n';
 import { loadPoseDetector, type PoseDetector } from '../pose/detector';
-import { createTracker, type PoseMovement } from '../pose/movements';
+import { createTracker, isPoseUsable, type PoseMovement } from '../pose/movements';
 import type { FormFeedback, Keypoint } from '../pose/pose-types';
 
 type Status = 'loading' | 'ready' | 'denied' | 'error' | 'unsupported';
@@ -32,8 +32,6 @@ const SKELETON_EDGES: [string, string][] = [
   ['right_knee', 'right_ankle'],
 ];
 const MIN_SCORE = 0.3;
-/** How many of the 17 joints must be confidently visible before a reading is trusted. */
-const MIN_VISIBLE_JOINTS = 6;
 
 /**
  * Full-screen camera view that counts reps and flags basic form issues for one exercise, using
@@ -65,10 +63,12 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
       if (video.readyState >= 2) {
         const points = await detector.estimate(video);
         if (stopped) return;
-        drawSkeleton(canvasRef.current, video, points);
-        const seen = points ? points.filter((p) => (p.score ?? 0) >= MIN_SCORE).length >= MIN_VISIBLE_JOINTS : false;
-        setPersonVisible(seen);
-        if (points && seen) {
+        const usable = points ? isPoseUsable(movement, points) : false;
+        setPersonVisible(usable);
+        // Drawing a skeleton built from joints the movement can't actually use is more confusing
+        // than no overlay at all — a close-up face still "detects" shoulders, just nothing below them.
+        drawSkeleton(canvasRef.current, video, usable ? points : null);
+        if (points && usable) {
           const update = tracker.update(points);
           if (update.repCompleted) {
             setReps((r) => r + 1);

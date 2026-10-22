@@ -18,6 +18,16 @@ export function detectMovement(exerciseName: string, measuredAs: MeasuredAs): Po
   return null;
 }
 
+/**
+ * Whether the joints this movement actually reads are visible — not just some count of the 17
+ * keypoints. A close-up face-and-shoulders selfie can confidently show six points and still have
+ * nothing useful for a squat, which needs the hips and knees that aren't anywhere in that frame.
+ */
+export function isPoseUsable(movement: PoseMovement, points: Keypoint[]): boolean {
+  if (movement === 'squat') return sideAngle(points, 'hip', 'knee', 'ankle') !== null;
+  return sideAngle(points, 'shoulder', 'elbow', 'wrist') !== null && sideAngle(points, 'shoulder', 'hip', 'ankle') !== null;
+}
+
 type Phase = 'up' | 'down';
 
 /** A rep tracker for a joint that opens past `upThreshold` at the top and closes past
