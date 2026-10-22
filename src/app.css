@@ -1250,6 +1250,21 @@ body:has(.app-shell.desktop) .app-toast {
   color: var(--ink);
 }
 
+/* Centered over the live camera feed while the model loads in the background, so the person sees
+ * their own picture right away instead of a black screen with no explanation. */
+.app-pose-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  text-align: center;
+  color: var(--ink);
+  pointer-events: none;
+}
+
 .app-pose-panel {
   display: flex;
   flex-direction: column;

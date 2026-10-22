@@ -7,7 +7,7 @@ import { loadPoseDetector, type PoseDetector } from '../pose/detector';
 import { createTracker, isPoseUsable, type PoseMovement } from '../pose/movements';
 import type { FormFeedback, Keypoint } from '../pose/pose-types';
 
-type Status = 'loading' | 'ready' | 'denied' | 'error' | 'unsupported';
+type Status = 'loading' | 'modelLoading' | 'ready' | 'denied' | 'error' | 'unsupported';
 
 interface Props {
   movement: PoseMovement;
@@ -59,8 +59,12 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
     let stopped = false;
     const tracker = createTracker(movement);
 
+    // Runs from the moment the camera stream is playing, well before the pose model has loaded —
+    // `detector` starts null and is filled in once loadPoseDetector() resolves, so the live feed
+    // is on screen immediately instead of sitting on a black frame for however long the model
+    // (~1.2MB, loaded lazily) takes to arrive.
     const loop = async () => {
-      if (stopped || !detector || !videoRef.current || !canvasRef.current || !stageRef.current) return;
+      if (stopped || !videoRef.current || !canvasRef.current || !stageRef.current) return;
       const video = videoRef.current;
       const canvas = canvasRef.current;
       if (video.readyState >= 2 && video.videoWidth && video.videoHeight) {
@@ -82,10 +86,13 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
         const rotate = deviceIsPortrait && video.videoWidth > video.videoHeight;
         const upright = uprightFrame(uprightRef, video, rotate);
 
-        // Both the overlay and the model read from the same corrected frame, so if the model
-        // is seeing a sideways person, the fix lives here rather than only in how it's drawn.
-        const points = await detector.estimate(upright);
-        if (stopped) return;
+        let points: Keypoint[] | null = null;
+        if (detector) {
+          // Both the overlay and the model read from the same corrected frame, so if the model
+          // is seeing a sideways person, the fix lives here rather than only in how it's drawn.
+          points = await detector.estimate(upright);
+          if (stopped) return;
+        }
         const usable = points ? isPoseUsable(movement, points) : false;
         const anyoneInFrame = points ? points.some((p) => (p.score ?? 0) >= MIN_SCORE) : false;
         setPersonVisible(anyoneInFrame);
@@ -117,13 +124,16 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
           videoRef.current.srcObject = stream;
           await videoRef.current.play();
         }
+        // Start painting the live feed now — the model loads in the background below.
+        setStatus('modelLoading');
+        raf = requestAnimationFrame(() => void loop());
+
         detector = await loadPoseDetector();
         if (stopped) {
           detector.dispose();
           return;
         }
         setStatus('ready');
-        raf = requestAnimationFrame(() => void loop());
       } catch (e) {
         if (stopped) return;
         const denied = e instanceof DOMException && (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError');
@@ -149,7 +159,12 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
       <div className="app-pose-stage" ref={stageRef}>
         <video ref={videoRef} className="app-pose-video-source" playsInline muted aria-hidden="true" />
         <canvas ref={canvasRef} className="app-pose-canvas" />
-        {status === 'loading' && <p className="t-body app-pose-status">{t('pose.loading')}</p>}
+        {(status === 'loading' || status === 'modelLoading') && (
+          <div className="app-pose-loading">
+            <span className="v-spin big" aria-hidden="true" />
+            <p className="t-body">{t('pose.loading')}</p>
+          </div>
+        )}
         {status === 'ready' && !personVisible && <p className="t-body app-pose-status">{t('pose.noPerson')}</p>}
       </div>
 
