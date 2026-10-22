@@ -41,3 +41,16 @@ function angleIfVisible(points: Keypoint[], a: string, vertex: string, c: string
   const pc = point(points, c);
   return pa && pv && pc ? angleAt(pa, pv, pc) : null;
 }
+
+/** The midpoint of a left/right joint pair (hip, shoulder), averaging both sides when both are
+ * visible so the point tracks the body's centerline rather than one arbitrary side of it. */
+export function sideMidpoint(points: Keypoint[], name: string): Point2D | null {
+  const left = point(points, `left_${name}`);
+  const right = point(points, `right_${name}`);
+  if (left && right) return { x: (left.x + right.x) / 2, y: (left.y + right.y) / 2 };
+  return left ?? right;
+}
+
+export function distance(a: Point2D, b: Point2D): number {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}

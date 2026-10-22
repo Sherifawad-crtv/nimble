@@ -171,7 +171,7 @@ function Active({ assignment: a, log, exercises }: { assignment: Assignment; log
               const ex = exById.get(it.exerciseId);
               const measured = ex?.measuredAs ?? 'reps';
               const next = block.items[i + 1]?.exerciseName ?? block.items[0]?.exerciseName;
-              const movement = !timer ? detectMovement(it.exerciseName, measured) : null;
+              const movement = !timer ? detectMovement(it.exerciseName) : null;
               return (
                 <article key={it.id} className="app-exercise" aria-label={it.exerciseName}>
                   <h3 className="t-body-strong">{it.exerciseName}</h3>
