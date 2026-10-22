@@ -92,13 +92,10 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
 
     void (async () => {
       try {
-        // Ask for a portrait-shaped stream to match how a phone is actually held — without a
-        // hint some browsers default to a landscape camera mode regardless of device orientation,
-        // which left the frame cropped sideways relative to what was on screen.
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 } },
-          audio: false,
-        });
+        // No resolution hint: an explicit ideal width/height pushed some phones (iOS especially)
+        // to digitally crop the sensor to match it, zooming in tight enough to cut off the knees.
+        // drawFrame()'s cover-crop math already adapts to whatever shape the stream actually is.
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
         if (stopped) {
           stream.getTracks().forEach((tr) => tr.stop());
           return;
