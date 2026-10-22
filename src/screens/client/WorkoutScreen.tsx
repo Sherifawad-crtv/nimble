@@ -5,6 +5,7 @@ import { useToast } from '../../app/Toast';
 import { Comments } from '../../components/Comments';
 import { DataBoundary } from '../../components/DataBoundary';
 import { Page } from '../../components/Page';
+import { PoseCamera } from '../../components/PoseCamera';
 import { SetLogger } from '../../components/SetLogger';
 import { VideoEmbed } from '../../components/VideoEmbed';
 import { WorkoutPlan } from '../../components/WorkoutPlan';
@@ -13,6 +14,7 @@ import { Banner, Button, StatusChip, TextField } from '../../design';
 import { errorMessage, useAction, useData } from '../../hooks/data';
 import { keys } from '../../hooks/keys';
 import { formatDateLong, t } from '../../i18n';
+import { detectMovement, type PoseMovement } from '../../pose/movements';
 import { formatTimerResult } from '../../lib/results';
 import { blockTypeLabel, isTimerBlock, settingsSummary, targetText } from '../../lib/workout';
 import type { Assignment, Block, Exercise, SetResult, WorkoutLog } from '../../types';
@@ -89,6 +91,7 @@ function Active({ assignment: a, log, exercises }: { assignment: Assignment; log
   const [note, setNote] = useState(log.clientNote ?? '');
   const [rest, setRest] = useState<{ seconds: number; next?: string } | null>(null);
   const [dirty, setDirty] = useState(false);
+  const [camera, setCamera] = useState<{ itemId: string; movement: PoseMovement; name: string; target?: number } | null>(null);
   const latest = useRef({ results, note, log });
   latest.current = { results, note, log };
 
@@ -168,6 +171,7 @@ function Active({ assignment: a, log, exercises }: { assignment: Assignment; log
               const ex = exById.get(it.exerciseId);
               const measured = ex?.measuredAs ?? 'reps';
               const next = block.items[i + 1]?.exerciseName ?? block.items[0]?.exerciseName;
+              const movement = !timer ? detectMovement(it.exerciseName, measured) : null;
               return (
                 <article key={it.id} className="app-exercise" aria-label={it.exerciseName}>
                   <h3 className="t-body-strong">{it.exerciseName}</h3>
@@ -178,14 +182,27 @@ function Active({ assignment: a, log, exercises }: { assignment: Assignment; log
                     <p className="t-label v-muted">{t('workout.exerciseMissing')}</p>
                   )}
                   {!timer && (
-                    <SetLogger
-                      name={it.exerciseName}
-                      measuredAs={measured}
-                      target={it.target}
-                      saved={results[it.id] ?? []}
-                      onChange={(sets) => setItemSets(it.id, sets)}
-                      onSetDone={(seconds) => setRest({ seconds, next })}
-                    />
+                    <>
+                      <SetLogger
+                        name={it.exerciseName}
+                        measuredAs={measured}
+                        target={it.target}
+                        saved={results[it.id] ?? []}
+                        onChange={(sets) => setItemSets(it.id, sets)}
+                        onSetDone={(seconds) => setRest({ seconds, next })}
+                      />
+                      {movement && (
+                        <Button
+                          fullWidth
+                          size="md"
+                          variant="secondary"
+                          icon="play"
+                          onClick={() => setCamera({ itemId: it.id, movement, name: it.exerciseName, target: it.target.reps })}
+                        >
+                          {t('pose.track')}
+                        </Button>
+                      )}
+                    </>
                   )}
                 </article>
               );
@@ -220,6 +237,18 @@ function Active({ assignment: a, log, exercises }: { assignment: Assignment; log
         {t('workout.finish')}
       </Button>
       {rest && <RestOverlay seconds={rest.seconds} next={rest.next} onClose={() => setRest(null)} />}
+      {camera && (
+        <PoseCamera
+          movement={camera.movement}
+          exerciseName={camera.name}
+          target={camera.target}
+          onClose={() => setCamera(null)}
+          onApply={(reps) => {
+            setItemSets(camera.itemId, [...(results[camera.itemId] ?? []), { reps }]);
+            setCamera(null);
+          }}
+        />
+      )}
     </>
   );
 }

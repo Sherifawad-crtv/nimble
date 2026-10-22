@@ -1,0 +1,33 @@
+import type { Keypoint } from './pose-types';
+
+/**
+ * Loads TensorFlow.js and the MoveNet model only when camera tracking is actually opened —
+ * these packages are not worth adding to every visitor's initial bundle for a feature most
+ * sessions never touch.
+ */
+export async function loadPoseDetector() {
+  const [tf, poseDetection] = await Promise.all([
+    import('@tensorflow/tfjs-core'),
+    (async () => {
+      await import('@tensorflow/tfjs-backend-webgl');
+      return import('@tensorflow-models/pose-detection');
+    })(),
+  ]);
+  await tf.ready();
+
+  const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, {
+    modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+  });
+
+  return {
+    async estimate(video: HTMLVideoElement): Promise<Keypoint[] | null> {
+      const poses = await detector.estimatePoses(video, { flipHorizontal: false });
+      return poses[0]?.keypoints ?? null;
+    },
+    dispose() {
+      detector.dispose();
+    },
+  };
+}
+
+export type PoseDetector = Awaited<ReturnType<typeof loadPoseDetector>>;

@@ -1195,6 +1195,78 @@ body:has(.app-shell.desktop) .app-toast {
   color: var(--ink);
 }
 
+/* ---------- camera rep tracking (experimental) ---------- */
+
+.app-pose {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.app-pose-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(env(safe-area-inset-top), var(--space-4)) var(--space-4) var(--space-2);
+}
+
+.app-pose-stage {
+  position: relative;
+  flex: 1;
+  min-block-size: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.app-pose-video,
+.app-pose-canvas {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.app-pose-status {
+  position: absolute;
+  inset-inline: var(--space-4);
+  inset-block-end: var(--space-4);
+  text-align: center;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, #000 60%, transparent);
+  color: var(--ink);
+}
+
+.app-pose-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-4) calc(max(env(safe-area-inset-bottom), var(--space-4)));
+}
+
+.app-pose-count {
+  color: var(--text-brand);
+}
+
+.app-pose-feedback {
+  text-align: center;
+}
+
+.app-pose-feedback.good {
+  color: var(--text-brand);
+}
+
+.app-pose-feedback.warn {
+  color: var(--warning);
+}
+
 /* ---------- sign in ---------- */
 
 .app-signin {
