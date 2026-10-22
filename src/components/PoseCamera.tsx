@@ -6,6 +6,7 @@ import { t } from '../i18n';
 import { loadPoseDetector, type PoseDetector } from '../pose/detector';
 import { createTracker, isPoseUsable, type PoseMovement } from '../pose/movements';
 import type { FormFeedback, Keypoint } from '../pose/pose-types';
+import { KeypointSmoother } from '../pose/smoothing';
 
 type Status = 'loading' | 'modelLoading' | 'ready' | 'denied' | 'error' | 'unsupported';
 
@@ -58,6 +59,7 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
     let raf = 0;
     let stopped = false;
     const tracker = createTracker(movement);
+    const smoother = new KeypointSmoother();
 
     // Runs from the moment the camera stream is playing, well before the pose model has loaded —
     // `detector` starts null and is filled in once loadPoseDetector() resolves, so the live feed
@@ -90,8 +92,11 @@ export function PoseCamera({ movement, exerciseName, target, onClose, onApply }:
         if (detector) {
           // Both the overlay and the model read from the same corrected frame, so if the model
           // is seeing a sideways person, the fix lives here rather than only in how it's drawn.
-          points = await detector.estimate(upright);
+          const raw = await detector.estimate(upright);
           if (stopped) return;
+          // Smoothed before anything else touches it — the skeleton drawn, the angle math the
+          // rep trackers run, and the visibility check all read the same steadied positions.
+          points = raw ? smoother.smooth(raw, performance.now()) : null;
         }
         const usable = points ? isPoseUsable(movement, points) : false;
         const anyoneInFrame = points ? points.some((p) => (p.score ?? 0) >= MIN_SCORE) : false;

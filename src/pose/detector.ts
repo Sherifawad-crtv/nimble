@@ -21,7 +21,11 @@ export async function loadPoseDetector() {
 
   return {
     async estimate(source: HTMLVideoElement | HTMLCanvasElement): Promise<Keypoint[] | null> {
-      const poses = await detector.estimatePoses(source, { flipHorizontal: false });
+      // MoveNet's own temporal smoothing (on by default) times itself off the input's
+      // `currentTime`, which only a <video> element has — a canvas doesn't, so smoothing was
+      // silently doing nothing once frames started going through the rotation-correction canvas.
+      // Supplying our own clock here is exactly what the library's docs call for in that case.
+      const poses = await detector.estimatePoses(source, { flipHorizontal: false }, performance.now());
       return poses[0]?.keypoints ?? null;
     },
     dispose() {
