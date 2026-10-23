@@ -51,7 +51,7 @@ After proposing, say in one short sentence what you imported, and name anything 
 const itemSchema = {
   type: 'object',
   properties: {
-    exerciseId: { type: 'string', description: 'An id returned by search_exercises.' },
+    exerciseId: { type: 'string', description: 'An id returned by search_exercises or list_exercises.' },
     sets: { type: 'integer' },
     reps: { type: 'integer' },
     durationSec: { type: 'integer' },
