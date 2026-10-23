@@ -32,14 +32,6 @@ import { coachOverview, exerciseProgress, personalRecords, progressSummary, with
 import { parseVideoUrl, thumbnailFor, videoUrlFor } from '../videoLink';
 import { callFunction, must } from './client';
 
-/**
- * The deployed edge function the assistant talks to. The file-upload version is live under its own
- * name while it is being tried out, so the original `coach-assistant` keeps serving production
- * unchanged. Promoting the upload means deploying the same source to `coach-assistant` and
- * switching this back.
- */
-const ASSISTANT_FUNCTION = 'coach-assistant-upload';
-
 // ---------- rows ----------
 
 interface ProfileRow {
@@ -232,7 +224,7 @@ export class SupabaseDataService implements DataService {
 
   async askAssistant(messages: AssistantMessage[]): Promise<AssistantReply> {
     await this.coach();
-    return callFunction<AssistantReply>(this.sb, ASSISTANT_FUNCTION, { messages });
+    return callFunction<AssistantReply>(this.sb, 'coach-assistant', { messages });
   }
 
   async savePushDevice(d: { endpoint: string; p256dh: string; auth: string }): Promise<void> {
