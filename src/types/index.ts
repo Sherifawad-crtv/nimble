@@ -201,9 +201,15 @@ export interface Package {
 export type PackageInput = Omit<Package, 'id' | 'sessionsRemaining' | 'state'> & { id?: Id };
 
 // ---------- coach assistant ----------
+/** A file the coach attached for the assistant to read: binary files as base64, text files as text. */
+export type AssistantAttachment =
+  | { name: string; mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' | 'application/pdf'; data: string }
+  | { name: string; text: string };
+
 export interface AssistantMessage {
   role: 'user' | 'assistant';
   content: string;
+  attachments?: AssistantAttachment[];
 }
 
 /** One change the assistant wants to make. Nothing happens until the coach confirms it. */

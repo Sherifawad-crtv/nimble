@@ -8,9 +8,10 @@ import { ParticleOrb } from './ParticleOrb';
 import { errorMessage, useAction, useData } from '../hooks/data';
 import { keys } from '../hooks/keys';
 import { formatDay, t } from '../i18n';
+import { ATTACH_ACCEPT, AttachmentError, MAX_CHAT_BASE64, MAX_FILES, payloadSize, readAttachment } from '../lib/attachments';
 import { blockTypeLabel, isTimerBlock, measuredLabel, settingsSummary, targetText } from '../lib/workout';
 import { dataService } from '../services';
-import type { AssistantMessage, AssistantProposal, ExerciseInput, Id, MeasuredAs } from '../types';
+import type { AssistantAttachment, AssistantMessage, AssistantProposal, ExerciseInput, Id, MeasuredAs } from '../types';
 
 interface Turn extends AssistantMessage {
   proposal?: AssistantProposal;
@@ -19,11 +20,28 @@ interface Turn extends AssistantMessage {
   fresh?: boolean;
 }
 
-const STARTERS = [
+const STARTERS: { label: string; prompt?: string }[] = [
   { label: t('assistant.starter.workout'), prompt: t('assistant.starter.workout.prompt') },
   { label: t('assistant.starter.assign'), prompt: t('assistant.starter.assign.prompt') },
   { label: t('assistant.starter.find'), prompt: t('assistant.starter.find.prompt') },
+  { label: t('assistant.starter.upload') },
 ];
+
+/** A file shown as a small labelled chip, in the composer before sending and in the thread after. */
+function FileChip({ file, onRemove }: { file: AssistantAttachment; onRemove?: () => void }) {
+  const isImage = 'mediaType' in file && file.mediaType.startsWith('image/');
+  return (
+    <li className="assist-file">
+      <Icon name={isImage ? 'gallery' : 'file'} size={16} />
+      <span className="assist-file-name">{file.name}</span>
+      {onRemove && (
+        <button type="button" className="assist-file-x" aria-label={t('assistant.attach.remove', { name: file.name })} onClick={onRemove}>
+          <Icon name="close" size={14} />
+        </button>
+      )}
+    </li>
+  );
+}
 
 const STATUS = [t('assistant.status.1'), t('assistant.status.2'), t('assistant.status.3')];
 
@@ -96,6 +114,12 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState('');
+  const [pending, setPending] = useState<AssistantAttachment[]>([]);
+  const [reading, setReading] = useState(false);
+  /** A plan from a file is being brought in and has not been saved yet. */
+  const [importing, setImporting] = useState(false);
+  const [resume, setResume] = useState(false);
+  const picker = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [thinking, setThinking] = useState(false);
   const [typing, setTyping] = useState(false);
@@ -119,27 +143,65 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
 
   const close = () => setClosing(true);
 
+  const pick = async (files: File[]) => {
+    if (!files.length) return;
+    if (pending.length + files.length > MAX_FILES) {
+      toast.show(t('assistant.attach.tooMany', { n: MAX_FILES }), 'error');
+      return;
+    }
+    setReading(true);
+    try {
+      const added: AssistantAttachment[] = [];
+      for (const f of files) added.push(await readAttachment(f));
+      // Earlier files go with every message in the chat, so what is already there counts too.
+      const inChat = turns.flatMap((x) => x.attachments ?? []);
+      if (payloadSize([...inChat, ...pending, ...added]) > MAX_CHAT_BASE64) {
+        toast.show(t('assistant.attach.tooMuch'), 'error');
+        return;
+      }
+      setPending((p) => [...p, ...added]);
+    } catch (e) {
+      toast.show(e instanceof AttachmentError ? e.message : errorMessage(e), 'error');
+    } finally {
+      setReading(false);
+    }
+  };
+
   const send = async (text: string) => {
-    const content = text.trim();
-    if (!content || busy) return;
-    const next: Turn[] = [...turns.map((x) => ({ ...x, fresh: false })), { role: 'user', content }];
+    const attachments = pending;
+    const wasImporting = importing;
+    // A file on its own means "bring this in", exactly as written, unless they say otherwise.
+    const content = text.trim() || (attachments.length ? t('assistant.upload.defaultPrompt') : '');
+    if (!content || busy || reading) return;
+    const next: Turn[] = [...turns.map((x) => ({ ...x, fresh: false })), { role: 'user', content, ...(attachments.length ? { attachments } : {}) }];
     setTurns(next);
     setDraft('');
+    setPending([]);
+    if (attachments.length) setImporting(true);
     setBusy(true);
     setThinking(true);
     try {
-      const reply = await dataService.askAssistant(next.map(({ role, content: c }) => ({ role, content: c })));
+      const reply = await dataService.askAssistant(next.map(({ role, content: c, attachments: a }) => ({ role, content: c, ...(a?.length ? { attachments: a } : {}) })));
       setThinking(false);
       setTurns([...next, { role: 'assistant', content: reply.text, fresh: true, ...(reply.proposal ? { proposal: reply.proposal } : {}) }]);
     } catch (e) {
       toast.show(errorMessage(e), 'error');
       setTurns(next.slice(0, -1));
-      setDraft(content);
+      setDraft(text);
+      setPending(attachments);
+      setImporting(wasImporting);
     } finally {
       setThinking(false);
       setBusy(false);
     }
   };
+
+  // Runs on the render after the exercises are saved, so the follow-up is built from the settled thread.
+  useEffect(() => {
+    if (!resume || busy) return;
+    setResume(false);
+    void send(t('assistant.upload.continue'));
+  }, [resume, busy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const settle = (index: number, message: string) =>
     setTurns((list) => [...list.map((x, i) => (i === index ? { ...x, resolved: true } : x)), { role: 'assistant' as const, content: message, fresh: true }]);
@@ -149,6 +211,7 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
     try {
       if (p.kind === 'workout') {
         const saved = await saveWorkout.run({ workout: p });
+        setImporting(false);
         toast.show(t('assistant.done.workout', { title: saved.title }));
         setClosing(true);
         navigate(`/coach/workouts/${saved.id}`);
@@ -171,11 +234,15 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
           }
         }
         settle(index, failed.length ? t('assistant.done.exercisesSome', { n: done, failed: failed.join(', ') }) : t('assistant.done.exercises', { n: done }));
+        // Adding the missing exercises is only the first step of an import: carry straight on to the
+        // plan itself rather than leaving the coach to ask for it.
+        if (importing && done > 0) setResume(true);
       } else {
         const ids = new Map<string, Id>();
         for (const n of p.newWorkouts) ids.set(n.key, (await saveWorkout.run({ workout: { kind: 'workout', workout: n.workout } })).id);
         const days = p.sessions.map((x) => ({ dayOffset: x.dayOffset, workoutId: (x.workoutId ?? ids.get(x.workoutKey ?? '')) as Id }));
         const saved = await saveProgram.run({ title: p.title, days });
+        setImporting(false);
         toast.show(t('assistant.done.program', { title: saved.title }));
         setClosing(true);
         navigate(`/coach/programs/${saved.id}`);
@@ -210,7 +277,17 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
         </button>
         {!empty && <h2 className="t-heading assist-bar-title">{t('assistant.title')}</h2>}
         {!empty ? (
-          <button type="button" className="assist-round" aria-label={t('assistant.new')} disabled={busy} onClick={() => setTurns([])}>
+          <button
+            type="button"
+            className="assist-round"
+            aria-label={t('assistant.new')}
+            disabled={busy}
+            onClick={() => {
+              setTurns([]);
+              setPending([]);
+              setImporting(false);
+            }}
+          >
             <Icon name="refresh" size={20} />
           </button>
         ) : (
@@ -225,7 +302,13 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
           <h1 className="t-title assist-headline">{t('assistant.headline')}</h1>
           <div className="assist-chips" role="group" aria-label={t('assistant.starters')}>
             {STARTERS.map((s, k) => (
-              <button key={s.label} type="button" className="assist-chip" style={{ '--i': k } as React.CSSProperties} onClick={() => void send(s.prompt)}>
+              <button
+                key={s.label}
+                type="button"
+                className="assist-chip"
+                style={{ '--i': k } as React.CSSProperties}
+                onClick={() => (s.prompt ? void send(s.prompt) : picker.current?.click())}
+              >
                 {s.label}
               </button>
             ))}
@@ -236,7 +319,16 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
           {turns.map((turn, i) =>
             turn.role === 'user' ? (
               <li key={i} className="assist-msg me">
-                <p className="assist-bubble me">{turn.content}</p>
+                <div className="assist-me-col">
+                  {turn.attachments?.length ? (
+                    <ul className="assist-files">
+                      {turn.attachments.map((f, k) => (
+                        <FileChip key={k} file={f} />
+                      ))}
+                    </ul>
+                  ) : null}
+                  <p className="assist-bubble me">{turn.content}</p>
+                </div>
               </li>
             ) : (
               <li key={i} className="assist-msg">
@@ -258,7 +350,30 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
         </ol>
       )}
 
+      {pending.length > 0 && (
+        <ul className="assist-files pending" aria-label={t('assistant.attach')}>
+          {pending.map((f, k) => (
+            <FileChip key={k} file={f} onRemove={() => setPending((p) => p.filter((_, j) => j !== k))} />
+          ))}
+        </ul>
+      )}
+
       <form className="assist-composer" onSubmit={onSubmit}>
+        <input
+          ref={picker}
+          type="file"
+          multiple
+          hidden
+          accept={ATTACH_ACCEPT}
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? []);
+            e.target.value = '';
+            void pick(files);
+          }}
+        />
+        <button type="button" className="assist-attach" aria-label={t('assistant.attach')} disabled={busy || reading} onClick={() => picker.current?.click()}>
+          {reading ? <span className="v-spin" aria-hidden="true" /> : <Icon name="paperclip" size={22} />}
+        </button>
         <textarea
           ref={field}
           rows={1}
@@ -283,7 +398,7 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
             typer.current = window.setTimeout(() => setTyping(false), 700);
           }}
         />
-        <button type="submit" className="assist-send" aria-label={t('assistant.send')} disabled={busy || !draft.trim()}>
+        <button type="submit" className="assist-send" aria-label={t('assistant.send')} disabled={busy || reading || (!draft.trim() && !pending.length)}>
           <Icon name="arrow-up" size={22} />
         </button>
       </form>

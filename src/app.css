@@ -2013,6 +2013,85 @@ html[data-keyboard] .app-tabbar {
   color: var(--muted);
 }
 
+/* Attaching a plan: the paperclip beside the field, and each chosen file as a small removable chip. */
+.assist-attach {
+  flex: none;
+  inline-size: 52px;
+  block-size: 52px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.08);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  transition:
+    transform 0.18s var(--ease-emphasized),
+    background 0.2s ease;
+}
+.assist-attach:disabled {
+  color: var(--muted);
+}
+.assist-attach:not(:disabled):active {
+  transform: scale(0.9);
+  background: rgb(255 255 255 / 0.16);
+}
+.assist-files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.assist-files.pending {
+  padding: var(--space-2) var(--space-4) 0;
+}
+.assist-me-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+  min-inline-size: 0;
+  max-inline-size: 85%;
+}
+.assist-me-col .assist-files {
+  justify-content: flex-end;
+}
+.assist-me-col .assist-bubble.me {
+  max-inline-size: 100%;
+}
+.assist-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-inline-size: 220px;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 0.08);
+  color: var(--ink);
+  font: 500 14px/20px var(--font-sans);
+}
+.assist-file-name {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.assist-file-x {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 22px;
+  block-size: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.12);
+  color: var(--ink);
+}
+
 /* With the keyboard open there is no home indicator below the composer, so it sits right on the keyboard. */
 html[data-keyboard] .assist-composer {
   padding-block-end: var(--space-2);
