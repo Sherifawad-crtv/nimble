@@ -22,6 +22,14 @@ Run each file in the SQL editor (both roll back):
 | Function | Who | JWT |
 | --- | --- | --- |
 | `link-preview` | coach | on |
+| `coach-assistant` | coach | off (checks the caller itself) |
+| `coach-assistant-upload` | coach | off (checks the caller itself) |
+
+`coach-assistant-upload` is the same source as `coach-assistant` (`functions/coach-assistant/index.ts`)
+with file attachments, deployed under its own name so it could be tried without touching the live
+assistant. Only the upload branch's app calls it. To promote: deploy that source to `coach-assistant`,
+point `ASSISTANT_FUNCTION` in `src/services/supabase/SupabaseDataService.ts` back at it, and delete
+`coach-assistant-upload`.
 
 ## Auth settings (dashboard)
 
