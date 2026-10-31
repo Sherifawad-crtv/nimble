@@ -66,6 +66,8 @@ const MAP = {
   circle: 'record-linear',
   sparkle: 'stars-bold',
   paperclip: 'paperclip-linear',
+  menu: 'hamburger-menu-linear',
+  camera: 'camera-linear',
   gallery: 'gallery-linear',
   file: 'file-text-linear',
   'check-circle-duo': 'check-circle-bold-duotone',

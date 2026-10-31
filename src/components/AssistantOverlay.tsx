@@ -40,10 +40,19 @@ const chatTitle = (turns: Turn[]): string => {
   return line.length > 60 ? `${line.slice(0, 59)}…` : line || t('assistant.history.untitled');
 };
 
-const when = (iso: string): string => {
-  const d = new Date(iso);
-  const today = new Date().toDateString() === d.toDateString();
-  return new Intl.DateTimeFormat(undefined, today ? { hour: 'numeric', minute: '2-digit' } : { day: 'numeric', month: 'short' }).format(d);
+/** Saved chats under Today, Yesterday, Previous 7 days and Older, newest first within each. */
+const groupChats = (list: AssistantChatSummary[]): { label: string; chats: AssistantChatSummary[] }[] => {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const day = 86_400_000;
+  const buckets = [
+    { label: t('assistant.group.today'), from: start.getTime(), chats: [] as AssistantChatSummary[] },
+    { label: t('assistant.group.yesterday'), from: start.getTime() - day, chats: [] as AssistantChatSummary[] },
+    { label: t('assistant.group.week'), from: start.getTime() - 7 * day, chats: [] as AssistantChatSummary[] },
+    { label: t('assistant.group.older'), from: -Infinity, chats: [] as AssistantChatSummary[] },
+  ];
+  for (const c of list) buckets.find((b) => new Date(c.updatedAt).getTime() >= b.from)?.chats.push(c);
+  return buckets.filter((b) => b.chats.length);
 };
 
 const STARTERS: { label: string; prompt?: string }[] = [
@@ -138,7 +147,16 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
   const toast = useToast();
   const navigate = useNavigate();
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [view, setView] = useState<'chat' | 'history'>('chat');
+  /** The list of saved chats, which slides in over the conversation from the left. */
+  const [drawer, setDrawer] = useState(false);
+  const [search, setSearch] = useState('');
+  /** The saved chat whose "..." menu is open. */
+  const [menuFor, setMenuFor] = useState<Id | null>(null);
+  /** The "+" menu in the composer: photo, file, camera. */
+  const [attachMenu, setAttachMenu] = useState(false);
+  const plus = useRef<HTMLDivElement>(null);
+  const photoPicker = useRef<HTMLInputElement>(null);
+  const cameraPicker = useRef<HTMLInputElement>(null);
   /** The saved chat these turns belong to. A new one starts with each new conversation. */
   const [chatId, setChatId] = useState<Id>(() => crypto.randomUUID());
   /** What was last written for this chat, so opening an old one does not rewrite it. */
@@ -165,7 +183,7 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
 
   const saveChat = useAction((s, a: { id: Id; title: string; messages: SavedAssistantMessage[] }) => s.saveAssistantChat(a), { invalidate: [keys.assistantChats] });
   const removeChat = useAction((s, id: Id) => s.deleteAssistantChat(id), { invalidate: [keys.assistantChats] });
-  const chats = useData(keys.assistantChats, (s) => s.listAssistantChats(), { enabled: view === 'history' });
+  const chats = useData(keys.assistantChats, (s) => s.listAssistantChats(), { enabled: drawer });
 
   const addExercise = useAction((s, a: ExerciseInput) => s.createExercise(a), { invalidate: [keys.exercisesAll] });
   const attachVideo = useAction((s, a: { id: Id; videoUrl: string }) => s.updateExercise(a.id, { videoUrl: a.videoUrl }), { invalidate: [keys.exercisesAll] });
@@ -188,6 +206,13 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
     });
   }, [turns, busy, chatId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (!attachMenu) return;
+    const away = (e: PointerEvent) => !plus.current?.contains(e.target as Node) && setAttachMenu(false);
+    document.addEventListener('pointerdown', away);
+    return () => document.removeEventListener('pointerdown', away);
+  }, [attachMenu]);
+
   const close = () => setClosing(true);
 
   const startNew = () => {
@@ -196,7 +221,7 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
     setImporting(false);
     setChatId(crypto.randomUUID());
     saved.current = '';
-    setView('chat');
+    setDrawer(false);
   };
 
   const open = async (summary: AssistantChatSummary) => {
@@ -208,7 +233,7 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
       setChatId(chat.id);
       setPending([]);
       setImporting(false);
-      setView('chat');
+      setDrawer(false);
     } catch (e) {
       toast.show(errorMessage(e), 'error');
     }
@@ -339,7 +364,7 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
     const el = field.current;
     if (!el) return;
     el.style.blockSize = 'auto';
-    el.style.blockSize = `${el.scrollHeight + 2}px`; // + the 1px border on each side
+    el.style.blockSize = `${el.scrollHeight}px`;
   }, [draft]);
 
   const onSubmit = (e: FormEvent) => {
@@ -352,59 +377,82 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
   return (
     <div className={closing ? 'assist closing' : 'assist'} role="dialog" aria-modal="true" aria-label={t('assistant.title')} onAnimationEnd={(e) => e.currentTarget === e.target && closing && onClose()}>
       <header className="assist-bar">
-        {view === 'history' ? (
-          <button type="button" className="assist-round" aria-label={t('assistant.history.back')} onClick={() => setView('chat')}>
-            <Icon name="chev-l" size={22} />
-          </button>
-        ) : (
-          <button type="button" className="assist-round" aria-label={t('assistant.close')} onClick={close}>
-            <Icon name="chev-d" size={22} />
-          </button>
-        )}
-        {(view === 'history' || !empty) && <h2 className="t-heading assist-bar-title">{view === 'history' ? t('assistant.history') : t('assistant.title')}</h2>}
-        {view === 'history' ? (
-          <span className="assist-round ghost" aria-hidden="true" />
-        ) : (
-          <div className="assist-bar-actions">
-            <button type="button" className="assist-round" aria-label={t('assistant.history')} disabled={busy} onClick={() => setView('history')}>
-              <Icon name="clock" size={20} />
-            </button>
-            {!empty && (
-              <button type="button" className="assist-round" aria-label={t('assistant.new')} disabled={busy} onClick={startNew}>
-                <Icon name="refresh" size={20} />
-              </button>
-            )}
-          </div>
-        )}
+        <button type="button" className="assist-round" aria-label={t('assistant.chats')} onClick={() => {
+            setMenuFor(null);
+            setDrawer(true);
+          }}>
+          <Icon name="menu" size={22} />
+        </button>
+        <h2 className="t-body-strong assist-bar-title">{empty ? '' : chatTitle(turns)}</h2>
+        <button type="button" className="assist-round" aria-label={t('assistant.new')} disabled={busy || empty} onClick={startNew}>
+          <Icon name="edit" size={20} />
+        </button>
       </header>
 
-      {view === 'history' ? (
-        <div className="assist-history">
-          {chats.isPending ? (
-            <div className="assist-history-note v-muted t-body" role="status">
-              <span className="v-spin" aria-hidden="true" />
+      {drawer && (
+        <>
+          <div className="assist-scrim" onClick={() => setDrawer(false)} />
+          <aside className="assist-drawer" aria-label={t('assistant.chats')}>
+            <div className="assist-drawer-top">
+              <label className="assist-search">
+                <Icon name="search" size={18} />
+                <input type="search" value={search} placeholder={t('assistant.search')} aria-label={t('assistant.search')} autoComplete="off" onChange={(e) => setSearch(e.target.value)} />
+              </label>
+              <button type="button" className="assist-round" aria-label={t('assistant.close')} onClick={close}>
+                <Icon name="close" size={22} />
+              </button>
             </div>
-          ) : chats.error ? (
-            <p className="assist-history-note v-muted t-body">{errorMessage(chats.error)}</p>
-          ) : !chats.data?.length ? (
-            <p className="assist-history-note v-muted t-body">{t('assistant.history.empty')}</p>
-          ) : (
-            <ul className="assist-history-list">
-              {chats.data.map((c) => (
-                <li key={c.id} className="assist-history-row" data-current={c.id === chatId || undefined}>
-                  <button type="button" className="assist-history-open" onClick={() => void open(c)}>
-                    <span className="assist-history-title t-body-strong">{c.title}</span>
-                    <span className="t-label v-muted">{when(c.updatedAt)}</span>
-                  </button>
-                  <button type="button" className="assist-history-del" aria-label={t('assistant.history.delete', { title: c.title })} disabled={removeChat.isPending} onClick={() => void forget(c)}>
-                    <Icon name="trash" size={18} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ) : empty ? (
+            <button type="button" className="assist-new-row" disabled={busy} onClick={startNew}>
+              <Icon name="edit" size={20} />
+              <span className="t-body-strong">{t('assistant.new')}</span>
+            </button>
+            <div className="assist-drawer-list">
+              {chats.isPending ? (
+                <div className="assist-history-note" role="status">
+                  <span className="v-spin" aria-hidden="true" />
+                </div>
+              ) : chats.error ? (
+                <p className="assist-history-note v-muted t-body">{errorMessage(chats.error)}</p>
+              ) : !chats.data?.length ? (
+                <p className="assist-history-note v-muted t-body">{t('assistant.history.empty')}</p>
+              ) : (
+                (() => {
+                  const q = search.trim().toLowerCase();
+                  const groups = groupChats(chats.data.filter((c) => !q || c.title.toLowerCase().includes(q)));
+                  if (!groups.length) return <p className="assist-history-note v-muted t-body">{t('assistant.search.none')}</p>;
+                  return groups.map((g) => (
+                    <section key={g.label} className="assist-group">
+                      <h3 className="t-eyebrow v-muted">{g.label}</h3>
+                      <ul>
+                        {g.chats.map((c) => (
+                          <li key={c.id} className="assist-chat-row" data-current={c.id === chatId || undefined}>
+                            <button type="button" className="assist-chat-open" onClick={() => void open(c)}>
+                              {c.title}
+                            </button>
+                            {menuFor === c.id ? (
+                              <button type="button" className="assist-chat-del" disabled={removeChat.isPending} onClick={() => void forget(c).then(() => setMenuFor(null))}>
+                                <Icon name="trash" size={16} />
+                                {t('assistant.history.delete')}
+                              </button>
+                            ) : (
+                              <button type="button" className="assist-chat-more" aria-label={t('assistant.history.options', { title: c.title })} onClick={() => setMenuFor(c.id)}>
+                                <Icon name="dots" size={20} />
+                              </button>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  ));
+                })()
+              )}
+            </div>
+            <div className="assist-drawer-foot t-label v-muted">{me.name}</div>
+          </aside>
+        </>
+      )}
+
+      {empty ? (
         <div className="assist-hero">
           <ParticleOrb size={210} energy={typing ? 0.55 : 0.08} />
           <p className="t-label assist-hello">{t('assistant.hello', { name: me.name.split(' ')[0] ?? me.name })}</p>
@@ -462,57 +510,91 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
         </ol>
       )}
 
-      {view === 'chat' && pending.length > 0 && (
-        <ul className="assist-files pending" aria-label={t('assistant.attach')}>
-          {pending.map((f, k) => (
-            <FileChip key={k} name={f.name} image={'mediaType' in f && f.mediaType.startsWith('image/')} onRemove={() => setPending((p) => p.filter((_, j) => j !== k))} />
-          ))}
-        </ul>
-      )}
-
-      <form className="assist-composer" onSubmit={onSubmit} hidden={view === 'history'}>
-        <input
-          ref={picker}
-          type="file"
-          multiple
-          hidden
-          accept={ATTACH_ACCEPT}
-          onChange={(e) => {
-            const files = Array.from(e.target.files ?? []);
-            e.target.value = '';
-            void pick(files);
-          }}
-        />
-        <button type="button" className="assist-attach" aria-label={t('assistant.attach')} disabled={busy || reading} onClick={() => picker.current?.click()}>
-          {reading ? <span className="v-spin" aria-hidden="true" /> : <Icon name="paperclip" size={22} />}
-        </button>
-        <textarea
-          ref={field}
-          rows={1}
-          className="assist-input"
-          value={draft}
-          maxLength={1000}
-          placeholder={t('assistant.placeholder')}
-          aria-label={t('assistant.placeholder')}
-          enterKeyHint="enter"
-          autoComplete="off"
-          onKeyDown={(e) => {
-            // Desktop: Enter sends, Shift+Enter breaks the line. Touch keyboards keep Enter as a new line.
-            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-              e.preventDefault();
-              void send(draft);
-            }
-          }}
-          onChange={(e) => {
-            setDraft(e.target.value);
-            setTyping(true);
-            window.clearTimeout(typer.current);
-            typer.current = window.setTimeout(() => setTyping(false), 700);
-          }}
-        />
-        <button type="submit" className="assist-send" aria-label={t('assistant.send')} disabled={busy || reading || (!draft.trim() && !pending.length)}>
-          <Icon name="arrow-up" size={22} />
-        </button>
+      <form className="assist-composer" onSubmit={onSubmit}>
+        {([[picker, ATTACH_ACCEPT, false], [photoPicker, 'image/*', false], [cameraPicker, 'image/*', true]] as const).map(([ref, accept, camera], k) => (
+          <input
+            key={k}
+            ref={ref}
+            type="file"
+            multiple={!camera}
+            hidden
+            accept={accept}
+            {...(camera ? { capture: 'environment' as const } : {})}
+            onChange={(e) => {
+              const files = Array.from(e.target.files ?? []);
+              e.target.value = '';
+              void pick(files);
+            }}
+          />
+        ))}
+        <div className="assist-box">
+          {pending.length > 0 && (
+            <ul className="assist-files pending" aria-label={t('assistant.attach')}>
+              {pending.map((f, k) => (
+                <FileChip key={k} name={f.name} image={'mediaType' in f && f.mediaType.startsWith('image/')} onRemove={() => setPending((p) => p.filter((_, j) => j !== k))} />
+              ))}
+            </ul>
+          )}
+          <textarea
+            ref={field}
+            rows={1}
+            className="assist-input"
+            value={draft}
+            maxLength={1000}
+            placeholder={t('assistant.placeholder')}
+            aria-label={t('assistant.placeholder')}
+            enterKeyHint="enter"
+            autoComplete="off"
+            onKeyDown={(e) => {
+              // Desktop: Enter sends, Shift+Enter breaks the line. Touch keyboards keep Enter as a new line.
+              if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                e.preventDefault();
+                void send(draft);
+              }
+            }}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              setTyping(true);
+              window.clearTimeout(typer.current);
+              typer.current = window.setTimeout(() => setTyping(false), 700);
+            }}
+          />
+          <div className="assist-box-row">
+            <div className="assist-plus-wrap" ref={plus}>
+              <button type="button" className="assist-plus" aria-label={t('assistant.attach.menu')} aria-expanded={attachMenu} disabled={busy || reading} onClick={() => setAttachMenu((v) => !v)}>
+                {reading ? <span className="v-spin" aria-hidden="true" /> : <Icon name="plus" size={22} />}
+              </button>
+              {attachMenu && (
+                <ul className="assist-pop" role="menu">
+                  {(
+                    [
+                      ['gallery', t('assistant.attach.photo'), photoPicker],
+                      ['file', t('assistant.attach.file'), picker],
+                      ['camera', t('assistant.attach.camera'), cameraPicker],
+                    ] as const
+                  ).map(([icon, label, ref]) => (
+                    <li key={label} role="none">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setAttachMenu(false);
+                          ref.current?.click();
+                        }}
+                      >
+                        <Icon name={icon} size={20} />
+                        {label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <button type="submit" className="assist-send" aria-label={t('assistant.send')} disabled={busy || reading || (!draft.trim() && !pending.length)}>
+              <Icon name="arrow-up" size={20} />
+            </button>
+          </div>
+        </div>
       </form>
     </div>
   );

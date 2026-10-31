@@ -1797,71 +1797,6 @@ html[data-keyboard] .app-tabbar {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
-.assist-composer[hidden] {
-  display: none;
-}
-.assist-bar-actions {
-  display: flex;
-  gap: var(--space-2);
-}
-.assist-history {
-  flex: 1;
-  min-block-size: 0;
-  overflow-y: auto;
-  padding: var(--space-4);
-}
-.assist-history-note {
-  display: grid;
-  place-items: center;
-  min-block-size: 40%;
-  margin: 0;
-  text-align: center;
-}
-.assist-history-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-.assist-history-row {
-  display: flex;
-  align-items: stretch;
-  border-radius: var(--radius-lg, 16px);
-  background: rgb(255 255 255 / 0.06);
-}
-.assist-history-row[data-current] {
-  box-shadow: inset 0 0 0 1px rgb(201 247 17 / 0.45);
-}
-.assist-history-open {
-  flex: 1;
-  min-inline-size: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: flex-start;
-  padding: 14px 16px;
-  border: 0;
-  background: none;
-  color: var(--ink);
-  text-align: start;
-}
-.assist-history-title {
-  max-inline-size: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.assist-history-del {
-  flex: none;
-  inline-size: 48px;
-  border: 0;
-  background: none;
-  color: var(--muted);
-  display: grid;
-  place-items: center;
-}
 .assist-hero {
   flex: 1;
   display: flex;
@@ -2029,79 +1964,8 @@ html[data-keyboard] .app-tabbar {
   gap: var(--space-2);
   padding-block-start: var(--space-2);
 }
-.assist-composer {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4) calc(var(--space-2) + env(safe-area-inset-bottom));
-}
-.assist-input {
-  flex: 1;
-  min-inline-size: 0;
-  block-size: 52px;
-  min-block-size: 52px;
-  max-block-size: 152px;
-  resize: none;
-  overflow-y: auto;
-  line-height: 22px;
-  padding-block: 14px;
-  border: 1px solid rgb(255 255 255 / 0.12);
-  outline: 0;
-  border-radius: 26px;
-  background: rgb(255 255 255 / 0.08);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  color: var(--ink);
-  padding-inline: 20px;
-  font: 500 16px/22px var(--font-sans);
-  scrollbar-width: none;
-}
-.assist-input::-webkit-scrollbar {
-  display: none;
-}
-.assist-input::placeholder {
-  color: var(--muted);
-}
-.assist-send {
-  flex: none;
-  inline-size: 52px;
-  block-size: 52px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--brand);
-  color: var(--on-brand);
-  display: grid;
-  place-items: center;
-}
-.assist-send:disabled {
-  background: rgb(255 255 255 / 0.08);
-  color: var(--muted);
-}
 
-/* Attaching a plan: the paperclip beside the field, and each chosen file as a small removable chip. */
-.assist-attach {
-  flex: none;
-  inline-size: 52px;
-  block-size: 52px;
-  border: 1px solid rgb(255 255 255 / 0.12);
-  border-radius: 50%;
-  background: rgb(255 255 255 / 0.08);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  color: var(--ink);
-  display: grid;
-  place-items: center;
-  transition:
-    transform 0.18s var(--ease-emphasized),
-    background 0.2s ease;
-}
-.assist-attach:disabled {
-  color: var(--muted);
-}
-.assist-attach:not(:disabled):active {
-  transform: scale(0.9);
-  background: rgb(255 255 255 / 0.16);
-}
+/* Each chosen file as a small removable chip. */
 .assist-files {
   list-style: none;
   margin: 0;
@@ -2109,9 +1973,6 @@ html[data-keyboard] .app-tabbar {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-}
-.assist-files.pending {
-  padding: var(--space-2) var(--space-4) 0;
 }
 .assist-me-col {
   display: flex;
@@ -2158,9 +2019,6 @@ html[data-keyboard] .app-tabbar {
 }
 
 /* With the keyboard open there is no home indicator below the composer, so it sits right on the keyboard. */
-html[data-keyboard] .assist-composer {
-  padding-block-end: var(--space-2);
-}
 
 /* Motion curves: decelerate for things entering, accelerate for leaving, a soft overshoot for taps. */
 .assist {
@@ -2316,27 +2174,6 @@ html[data-keyboard] .assist-composer {
   padding: 1px 6px;
   border-radius: 6px;
 }
-.assist-input {
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-.assist-input:focus {
-  border-color: rgb(201 247 17 / 0.55);
-  box-shadow: 0 0 0 4px rgb(201 247 17 / 0.12);
-}
-.assist-send {
-  transition:
-    transform 0.18s var(--ease-emphasized),
-    background 0.2s ease,
-    color 0.2s ease;
-}
-.assist-send:not(:disabled) {
-  animation: assist-pop 0.36s var(--ease-spring) both;
-}
-.assist-send:not(:disabled):active {
-  transform: scale(0.9);
-}
 .assist-hero canvas {
   display: block;
   margin-block-end: -8px;
@@ -2366,6 +2203,312 @@ html[data-keyboard] .assist-composer {
   background: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+}
+
+/* ---------- assistant, laid out like a phone chat app: top bar, chats drawer, one boxed composer ---------- */
+.assist-bar {
+  gap: var(--space-1);
+  padding-inline: var(--space-2);
+}
+.assist-bar-title {
+  flex: 1;
+  min-inline-size: 0;
+  margin: 0;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.assist-bar .assist-round {
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.assist-bar .assist-round:disabled {
+  opacity: 0.35;
+}
+.assist-bar .assist-round:not(:disabled):active {
+  background: rgb(255 255 255 / 0.1);
+}
+
+.assist-composer {
+  padding: var(--space-2) var(--space-3) calc(var(--space-2) + env(safe-area-inset-bottom));
+}
+/* With the keyboard open there is no home indicator below the composer, so it sits right on the keyboard. */
+html[data-keyboard] .assist-composer {
+  padding-block-end: var(--space-2);
+}
+.assist-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 14px 10px 10px 18px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 28px;
+  background: rgb(255 255 255 / 0.08);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.assist-box:focus-within {
+  border-color: rgb(201 247 17 / 0.55);
+  box-shadow: 0 0 0 4px rgb(201 247 17 / 0.12);
+}
+.assist-box .assist-files.pending {
+  padding: 0 8px 0 0;
+}
+.assist-input {
+  inline-size: 100%;
+  min-block-size: 24px;
+  max-block-size: 144px;
+  padding: 0 8px 0 0;
+  border: 0;
+  outline: 0;
+  resize: none;
+  overflow-y: auto;
+  background: none;
+  color: var(--ink);
+  font: 500 16px/24px var(--font-sans);
+  scrollbar-width: none;
+}
+.assist-input::-webkit-scrollbar {
+  display: none;
+}
+.assist-input::placeholder {
+  color: var(--muted);
+}
+.assist-box-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.assist-plus,
+.assist-send {
+  flex: none;
+  inline-size: 38px;
+  block-size: 38px;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition:
+    transform 0.18s var(--ease-emphasized),
+    background 0.2s ease,
+    color 0.2s ease;
+}
+.assist-plus {
+  border: 1px solid rgb(255 255 255 / 0.18);
+  background: none;
+  color: var(--ink);
+}
+.assist-plus:disabled {
+  color: var(--muted);
+}
+.assist-plus:not(:disabled):active,
+.assist-send:not(:disabled):active {
+  transform: scale(0.9);
+}
+.assist-send {
+  border: 0;
+  background: var(--brand);
+  color: var(--on-brand);
+}
+.assist-send:disabled {
+  background: rgb(255 255 255 / 0.1);
+  color: var(--muted);
+}
+.assist-send:not(:disabled) {
+  animation: assist-pop 0.36s var(--ease-spring) both;
+}
+.assist-plus-wrap {
+  position: relative;
+}
+.assist-pop {
+  position: absolute;
+  inset-block-end: calc(100% + 10px);
+  inset-inline-start: 0;
+  z-index: 2;
+  min-inline-size: 180px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: 20px;
+  background: var(--surface-card);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  box-shadow: var(--shadow-pop);
+  animation: assist-rise 0.22s var(--ease-decel) both;
+}
+.assist-pop button {
+  inline-size: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: var(--ink);
+  font: 500 16px/22px var(--font-sans);
+  text-align: start;
+}
+.assist-pop button:active {
+  background: rgb(255 255 255 / 0.1);
+}
+
+.assist-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--scrim);
+  animation: assist-fade 0.25s ease both;
+}
+.assist-drawer {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 6;
+  inline-size: min(86%, 340px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: calc(env(safe-area-inset-top) + var(--space-2)) var(--space-3) calc(var(--space-3) + env(safe-area-inset-bottom));
+  background: var(--surface-card);
+  box-shadow: var(--shadow-pop);
+  animation: assist-drawer-in 0.3s var(--ease-emphasized) both;
+}
+@keyframes assist-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes assist-drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+.assist-drawer-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.assist-drawer .assist-round {
+  flex: none;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.assist-search {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 14px;
+  block-size: 44px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 0.08);
+  color: var(--muted);
+}
+.assist-search input {
+  flex: 1;
+  min-inline-size: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--ink);
+  font: 500 16px/22px var(--font-sans);
+}
+.assist-new-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: var(--ink);
+  text-align: start;
+}
+.assist-new-row:not(:disabled):active {
+  background: rgb(255 255 255 / 0.1);
+}
+.assist-new-row:disabled {
+  color: var(--muted);
+}
+.assist-drawer-list {
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.assist-history-note {
+  display: grid;
+  place-items: center;
+  min-block-size: 30%;
+  margin: 0;
+  text-align: center;
+}
+.assist-group h3 {
+  margin: 0;
+  padding: 0 14px 4px;
+}
+.assist-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.assist-chat-row {
+  display: flex;
+  align-items: center;
+  border-radius: 14px;
+}
+.assist-chat-row[data-current] {
+  background: rgb(255 255 255 / 0.1);
+}
+.assist-chat-open {
+  flex: 1;
+  min-inline-size: 0;
+  padding: 12px 14px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: 500 16px/22px var(--font-sans);
+  text-align: start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.assist-chat-more,
+.assist-chat-del {
+  flex: none;
+  border: 0;
+  background: none;
+  color: var(--muted);
+}
+.assist-chat-more {
+  inline-size: 40px;
+  block-size: 44px;
+  display: grid;
+  place-items: center;
+}
+.assist-chat-del {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-end: 6px;
+  padding: 8px 12px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 80 80 / 0.14);
+  color: #ff8a8a;
+  font: 600 14px/20px var(--font-sans);
+}
+.assist-drawer-foot {
+  padding: var(--space-2) 14px 0;
+  border-block-start: 1px solid rgb(255 255 255 / 0.1);
 }
 
 /* ---------- notification prompt ---------- */
