@@ -23,4 +23,5 @@ export const keys = {
   comments: (assignmentId: string) => ['comments', assignmentId] as const,
   packages: (clientId: string) => ['packages', clientId] as const,
   invites: ['invites'] as const,
+  assistantChats: ['assistantChats'] as const,
 };

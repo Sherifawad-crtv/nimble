@@ -196,6 +196,19 @@ export class MockDataService implements DataService, DemoSession {
     throw new ServiceError('forbidden', 'The assistant needs a real account. It is not part of the demo.');
   }
 
+  // Chats are kept only by the real backend; the demo has no assistant to talk to.
+  async listAssistantChats(): Promise<never[]> {
+    return [];
+  }
+
+  async getAssistantChat(): Promise<never> {
+    throw new ServiceError('not_found', 'That chat is no longer available.');
+  }
+
+  async saveAssistantChat(): Promise<void> {}
+
+  async deleteAssistantChat(): Promise<void> {}
+
   // Push needs a real backend; the demo backend has nothing to send.
   async savePushDevice(): Promise<void> {}
   async removePushDevice(): Promise<void> {}

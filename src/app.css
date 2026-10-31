@@ -1797,6 +1797,71 @@ html[data-keyboard] .app-tabbar {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
+.assist-composer[hidden] {
+  display: none;
+}
+.assist-bar-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+.assist-history {
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+}
+.assist-history-note {
+  display: grid;
+  place-items: center;
+  min-block-size: 40%;
+  margin: 0;
+  text-align: center;
+}
+.assist-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.assist-history-row {
+  display: flex;
+  align-items: stretch;
+  border-radius: var(--radius-lg, 16px);
+  background: rgb(255 255 255 / 0.06);
+}
+.assist-history-row[data-current] {
+  box-shadow: inset 0 0 0 1px rgb(201 247 17 / 0.45);
+}
+.assist-history-open {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  text-align: start;
+}
+.assist-history-title {
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.assist-history-del {
+  flex: none;
+  inline-size: 48px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+}
 .assist-hero {
   flex: 1;
   display: flex;

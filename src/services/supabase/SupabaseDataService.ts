@@ -1,6 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { addDays, todayISO } from '../../lib/date';
 import type {
+  AssistantChat,
+  AssistantChatSummary,
   AssistantMessage,
   AssistantReply,
   Assignment,
@@ -23,6 +25,7 @@ import type {
   Profile,
   Program,
   ProgramInput,
+  SavedAssistantMessage,
   Workout,
   WorkoutInput,
   WorkoutLog,
@@ -31,6 +34,9 @@ import { ServiceError, type DataService, type ExerciseQuery } from '../DataServi
 import { coachOverview, exerciseProgress, personalRecords, progressSummary, withPackageState } from '../stats';
 import { parseVideoUrl, thumbnailFor, videoUrlFor } from '../videoLink';
 import { callFunction, must } from './client';
+
+/** Trial copy of the assistant function while its new reply style is tried on a preview. */
+const ASSISTANT_FUNCTION = 'coach-assistant-next';
 
 // ---------- rows ----------
 
@@ -224,7 +230,29 @@ export class SupabaseDataService implements DataService {
 
   async askAssistant(messages: AssistantMessage[]): Promise<AssistantReply> {
     await this.coach();
-    return callFunction<AssistantReply>(this.sb, 'coach-assistant', { messages });
+    return callFunction<AssistantReply>(this.sb, ASSISTANT_FUNCTION, { messages });
+  }
+
+  async listAssistantChats(): Promise<AssistantChatSummary[]> {
+    await this.coach();
+    const rows = must(await this.sb.from('assistant_chats').select('id, title, updated_at').order('updated_at', { ascending: false }).returns<{ id: string; title: string; updated_at: string }[]>());
+    return rows.map((r) => ({ id: r.id, title: r.title, updatedAt: r.updated_at }));
+  }
+
+  async getAssistantChat(id: Id): Promise<AssistantChat> {
+    await this.coach();
+    const r = must(await this.sb.from('assistant_chats').select('id, title, messages, updated_at').eq('id', id).single<{ id: string; title: string; messages: SavedAssistantMessage[]; updated_at: string }>());
+    return { id: r.id, title: r.title, messages: r.messages, updatedAt: r.updated_at };
+  }
+
+  async saveAssistantChat(chat: { id: Id; title: string; messages: SavedAssistantMessage[] }): Promise<void> {
+    const me = await this.coach();
+    must(await this.sb.from('assistant_chats').upsert({ id: chat.id, user_id: me.id, title: chat.title, messages: chat.messages, updated_at: new Date().toISOString() }));
+  }
+
+  async deleteAssistantChat(id: Id): Promise<void> {
+    await this.coach();
+    must(await this.sb.from('assistant_chats').delete().eq('id', id));
   }
 
   async savePushDevice(d: { endpoint: string; p256dh: string; auth: string }): Promise<void> {

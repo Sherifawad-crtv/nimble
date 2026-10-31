@@ -1,6 +1,9 @@
 import type {
+  AssistantChat,
+  AssistantChatSummary,
   AssistantMessage,
   AssistantReply,
+  SavedAssistantMessage,
   Assignment,
   AssignmentStatus,
   CoachOverview,
@@ -52,6 +55,12 @@ export interface DataService {
 
   /** Rule-bounded assistant for coaches: answers, or proposes one change to confirm. */
   askAssistant(messages: AssistantMessage[]): Promise<AssistantReply>;
+  /** The coach's saved assistant chats, newest first. Private to them. */
+  listAssistantChats(): Promise<AssistantChatSummary[]>;
+  getAssistantChat(id: Id): Promise<AssistantChat>;
+  /** Creates the chat, or replaces its messages (and moves it to the top of the list). */
+  saveAssistantChat(chat: { id: Id; title: string; messages: SavedAssistantMessage[] }): Promise<void>;
+  deleteAssistantChat(id: Id): Promise<void>;
 
   // library
   listExercises(q?: ExerciseQuery): Promise<Exercise[]>;

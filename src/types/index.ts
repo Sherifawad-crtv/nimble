@@ -238,6 +238,24 @@ export interface AssistantReply {
   proposal?: AssistantProposal;
 }
 
+/** A message as it is kept in a saved chat: the files are reduced to their names. */
+export interface SavedAssistantMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  files?: string[];
+  proposal?: AssistantProposal;
+}
+
+export interface AssistantChatSummary {
+  id: Id;
+  title: string;
+  updatedAt: ISOTime;
+}
+
+export interface AssistantChat extends AssistantChatSummary {
+  messages: SavedAssistantMessage[];
+}
+
 // ---------- coach home ----------
 
 /** Where a client is in the program they were assigned, worked out by the service. */

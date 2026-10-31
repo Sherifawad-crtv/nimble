@@ -11,14 +11,40 @@ import { formatDay, t } from '../i18n';
 import { ATTACH_ACCEPT, AttachmentError, MAX_CHAT_BASE64, MAX_FILES, payloadSize, readAttachment } from '../lib/attachments';
 import { blockTypeLabel, isTimerBlock, measuredLabel, settingsSummary, targetText } from '../lib/workout';
 import { dataService } from '../services';
-import type { AssistantAttachment, AssistantMessage, AssistantProposal, ExerciseInput, Id, MeasuredAs } from '../types';
+import type { AssistantAttachment, AssistantChatSummary, AssistantMessage, AssistantProposal, ExerciseInput, Id, MeasuredAs, SavedAssistantMessage } from '../types';
 
 interface Turn extends AssistantMessage {
   proposal?: AssistantProposal;
   resolved?: boolean;
   /** A reply that just arrived: its text is still being revealed. */
   fresh?: boolean;
+  /** Names of files attached in an earlier visit. Shown as chips, but their contents are not sent again. */
+  files?: string[];
 }
+
+/** What is kept of a turn: the words and any proposal card, with files reduced to their names. */
+const toSaved = (turn: Turn): SavedAssistantMessage => {
+  const files = turn.attachments?.map((a) => a.name) ?? turn.files;
+  return { role: turn.role, content: turn.content, ...(files?.length ? { files } : {}), ...(turn.proposal ? { proposal: turn.proposal } : {}) };
+};
+
+/** An old proposal is shown for reference only: the library may have changed since, so it is not offered again. */
+const fromSaved = (m: SavedAssistantMessage): Turn => ({ role: m.role, content: m.content, ...(m.files?.length ? { files: m.files } : {}), ...(m.proposal ? { proposal: m.proposal, resolved: true } : {}) });
+
+const chatTitle = (turns: Turn[]): string => {
+  const first = turns.find((x) => x.role === 'user');
+  if (!first) return t('assistant.history.untitled');
+  const names = first.attachments?.map((a) => a.name) ?? first.files ?? [];
+  const text = first.content === t('assistant.upload.defaultPrompt') && names.length ? names.join(', ') : first.content;
+  const line = text.replace(/\s+/g, ' ').trim();
+  return line.length > 60 ? `${line.slice(0, 59)}…` : line || t('assistant.history.untitled');
+};
+
+const when = (iso: string): string => {
+  const d = new Date(iso);
+  const today = new Date().toDateString() === d.toDateString();
+  return new Intl.DateTimeFormat(undefined, today ? { hour: 'numeric', minute: '2-digit' } : { day: 'numeric', month: 'short' }).format(d);
+};
 
 const STARTERS: { label: string; prompt?: string }[] = [
   { label: t('assistant.starter.workout'), prompt: t('assistant.starter.workout.prompt') },
@@ -28,14 +54,13 @@ const STARTERS: { label: string; prompt?: string }[] = [
 ];
 
 /** A file shown as a small labelled chip, in the composer before sending and in the thread after. */
-function FileChip({ file, onRemove }: { file: AssistantAttachment; onRemove?: () => void }) {
-  const isImage = 'mediaType' in file && file.mediaType.startsWith('image/');
+function FileChip({ name, image, onRemove }: { name: string; image: boolean; onRemove?: () => void }) {
   return (
     <li className="assist-file">
-      <Icon name={isImage ? 'gallery' : 'file'} size={16} />
-      <span className="assist-file-name">{file.name}</span>
+      <Icon name={image ? 'gallery' : 'file'} size={16} />
+      <span className="assist-file-name">{name}</span>
       {onRemove && (
-        <button type="button" className="assist-file-x" aria-label={t('assistant.attach.remove', { name: file.name })} onClick={onRemove}>
+        <button type="button" className="assist-file-x" aria-label={t('assistant.attach.remove', { name })} onClick={onRemove}>
           <Icon name="close" size={14} />
         </button>
       )}
@@ -113,6 +138,11 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
   const toast = useToast();
   const navigate = useNavigate();
   const [turns, setTurns] = useState<Turn[]>([]);
+  const [view, setView] = useState<'chat' | 'history'>('chat');
+  /** The saved chat these turns belong to. A new one starts with each new conversation. */
+  const [chatId, setChatId] = useState<Id>(() => crypto.randomUUID());
+  /** What was last written for this chat, so opening an old one does not rewrite it. */
+  const saved = useRef('');
   const [draft, setDraft] = useState('');
   const [pending, setPending] = useState<AssistantAttachment[]>([]);
   const [reading, setReading] = useState(false);
@@ -133,6 +163,10 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
   const assignWorkout = useAction((s, a: { clientId: string; workoutId: string; date: string }) => s.assignWorkout({ clientIds: [a.clientId], workoutId: a.workoutId, dates: [a.date] }), { invalidate: [keys.assignmentsAll] });
   const assignProgram = useAction((s, a: { clientId: string; programId: string; startDate: string }) => s.assignProgram(a), { invalidate: [keys.assignmentsAll] });
 
+  const saveChat = useAction((s, a: { id: Id; title: string; messages: SavedAssistantMessage[] }) => s.saveAssistantChat(a), { invalidate: [keys.assistantChats] });
+  const removeChat = useAction((s, id: Id) => s.deleteAssistantChat(id), { invalidate: [keys.assistantChats] });
+  const chats = useData(keys.assistantChats, (s) => s.listAssistantChats(), { enabled: view === 'history' });
+
   const addExercise = useAction((s, a: ExerciseInput) => s.createExercise(a), { invalidate: [keys.exercisesAll] });
   const attachVideo = useAction((s, a: { id: Id; videoUrl: string }) => s.updateExercise(a.id, { videoUrl: a.videoUrl }), { invalidate: [keys.exercisesAll] });
   const saveProgram = useAction((s, a: { title: string; days: { dayOffset: number; workoutId: Id }[] }) => s.saveProgram(a), { invalidate: [keys.programs, keys.templates] });
@@ -141,7 +175,53 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
     end.current?.scrollIntoView({ block: 'end', behavior: 'smooth' });
   }, [turns, busy]);
 
+  // Keep the conversation: written once a reply (or a confirmed change) has settled, never mid-request.
+  useEffect(() => {
+    if (busy || !turns.length) return;
+    const messages = turns.map(toSaved);
+    const signature = JSON.stringify([chatId, messages]);
+    if (signature === saved.current) return;
+    saved.current = signature;
+    // History is a convenience: a failed save must never get in the way of the conversation.
+    saveChat.run({ id: chatId, title: chatTitle(turns), messages }).catch(() => {
+      saved.current = '';
+    });
+  }, [turns, busy, chatId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const close = () => setClosing(true);
+
+  const startNew = () => {
+    setTurns([]);
+    setPending([]);
+    setImporting(false);
+    setChatId(crypto.randomUUID());
+    saved.current = '';
+    setView('chat');
+  };
+
+  const open = async (summary: AssistantChatSummary) => {
+    try {
+      const chat = await dataService.getAssistantChat(summary.id);
+      const restored = chat.messages.map(fromSaved);
+      saved.current = JSON.stringify([chat.id, chat.messages]);
+      setTurns(restored);
+      setChatId(chat.id);
+      setPending([]);
+      setImporting(false);
+      setView('chat');
+    } catch (e) {
+      toast.show(errorMessage(e), 'error');
+    }
+  };
+
+  const forget = async (summary: AssistantChatSummary) => {
+    try {
+      await removeChat.run(summary.id);
+      if (summary.id === chatId) startNew();
+    } catch (e) {
+      toast.show(errorMessage(e), 'error');
+    }
+  };
 
   const pick = async (files: File[]) => {
     if (!files.length) return;
@@ -272,30 +352,59 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
   return (
     <div className={closing ? 'assist closing' : 'assist'} role="dialog" aria-modal="true" aria-label={t('assistant.title')} onAnimationEnd={(e) => e.currentTarget === e.target && closing && onClose()}>
       <header className="assist-bar">
-        <button type="button" className="assist-round" aria-label={t('assistant.close')} onClick={close}>
-          <Icon name="chev-d" size={22} />
-        </button>
-        {!empty && <h2 className="t-heading assist-bar-title">{t('assistant.title')}</h2>}
-        {!empty ? (
-          <button
-            type="button"
-            className="assist-round"
-            aria-label={t('assistant.new')}
-            disabled={busy}
-            onClick={() => {
-              setTurns([]);
-              setPending([]);
-              setImporting(false);
-            }}
-          >
-            <Icon name="refresh" size={20} />
+        {view === 'history' ? (
+          <button type="button" className="assist-round" aria-label={t('assistant.history.back')} onClick={() => setView('chat')}>
+            <Icon name="chev-l" size={22} />
           </button>
         ) : (
+          <button type="button" className="assist-round" aria-label={t('assistant.close')} onClick={close}>
+            <Icon name="chev-d" size={22} />
+          </button>
+        )}
+        {(view === 'history' || !empty) && <h2 className="t-heading assist-bar-title">{view === 'history' ? t('assistant.history') : t('assistant.title')}</h2>}
+        {view === 'history' ? (
           <span className="assist-round ghost" aria-hidden="true" />
+        ) : (
+          <div className="assist-bar-actions">
+            <button type="button" className="assist-round" aria-label={t('assistant.history')} disabled={busy} onClick={() => setView('history')}>
+              <Icon name="clock" size={20} />
+            </button>
+            {!empty && (
+              <button type="button" className="assist-round" aria-label={t('assistant.new')} disabled={busy} onClick={startNew}>
+                <Icon name="refresh" size={20} />
+              </button>
+            )}
+          </div>
         )}
       </header>
 
-      {empty ? (
+      {view === 'history' ? (
+        <div className="assist-history">
+          {chats.isPending ? (
+            <div className="assist-history-note v-muted t-body" role="status">
+              <span className="v-spin" aria-hidden="true" />
+            </div>
+          ) : chats.error ? (
+            <p className="assist-history-note v-muted t-body">{errorMessage(chats.error)}</p>
+          ) : !chats.data?.length ? (
+            <p className="assist-history-note v-muted t-body">{t('assistant.history.empty')}</p>
+          ) : (
+            <ul className="assist-history-list">
+              {chats.data.map((c) => (
+                <li key={c.id} className="assist-history-row" data-current={c.id === chatId || undefined}>
+                  <button type="button" className="assist-history-open" onClick={() => void open(c)}>
+                    <span className="assist-history-title t-body-strong">{c.title}</span>
+                    <span className="t-label v-muted">{when(c.updatedAt)}</span>
+                  </button>
+                  <button type="button" className="assist-history-del" aria-label={t('assistant.history.delete', { title: c.title })} disabled={removeChat.isPending} onClick={() => void forget(c)}>
+                    <Icon name="trash" size={18} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : empty ? (
         <div className="assist-hero">
           <ParticleOrb size={210} energy={typing ? 0.55 : 0.08} />
           <p className="t-label assist-hello">{t('assistant.hello', { name: me.name.split(' ')[0] ?? me.name })}</p>
@@ -320,10 +429,13 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
             turn.role === 'user' ? (
               <li key={i} className="assist-msg me">
                 <div className="assist-me-col">
-                  {turn.attachments?.length ? (
+                  {turn.attachments?.length || turn.files?.length ? (
                     <ul className="assist-files">
-                      {turn.attachments.map((f, k) => (
-                        <FileChip key={k} file={f} />
+                      {(turn.attachments ?? []).map((f, k) => (
+                        <FileChip key={k} name={f.name} image={'mediaType' in f && f.mediaType.startsWith('image/')} />
+                      ))}
+                      {(turn.files ?? []).map((name, k) => (
+                        <FileChip key={`f${k}`} name={name} image={/\.(jpe?g|png|gif|webp|heic|heif)$/i.test(name)} />
                       ))}
                     </ul>
                   ) : null}
@@ -350,15 +462,15 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
         </ol>
       )}
 
-      {pending.length > 0 && (
+      {view === 'chat' && pending.length > 0 && (
         <ul className="assist-files pending" aria-label={t('assistant.attach')}>
           {pending.map((f, k) => (
-            <FileChip key={k} file={f} onRemove={() => setPending((p) => p.filter((_, j) => j !== k))} />
+            <FileChip key={k} name={f.name} image={'mediaType' in f && f.mediaType.startsWith('image/')} onRemove={() => setPending((p) => p.filter((_, j) => j !== k))} />
           ))}
         </ul>
       )}
 
-      <form className="assist-composer" onSubmit={onSubmit}>
+      <form className="assist-composer" onSubmit={onSubmit} hidden={view === 'history'}>
         <input
           ref={picker}
           type="file"
