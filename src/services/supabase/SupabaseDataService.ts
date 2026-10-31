@@ -35,9 +35,6 @@ import { coachOverview, exerciseProgress, personalRecords, progressSummary, with
 import { parseVideoUrl, thumbnailFor, videoUrlFor } from '../videoLink';
 import { callFunction, must } from './client';
 
-/** Trial copy of the assistant function while its new reply style is tried on a preview. */
-const ASSISTANT_FUNCTION = 'coach-assistant-next';
-
 // ---------- rows ----------
 
 interface ProfileRow {
@@ -230,7 +227,7 @@ export class SupabaseDataService implements DataService {
 
   async askAssistant(messages: AssistantMessage[]): Promise<AssistantReply> {
     await this.coach();
-    return callFunction<AssistantReply>(this.sb, ASSISTANT_FUNCTION, { messages });
+    return callFunction<AssistantReply>(this.sb, 'coach-assistant', { messages });
   }
 
   async listAssistantChats(): Promise<AssistantChatSummary[]> {
