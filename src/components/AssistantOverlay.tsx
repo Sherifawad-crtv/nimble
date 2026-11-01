@@ -102,7 +102,11 @@ function useReveal(text: string, fresh: boolean, onDone: () => void, onGrow: () 
     }, 24);
     return () => window.clearInterval(id);
   }, [text, fresh]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(onGrow, [n]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Braces matter: an effect must return nothing or a cleanup function. Whatever the scroll call hands
+  // back (some browsers and extensions return a Promise) would otherwise be treated as the cleanup.
+  useEffect(() => {
+    onGrow();
+  }, [n]); // eslint-disable-line react-hooks/exhaustive-deps
   return text.slice(0, n);
 }
 
@@ -497,7 +501,9 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
                     text={turn.content}
                     fresh={!!turn.fresh}
                     onDone={() => setTurns((list) => list.map((x, k) => (k === i ? { ...x, fresh: false } : x)))}
-                    onGrow={() => end.current?.scrollIntoView({ block: 'end' })}
+                    onGrow={() => {
+                      end.current?.scrollIntoView({ block: 'end' });
+                    }}
                   >
                     {turn.proposal && <ProposalCard proposal={turn.proposal} measured={measured} resolved={!!turn.resolved} busy={busy} onConfirm={() => void confirm(i, turn.proposal as AssistantProposal)} onCancel={() => settle(i, t('assistant.cancelled'))} />}
                   </Reply>
