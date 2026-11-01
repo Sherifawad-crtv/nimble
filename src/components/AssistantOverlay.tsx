@@ -110,6 +110,44 @@ function useReveal(text: string, fresh: boolean, onDone: () => void, onGrow: () 
   return text.slice(0, n);
 }
 
+/** Copies a message as written (Markdown and all) and says so for a moment. */
+function CopyButton({ text, align }: { text: string; align?: 'end' }) {
+  const toast = useToast();
+  const [done, setDone] = useState(false);
+  const timer = useRef<number>();
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Older or locked-down browsers: fall back to selecting a hidden field.
+      const field = document.createElement('textarea');
+      field.value = text;
+      field.setAttribute('readonly', '');
+      field.style.cssText = 'position:fixed;inset-block-start:0;opacity:0';
+      document.body.appendChild(field);
+      field.select();
+      const ok = document.execCommand('copy');
+      field.remove();
+      if (!ok) {
+        toast.show(t('assistant.copy.failed'), 'error');
+        return;
+      }
+    }
+    setDone(true);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setDone(false), 1600);
+  };
+  return (
+    <div className={align === 'end' ? 'assist-actions end' : 'assist-actions'}>
+      <button type="button" className="assist-copy" data-done={done || undefined} aria-label={t(done ? 'assistant.copied' : 'assistant.copy')} onClick={() => void copy()}>
+        <Icon name={done ? 'check' : 'copy'} size={16} />
+        {done && <span>{t('assistant.copied')}</span>}
+      </button>
+    </div>
+  );
+}
+
 function Reply({ text, fresh, onDone, onGrow, children }: { text: string; fresh: boolean; onDone: () => void; onGrow: () => void; children?: React.ReactNode }) {
   const shown = useReveal(text, fresh, onDone, onGrow);
   const finished = shown.length >= text.length;
@@ -119,6 +157,7 @@ function Reply({ text, fresh, onDone, onGrow, children }: { text: string; fresh:
         <Md text={shown} />
         {!finished && <span className="assist-caret" aria-hidden="true" />}
       </div>
+      {finished && <CopyButton text={text} />}
       {finished && children}
     </>
   );
@@ -218,6 +257,41 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
   }, [attachMenu]);
 
   const close = () => setClosing(true);
+
+  // The assistant is a sheet, not a screen: drag it down by its top edge, tap outside it or press Escape to leave.
+  const sheet = useRef<HTMLDivElement>(null);
+  const grab = useRef<{ y: number; at: number } | null>(null);
+  const offset = (e: React.PointerEvent) => Math.max(0, e.clientY - (grab.current?.y ?? e.clientY));
+  const onGrabDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('button, input, label')) return;
+    grab.current = { y: e.clientY, at: performance.now() };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    sheet.current?.classList.add('dragging');
+  };
+  const onGrabMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (grab.current) sheet.current?.style.setProperty('--drag', `${offset(e)}px`);
+  };
+  const onGrabUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!grab.current) return;
+    const dy = offset(e);
+    const speed = dy / Math.max(1, performance.now() - grab.current.at);
+    grab.current = null;
+    sheet.current?.classList.remove('dragging');
+    if (dy > 140 || (dy > 40 && speed > 0.6)) {
+      sheet.current?.style.setProperty('--drag', `${dy}px`);
+      setClosing(true);
+    } else sheet.current?.style.setProperty('--drag', '0px');
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (drawer) setDrawer(false);
+      else setClosing(true);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [drawer]);
 
   const startNew = () => {
     setTurns([]);
@@ -379,229 +453,236 @@ export function AssistantOverlay({ onClose }: { onClose: () => void }) {
   const empty = turns.length === 0;
 
   return (
-    <div className={closing ? 'assist closing' : 'assist'} role="dialog" aria-modal="true" aria-label={t('assistant.title')} onAnimationEnd={(e) => e.currentTarget === e.target && closing && onClose()}>
-      <header className="assist-bar">
-        <button type="button" className="assist-round" aria-label={t('assistant.chats')} onClick={() => {
-            setMenuFor(null);
-            setDrawer(true);
-          }}>
-          <Icon name="menu" size={22} />
-        </button>
-        <h2 className="t-body-strong assist-bar-title">{empty ? '' : chatTitle(turns)}</h2>
-        <button type="button" className="assist-round" aria-label={t('assistant.new')} disabled={busy || empty} onClick={startNew}>
-          <Icon name="edit" size={20} />
-        </button>
-      </header>
-
-      {drawer && (
-        <>
-          <div className="assist-scrim" onClick={() => setDrawer(false)} />
-          <aside className="assist-drawer" aria-label={t('assistant.chats')}>
-            <div className="assist-drawer-top">
-              <label className="assist-search">
-                <Icon name="search" size={18} />
-                <input type="search" value={search} placeholder={t('assistant.search')} aria-label={t('assistant.search')} autoComplete="off" onChange={(e) => setSearch(e.target.value)} />
-              </label>
-              <button type="button" className="assist-round" aria-label={t('assistant.close')} onClick={close}>
-                <Icon name="close" size={22} />
-              </button>
-            </div>
-            <button type="button" className="assist-new-row" disabled={busy} onClick={startNew}>
-              <Icon name="edit" size={20} />
-              <span className="t-body-strong">{t('assistant.new')}</span>
+    <div className={closing ? 'assist closing' : 'assist'} role="dialog" aria-modal="true" aria-label={t('assistant.title')}>
+      <div className="assist-backdrop" onClick={close} />
+      <div ref={sheet} className="assist-sheet" onAnimationEnd={(e) => e.currentTarget === e.target && closing && onClose()}>
+        <div className="assist-top" onPointerDown={onGrabDown} onPointerMove={onGrabMove} onPointerUp={onGrabUp} onPointerCancel={onGrabUp}>
+          <span className="assist-grabber" aria-hidden="true" />
+          <header className="assist-bar">
+            <button type="button" className="assist-round" aria-label={t('assistant.chats')} onClick={() => {
+                setMenuFor(null);
+                setDrawer(true);
+              }}>
+              <Icon name="menu" size={22} />
             </button>
-            <div className="assist-drawer-list">
-              {chats.isPending ? (
-                <div className="assist-history-note" role="status">
-                  <span className="v-spin" aria-hidden="true" />
-                </div>
-              ) : chats.error ? (
-                <p className="assist-history-note v-muted t-body">{errorMessage(chats.error)}</p>
-              ) : !chats.data?.length ? (
-                <p className="assist-history-note v-muted t-body">{t('assistant.history.empty')}</p>
-              ) : (
-                (() => {
-                  const q = search.trim().toLowerCase();
-                  const groups = groupChats(chats.data.filter((c) => !q || c.title.toLowerCase().includes(q)));
-                  if (!groups.length) return <p className="assist-history-note v-muted t-body">{t('assistant.search.none')}</p>;
-                  return groups.map((g) => (
-                    <section key={g.label} className="assist-group">
-                      <h3 className="t-eyebrow v-muted">{g.label}</h3>
-                      <ul>
-                        {g.chats.map((c) => (
-                          <li key={c.id} className="assist-chat-row" data-current={c.id === chatId || undefined}>
-                            <button type="button" className="assist-chat-open" onClick={() => void open(c)}>
-                              {c.title}
-                            </button>
-                            {menuFor === c.id ? (
-                              <button type="button" className="assist-chat-del" disabled={removeChat.isPending} onClick={() => void forget(c).then(() => setMenuFor(null))}>
-                                <Icon name="trash" size={16} />
-                                {t('assistant.history.delete')}
+            <h2 className="t-body-strong assist-bar-title">{empty ? '' : chatTitle(turns)}</h2>
+            <button type="button" className="assist-round" aria-label={t('assistant.new')} disabled={busy || empty} onClick={startNew}>
+              <Icon name="edit" size={20} />
+            </button>
+          </header>
+        </div>
+
+        {drawer && (
+          <>
+            <div className="assist-scrim" onClick={() => setDrawer(false)} />
+            <aside className="assist-drawer" aria-label={t('assistant.chats')}>
+              <div className="assist-drawer-top">
+                <label className="assist-search">
+                  <Icon name="search" size={18} />
+                  <input type="search" value={search} placeholder={t('assistant.search')} aria-label={t('assistant.search')} autoComplete="off" onChange={(e) => setSearch(e.target.value)} />
+                </label>
+                <button type="button" className="assist-round" aria-label={t('assistant.close')} onClick={close}>
+                  <Icon name="close" size={22} />
+                </button>
+              </div>
+              <button type="button" className="assist-new-row" disabled={busy} onClick={startNew}>
+                <Icon name="edit" size={20} />
+                <span className="t-body-strong">{t('assistant.new')}</span>
+              </button>
+              <div className="assist-drawer-list">
+                {chats.isPending ? (
+                  <div className="assist-history-note" role="status">
+                    <span className="v-spin" aria-hidden="true" />
+                  </div>
+                ) : chats.error ? (
+                  <p className="assist-history-note v-muted t-body">{errorMessage(chats.error)}</p>
+                ) : !chats.data?.length ? (
+                  <p className="assist-history-note v-muted t-body">{t('assistant.history.empty')}</p>
+                ) : (
+                  (() => {
+                    const q = search.trim().toLowerCase();
+                    const groups = groupChats(chats.data.filter((c) => !q || c.title.toLowerCase().includes(q)));
+                    if (!groups.length) return <p className="assist-history-note v-muted t-body">{t('assistant.search.none')}</p>;
+                    return groups.map((g) => (
+                      <section key={g.label} className="assist-group">
+                        <h3 className="t-eyebrow v-muted">{g.label}</h3>
+                        <ul>
+                          {g.chats.map((c) => (
+                            <li key={c.id} className="assist-chat-row" data-current={c.id === chatId || undefined}>
+                              <button type="button" className="assist-chat-open" onClick={() => void open(c)}>
+                                {c.title}
                               </button>
-                            ) : (
-                              <button type="button" className="assist-chat-more" aria-label={t('assistant.history.options', { title: c.title })} onClick={() => setMenuFor(c.id)}>
-                                <Icon name="dots" size={20} />
-                              </button>
-                            )}
-                          </li>
+                              {menuFor === c.id ? (
+                                <button type="button" className="assist-chat-del" disabled={removeChat.isPending} onClick={() => void forget(c).then(() => setMenuFor(null))}>
+                                  <Icon name="trash" size={16} />
+                                  {t('assistant.history.delete')}
+                                </button>
+                              ) : (
+                                <button type="button" className="assist-chat-more" aria-label={t('assistant.history.options', { title: c.title })} onClick={() => setMenuFor(c.id)}>
+                                  <Icon name="dots" size={20} />
+                                </button>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </section>
+                    ));
+                  })()
+                )}
+              </div>
+              <div className="assist-drawer-foot t-label v-muted">{me.name}</div>
+            </aside>
+          </>
+        )}
+
+        {empty ? (
+          <div className="assist-hero">
+            <ParticleOrb size={210} energy={typing ? 0.55 : 0.08} />
+            <p className="t-label assist-hello">{t('assistant.hello', { name: me.name.split(' ')[0] ?? me.name })}</p>
+            <h1 className="t-title assist-headline">{t('assistant.headline')}</h1>
+            <div className="assist-chips" role="group" aria-label={t('assistant.starters')}>
+              {STARTERS.map((s, k) => (
+                <button
+                  key={s.label}
+                  type="button"
+                  className="assist-chip"
+                  style={{ '--i': k } as React.CSSProperties}
+                  onClick={() => (s.prompt ? void send(s.prompt) : picker.current?.click())}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <ol className="assist-thread" aria-live="polite">
+            {turns.map((turn, i) =>
+              turn.role === 'user' ? (
+                <li key={i} className="assist-msg me">
+                  <div className="assist-me-col">
+                    {turn.attachments?.length || turn.files?.length ? (
+                      <ul className="assist-files">
+                        {(turn.attachments ?? []).map((f, k) => (
+                          <FileChip key={k} name={f.name} image={'mediaType' in f && f.mediaType.startsWith('image/')} />
+                        ))}
+                        {(turn.files ?? []).map((name, k) => (
+                          <FileChip key={`f${k}`} name={name} image={/\.(jpe?g|png|gif|webp|heic|heif)$/i.test(name)} />
                         ))}
                       </ul>
-                    </section>
-                  ));
-                })()
-              )}
-            </div>
-            <div className="assist-drawer-foot t-label v-muted">{me.name}</div>
-          </aside>
-        </>
-      )}
+                    ) : null}
+                    <p className="assist-bubble me">{turn.content}</p>
+                    <CopyButton text={turn.content} align="end" />
+                  </div>
+                </li>
+              ) : (
+                <li key={i} className="assist-msg">
+                  <div className="assist-col">
+                    <Reply
+                      text={turn.content}
+                      fresh={!!turn.fresh}
+                      onDone={() => setTurns((list) => list.map((x, k) => (k === i ? { ...x, fresh: false } : x)))}
+                      onGrow={() => {
+                        end.current?.scrollIntoView({ block: 'end' });
+                      }}
+                    >
+                      {turn.proposal && <ProposalCard proposal={turn.proposal} measured={measured} resolved={!!turn.resolved} busy={busy} onConfirm={() => void confirm(i, turn.proposal as AssistantProposal)} onCancel={() => settle(i, t('assistant.cancelled'))} />}
+                    </Reply>
+                  </div>
+                </li>
+              ),
+            )}
+            {thinking && <Thinking />}
+            <div ref={end} />
+          </ol>
+        )}
 
-      {empty ? (
-        <div className="assist-hero">
-          <ParticleOrb size={210} energy={typing ? 0.55 : 0.08} />
-          <p className="t-label assist-hello">{t('assistant.hello', { name: me.name.split(' ')[0] ?? me.name })}</p>
-          <h1 className="t-title assist-headline">{t('assistant.headline')}</h1>
-          <div className="assist-chips" role="group" aria-label={t('assistant.starters')}>
-            {STARTERS.map((s, k) => (
-              <button
-                key={s.label}
-                type="button"
-                className="assist-chip"
-                style={{ '--i': k } as React.CSSProperties}
-                onClick={() => (s.prompt ? void send(s.prompt) : picker.current?.click())}
-              >
-                {s.label}
+        <form className="assist-composer" onSubmit={onSubmit}>
+          {([[picker, ATTACH_ACCEPT, false], [photoPicker, 'image/*', false], [cameraPicker, 'image/*', true]] as const).map(([ref, accept, camera], k) => (
+            <input
+              key={k}
+              ref={ref}
+              type="file"
+              multiple={!camera}
+              hidden
+              accept={accept}
+              {...(camera ? { capture: 'environment' as const } : {})}
+              onChange={(e) => {
+                const files = Array.from(e.target.files ?? []);
+                e.target.value = '';
+                void pick(files);
+              }}
+            />
+          ))}
+          <div className="assist-box">
+            {pending.length > 0 && (
+              <ul className="assist-files pending" aria-label={t('assistant.attach')}>
+                {pending.map((f, k) => (
+                  <FileChip key={k} name={f.name} image={'mediaType' in f && f.mediaType.startsWith('image/')} onRemove={() => setPending((p) => p.filter((_, j) => j !== k))} />
+                ))}
+              </ul>
+            )}
+            <textarea
+              ref={field}
+              rows={1}
+              className="assist-input"
+              value={draft}
+              maxLength={1000}
+              placeholder={t('assistant.placeholder')}
+              aria-label={t('assistant.placeholder')}
+              enterKeyHint="enter"
+              autoComplete="off"
+              onKeyDown={(e) => {
+                // Desktop: Enter sends, Shift+Enter breaks the line. Touch keyboards keep Enter as a new line.
+                if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                  e.preventDefault();
+                  void send(draft);
+                }
+              }}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                setTyping(true);
+                window.clearTimeout(typer.current);
+                typer.current = window.setTimeout(() => setTyping(false), 700);
+              }}
+            />
+            <div className="assist-box-row">
+              <div className="assist-plus-wrap" ref={plus}>
+                <button type="button" className="assist-plus" aria-label={t('assistant.attach.menu')} aria-expanded={attachMenu} disabled={busy || reading} onClick={() => setAttachMenu((v) => !v)}>
+                  {reading ? <span className="v-spin" aria-hidden="true" /> : <Icon name="plus" size={22} />}
+                </button>
+                {attachMenu && (
+                  <ul className="assist-pop" role="menu">
+                    {(
+                      [
+                        ['gallery', t('assistant.attach.photo'), photoPicker],
+                        ['file', t('assistant.attach.file'), picker],
+                        ['camera', t('assistant.attach.camera'), cameraPicker],
+                      ] as const
+                    ).map(([icon, label, ref]) => (
+                      <li key={label} role="none">
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setAttachMenu(false);
+                            ref.current?.click();
+                          }}
+                        >
+                          <Icon name={icon} size={20} />
+                          {label}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <button type="submit" className="assist-send" aria-label={t('assistant.send')} disabled={busy || reading || (!draft.trim() && !pending.length)}>
+                <Icon name="arrow-up" size={20} />
               </button>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <ol className="assist-thread" aria-live="polite">
-          {turns.map((turn, i) =>
-            turn.role === 'user' ? (
-              <li key={i} className="assist-msg me">
-                <div className="assist-me-col">
-                  {turn.attachments?.length || turn.files?.length ? (
-                    <ul className="assist-files">
-                      {(turn.attachments ?? []).map((f, k) => (
-                        <FileChip key={k} name={f.name} image={'mediaType' in f && f.mediaType.startsWith('image/')} />
-                      ))}
-                      {(turn.files ?? []).map((name, k) => (
-                        <FileChip key={`f${k}`} name={name} image={/\.(jpe?g|png|gif|webp|heic|heif)$/i.test(name)} />
-                      ))}
-                    </ul>
-                  ) : null}
-                  <p className="assist-bubble me">{turn.content}</p>
-                </div>
-              </li>
-            ) : (
-              <li key={i} className="assist-msg">
-                <div className="assist-col">
-                  <Reply
-                    text={turn.content}
-                    fresh={!!turn.fresh}
-                    onDone={() => setTurns((list) => list.map((x, k) => (k === i ? { ...x, fresh: false } : x)))}
-                    onGrow={() => {
-                      end.current?.scrollIntoView({ block: 'end' });
-                    }}
-                  >
-                    {turn.proposal && <ProposalCard proposal={turn.proposal} measured={measured} resolved={!!turn.resolved} busy={busy} onConfirm={() => void confirm(i, turn.proposal as AssistantProposal)} onCancel={() => settle(i, t('assistant.cancelled'))} />}
-                  </Reply>
-                </div>
-              </li>
-            ),
-          )}
-          {thinking && <Thinking />}
-          <div ref={end} />
-        </ol>
-      )}
-
-      <form className="assist-composer" onSubmit={onSubmit}>
-        {([[picker, ATTACH_ACCEPT, false], [photoPicker, 'image/*', false], [cameraPicker, 'image/*', true]] as const).map(([ref, accept, camera], k) => (
-          <input
-            key={k}
-            ref={ref}
-            type="file"
-            multiple={!camera}
-            hidden
-            accept={accept}
-            {...(camera ? { capture: 'environment' as const } : {})}
-            onChange={(e) => {
-              const files = Array.from(e.target.files ?? []);
-              e.target.value = '';
-              void pick(files);
-            }}
-          />
-        ))}
-        <div className="assist-box">
-          {pending.length > 0 && (
-            <ul className="assist-files pending" aria-label={t('assistant.attach')}>
-              {pending.map((f, k) => (
-                <FileChip key={k} name={f.name} image={'mediaType' in f && f.mediaType.startsWith('image/')} onRemove={() => setPending((p) => p.filter((_, j) => j !== k))} />
-              ))}
-            </ul>
-          )}
-          <textarea
-            ref={field}
-            rows={1}
-            className="assist-input"
-            value={draft}
-            maxLength={1000}
-            placeholder={t('assistant.placeholder')}
-            aria-label={t('assistant.placeholder')}
-            enterKeyHint="enter"
-            autoComplete="off"
-            onKeyDown={(e) => {
-              // Desktop: Enter sends, Shift+Enter breaks the line. Touch keyboards keep Enter as a new line.
-              if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-                e.preventDefault();
-                void send(draft);
-              }
-            }}
-            onChange={(e) => {
-              setDraft(e.target.value);
-              setTyping(true);
-              window.clearTimeout(typer.current);
-              typer.current = window.setTimeout(() => setTyping(false), 700);
-            }}
-          />
-          <div className="assist-box-row">
-            <div className="assist-plus-wrap" ref={plus}>
-              <button type="button" className="assist-plus" aria-label={t('assistant.attach.menu')} aria-expanded={attachMenu} disabled={busy || reading} onClick={() => setAttachMenu((v) => !v)}>
-                {reading ? <span className="v-spin" aria-hidden="true" /> : <Icon name="plus" size={22} />}
-              </button>
-              {attachMenu && (
-                <ul className="assist-pop" role="menu">
-                  {(
-                    [
-                      ['gallery', t('assistant.attach.photo'), photoPicker],
-                      ['file', t('assistant.attach.file'), picker],
-                      ['camera', t('assistant.attach.camera'), cameraPicker],
-                    ] as const
-                  ).map(([icon, label, ref]) => (
-                    <li key={label} role="none">
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => {
-                          setAttachMenu(false);
-                          ref.current?.click();
-                        }}
-                      >
-                        <Icon name={icon} size={20} />
-                        {label}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
             </div>
-            <button type="submit" className="assist-send" aria-label={t('assistant.send')} disabled={busy || reading || (!draft.trim() && !pending.length)}>
-              <Icon name="arrow-up" size={20} />
-            </button>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }
